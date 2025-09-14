@@ -1,0 +1,133 @@
+{
+  "$schema": "https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/schema.json",
+  "palette": {
+    "white": "#FFFFFF",
+    "tan": "#CC3802",
+    "teal": "#047E84",
+    "plum": "#9A348E",
+    "blush": "#DA627D",
+    "salmon": "#FCA17D",
+    "sky": "#86BBD8",
+    "teal_blue": "#33658A"
+  },
+  "blocks": [
+    {
+      "alignment": "right",
+      "segments": [
+        {
+          "type": "text",
+          "style": "diamond",
+          "leading_diamond": "",
+          "foreground": "p:white",
+          "background": "p:tan",
+          "template": "{{ if .Env.PNPPSHOST }}  {{ .Env.PNPPSHOST }} {{ end }}"
+        },
+        {
+          "type": "text",
+          "style": "powerline",
+          "foreground": "p:white",
+          "background": "p:teal",
+          "powerline_symbol": "",
+          "template": "{{ if .Env.PNPPSSITE }}  {{ .Env.PNPPSSITE }}{{ end }}"
+        },
+        {
+          "type": "text",
+          "style": "diamond",
+          "trailing_diamond": "",
+          "foreground": "p:white",
+          "background": "p:teal",
+          "template": "{{ if .Env.PNPPSSITE }} {{ end }}"
+        },
+        {
+          "background": "p:teal_blue",
+          "foreground": "p:white",
+          "properties": {
+            "time_format": "15:04"
+          },
+          "style": "diamond",
+          "template": " ♥ {{ .CurrentDate | date .Format }} ",
+          "leading_diamond": "",
+          "type": "time"
+        }
+      ],
+      "type": "rprompt"
+    },
+    {
+      "alignment": "left",
+      "segments": [
+        {
+          "type": "text",
+          "style": "diamond",
+          "leading_diamond": "",
+          "foreground": "p:white",
+          "background": "p:tan",
+          "template": "{{ if .Env.PNPPSHOST }}  {{ .Env.PNPPSHOST }} {{ end }}"
+        },
+        {
+          "type": "text",
+          "style": "powerline",
+          "foreground": "p:white",
+          "background": "p:teal",
+          "powerline_symbol": "",
+          "template": "{{ if .Env.PNPPSSITE }}  {{ .Env.PNPPSSITE }}{{ end }}"
+        },
+        {
+          "type": "text",
+          "style": "diamond",
+          "trailing_diamond": "",
+          "foreground": "p:white",
+          "background": "p:teal",
+          "template": "{{ if .Env.PNPPSSITE }} {{ end }}"
+        }
+      ],
+      "type": "rprompt"
+    },
+    {
+      "alignment": "left",
+      "segments": [
+        {
+          "background": "p:plum",
+          "foreground": "p:white",
+          "style": "diamond",
+          "template": "\n{{ .UserName }} ",
+          "type": "session"
+        },
+        {
+          "background": "p:blush",
+          "foreground": "p:white",
+          "powerline_symbol": "",
+          "properties": {
+            "style": "folder"
+          },
+          "style": "powerline",
+          "template": " {{ .Path }} ",
+          "type": "path"
+        },
+        {
+          "background": "p:salmon",
+          "foreground": "p:white",
+          "powerline_symbol": "",
+          "properties": {
+            "branch_icon": "",
+            "fetch_status": false,
+            "fetch_upstream_icon": true
+          },
+          "style": "powerline",
+          "template": " ➜ ({{ .UpstreamIcon }} {{ .HEAD }}{{ if gt .StashCount 0 }}  {{ .StashCount }}{{ end }}) ",
+          "type": "git"
+        },
+        {
+          "background": "p:sky",
+          "foreground": "p:white",
+          "powerline_symbol": "",
+          "style": "powerline",
+          "template": "  {{ if .PackageManagerIcon }}{{ .PackageManagerIcon }} {{ end }}{{ .Full }} ",
+          "type": "node"
+        }
+      ],
+      "type": "prompt"
+    }
+  ],
+  "final_space": true,
+  "version": 3
+}

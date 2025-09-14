@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Rule mcp__clojure-mcp__bash"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

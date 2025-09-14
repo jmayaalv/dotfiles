@@ -1,0 +1,7 @@
+# /Users/jmaya/.config/tmuxinator/omnia_prod.yml
+
+name: omnia-prod
+root: ~/
+
+windows:
+  - db: ssh -C -o 'ServerAliveInterval 180' -L 8161:127.0.0.1:8161 devel.jmayaalv@omniaprod
