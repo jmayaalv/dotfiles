@@ -1,0 +1,3 @@
+export PATH=$HOME/bin:/usr/local/bin:/Applications/Tools/apache-maven-3.6.3/bin:$PATH
+
+alias cat='batcat'

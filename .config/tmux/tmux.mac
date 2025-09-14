@@ -1,0 +1,10 @@
+# set bar on top
+set-option -g status-position top
+
+# rebind prefix to ctrl-s
+set -g prefix C-s
+source-file ~/.config/tmux/secrets.conf
+
+# Bitwarden
+set -g @plugin 'Alkindi42/tmux-bitwarden'
+set -g @bw-copy-to-clipboard 'on'

@@ -1,4 +1,15 @@
-(prelude-require-packages '(diminish  clojure-snippets yasnippet))
+(prelude-require-packages '(diminish  clojure-snippets yasnippet catppuccin-theme))
+
+(disable-theme 'zenburn)
+
+(use-package catppuccin-theme
+  :init
+  (setq catppuccin-flavor 'frappe)
+  :hook (after-init . (lambda ()
+                        (load-theme 'catppuccin)
+                        (custom-set-faces
+                         '(font-lock-type-face ((t (:foreground "#f5e0dc"))))
+                         '(clojure-keyword-face ((t (:foreground "#f5e0dc" :weight normal))))))))
 
 ;;enable snippets
 (setq yas-snippet-dirs      '("~/.emacs.d/snippets"))
