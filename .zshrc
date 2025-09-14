@@ -36,6 +36,8 @@ zinit snippet OMZP::command-not-found
 autoload -Uz compinit && compinit
 
 zinit cdreplay -q
+eval "$(oh-my-posh init zsh --config ~/.config/ohmyposh/zen.json)"
+
 
 # History
 HISTSIZE=5000
