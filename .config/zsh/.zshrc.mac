@@ -1,4 +1,4 @@
-export PATH=$HOME/bin:/usr/local/bin:/Applications/Tools/apache-maven-3.6.3/bin:$HOME/.config/eza:$PATHq
+export PATH=$HOME/bin:/usr/local/bin:/Applications/Tools/apache-maven-3.6.3/bin:$HOME/.config/eza/eza-community/completions:$PATH
 
 if type brew &>/dev/null; then
     FPATH="$(brew --prefix)/share/zsh/site-functions:${FPATH}"
