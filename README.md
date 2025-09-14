@@ -2,10 +2,21 @@
 
 Personal configuration files managed with [GNU Stow](https://www.gnu.org/software/stow/).
 
+## Quick Start
+
+```bash
+cd ~
+git clone <repository-url> dotfiles
+cd dotfiles
+stow .
+source ~/.zshrc
+```
+
 ## Structure
 
 ```
 .
+├── .clojure/               # Clojure configuration and history
 ├── .config/
 │   ├── alacritty/          # Terminal emulator configuration
 │   ├── claude/             # Claude Code configuration and data
@@ -13,6 +24,7 @@ Personal configuration files managed with [GNU Stow](https://www.gnu.org/softwar
 │   ├── tmux/               # Tmux configuration files
 │   └── tmuxinator/         # Tmuxinator session configurations
 ├── .emacs.d/               # Emacs configuration directory
+├── .psqlrc                 # PostgreSQL configuration
 └── .zshrc                  # Zsh shell configuration
 ```
 
@@ -25,6 +37,8 @@ Personal configuration files managed with [GNU Stow](https://www.gnu.org/softwar
 - **Tmuxinator**: Tmux session manager with predefined layouts
 - **Oh My Posh**: Cross-platform prompt theme engine
 - **Emacs**: Text editor configuration
+- **Clojure**: Development tools and REPL configuration
+- **PostgreSQL**: Database client configuration
 
 ## Installation
 
