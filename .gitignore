@@ -5,3 +5,5 @@
 .config/claude/todos/
 .config/tmux/plugins/
 .emacs.d/personal/*.elc
+/.config/tmux/secrets.conf
+.clojure/.cpcache/

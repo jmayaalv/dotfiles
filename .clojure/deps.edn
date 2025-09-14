@@ -1,0 +1,18 @@
+{:aliases
+ {
+  :mcp {:deps      {org.slf4j/slf4j-nop     {:mvn/version "2.0.16"}
+                    com.bhauman/clojure-mcp {:git/url "https://github.com/bhauman/clojure-mcp.git"
+                                             :git/sha "d28a6712f7a94b22bbbdf846de4e80c36589aa80"}}
+        :exec-fn   clojure-mcp.main/start-mcp-server
+        :exec-args {:port 7888}}
+
+  :1.12-storm {:classpath-overrides {org.clojure/clojure nil}
+               :extra-deps          {com.github.flow-storm/clojure        {:mvn/version "1.12.0-9"}
+                                     com.github.flow-storm/flow-storm-dbg {:mvn/version "4.4.2"}}}
+
+  ;; Optional plugins you find yourself using regularly
+  :fs-web-plugin {:extra-deps {com.github.flow-storm/flow-storm-web-plugin {:mvn/version "1.0.0-beta"}}
+                  :jvm-opts   ["-Dclojure.storm.instrumentOnlyPrefixes.webPlugin=org.httpkit.server,ring.adapter.jetty,next.jdbc.result-set"
+                             "-Dflowstorm.plugins.namespaces.webPlugin=flow-storm.plugins.web.all"]}
+  }
+ }
