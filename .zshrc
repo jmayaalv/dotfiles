@@ -4,7 +4,15 @@ if [[ -f "/opt/homebrew/bin/brew" ]] then
 fi
 
 #java home
-export JAVA_HOME=${SDKMAN_CANDIDATES_DIR}/java/${CURRENT}
+   export JAVA_HOME=${SDKMAN_CANDIDATES_DIR}/java/${CURRENT}
+
+# Catppuccinno machiato for fzf
+export FZF_DEFAULT_OPTS=" \
+--color=bg+:#363A4F,bg:#24273A,spinner:#F4DBD6,hl:#ED8796 \
+--color=fg:#CAD3F5,header:#ED8796,info:#C6A0F6,pointer:#F4DBD6 \
+--color=marker:#B7BDF8,fg+:#CAD3F5,prompt:#C6A0F6,hl+:#ED8796 \
+--color=selected-bg:#494D64 \
+--color=border:#6E738D,label:#CAD3F5"
 
 # this is a solution to emacs tramp timeout problem
 [ $TERM = "dumb" ] && unsetopt zle && PS1='$ '
@@ -32,11 +40,16 @@ zinit light zsh-users/zsh-autosuggestions
 zinit light Aloxaf/fzf-tab
 zinit snippet OMZP::command-not-found
 
+#theme for zsh-syntax-highlighting
+source ~/.config/zsh/catppuccin_macchiato-zsh-syntax-highlighting.zsh
+
 # Load completions
 autoload -Uz compinit && compinit
 
 zinit cdreplay -q
 eval "$(oh-my-posh init zsh --config ~/.config/ohmyposh/zen.json)"
+
+
 
 
 # History
@@ -56,15 +69,21 @@ setopt hist_find_no_dups
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 zstyle ':completion:*' menu no
+zstyle ':completion:*' format $'\e[2;37mCompleting %d\e[m'
 zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
 zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
+
 
 # Shell integrations
 eval "$(fzf --zsh)"
 eval "$(zoxide init --cmd cd zsh)"
 
+export CARAPACE_BRIDGES='zsh,fish,bash,inshellisense' # optional
+source <(carapace _carapace)
+
 #Common aliases
 alias vi='vim'
+alias ls='eza'
 alias clj-new='clojure -X:new :name'
 alias clj-new-lib='clojure -X:new  :template lib :name'
 alias tlocal='tmux new -s local'
