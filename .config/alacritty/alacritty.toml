@@ -85,7 +85,17 @@ action = "PasteSelection"
 mouse = "Middle"
 
 [selection]
-semantic_escape_chars = ",│`|:\"' ()[]{}<>"
+save_to_clipboard = true
+
+[[keyboard.bindings]]
+key = "c"
+mods = "Command"
+action = "Copy"
+
+[[keyboard.bindings]]
+key = "v"
+mods = "Command"
+action = "Paste"
 
 [terminal.shell]
 program = "/bin/zsh"
