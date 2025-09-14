@@ -1,6 +1,10 @@
 # set bar on top
 set-option -g status-position top
 
+
+# Use emacs key bindings (no vi mode)
+setw -g mode-keys emacs
+
 # rebind prefix to ctrl-s
 set -g prefix C-s
 source-file ~/.config/tmux/secrets.conf
