@@ -43,12 +43,14 @@
           "background": "p:teal_blue",
           "foreground": "p:white",
           "properties": {
-            "time_format": "15:04"
+              "branch_icon": "",
+              "fetch_status": false,
+              "fetch_upstream_icon": true
           },
           "style": "diamond",
-          "template": " ♥ {{ .CurrentDate | date .Format }} ",
+            "template": " ⬅ ({{ .UpstreamIcon }} {{ .HEAD }}{{ if gt .StashCount 0 }}  {{ .StashCount }}{{ end }}) ",
           "leading_diamond": "",
-          "type": "time"
+          "type": "git"
         }
       ],
       "type": "rprompt"
@@ -103,19 +105,6 @@
           "style": "powerline",
           "template": " {{ .Path }} ",
           "type": "path"
-        },
-        {
-          "background": "p:salmon",
-          "foreground": "p:white",
-          "powerline_symbol": "",
-          "properties": {
-            "branch_icon": "",
-            "fetch_status": false,
-            "fetch_upstream_icon": true
-          },
-          "style": "powerline",
-          "template": " ➜ ({{ .UpstreamIcon }} {{ .HEAD }}{{ if gt .StashCount 0 }}  {{ .StashCount }}{{ end }}) ",
-          "type": "git"
         },
         {
           "background": "p:sky",

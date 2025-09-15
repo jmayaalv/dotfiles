@@ -6,13 +6,6 @@ if type brew &>/dev/null; then
     compinit
 fi
 
-alias cat='bat'
-alias clj-new='clojure -X:new :name'
-alias clj-new-lib='clojure -X:new  :template lib :name'
-
-alias tlocal='tmux new -s local'
-alias attach='tmux attach-session -t'
-
 alias federer='tmuxinator start federer'
 
 alias medusa='tmuxinator start medusa'

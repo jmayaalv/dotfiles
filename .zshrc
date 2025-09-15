@@ -82,6 +82,7 @@ export CARAPACE_BRIDGES='zsh,fish,bash,inshellisense' # optional
 source <(carapace _carapace)
 
 #Common aliases
+alias main='tmux new -s main'
 alias vi='vim'
 alias ls='eza'
 alias clj-new='clojure -X:new :name'
@@ -92,8 +93,8 @@ alias attach='tmux attach-session -t'
 # OS-specific configurations
 if [[ "$OSTYPE" == "darwin"* ]]; then
     # mac specific settings
-    source ~/.config/zsh/.zshrc.mac
+    source ~/.config/zsh/zshrc.mac
 elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
     # Linux specific settings
-    source ~/.config/zsh/.zshrc.linux
+    source ~/.config/zsh/zshrc.linux
 fi

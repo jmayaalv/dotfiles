@@ -57,7 +57,7 @@ TERM = "xterm-256color"
 size = 14
 
 [font.bold]
-family = "MesloLGM Nerd Font"
+family = "FiraCode Nerd Font"
 style = "Bold"
 
 [font.glyph_offset]
@@ -65,10 +65,10 @@ x = 0
 y = 0
 
 [font.italic]
-family = "MesloLGM Nerd Font"
+family = "FiraCode Nerd Font"
 
 [font.normal]
-family = "MesloLGM Nerd Font"
+family = "FiraCode Nerd Font"
 style = "Regular"
 
 [font.offset]
@@ -98,10 +98,12 @@ action = "Paste"
 [terminal.shell]
 program = "/bin/zsh"
 
+
 [window]
 decorations = "full"
 dynamic_title = true
 startup_mode = "Maximized"
+
 
 [window.dimensions]
 columns = 160
