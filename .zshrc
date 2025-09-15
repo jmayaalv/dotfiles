@@ -4,7 +4,7 @@ if [[ -f "/opt/homebrew/bin/brew" ]] then
 fi
 
 #java home
-   export JAVA_HOME=${SDKMAN_CANDIDATES_DIR}/java/${CURRENT}
+export JAVA_HOME=${SDKMAN_CANDIDATES_DIR}/java/${CURRENT}
 
 # Catppuccinno machiato for fzf
 export FZF_DEFAULT_OPTS=" \
@@ -49,9 +49,6 @@ autoload -Uz compinit && compinit
 
 zinit cdreplay -q
 eval "$(oh-my-posh init zsh --config ~/.config/ohmyposh/zen.json)"
-
-
-
 
 # History
 HISTSIZE=5000
