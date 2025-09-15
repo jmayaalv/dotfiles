@@ -1,6 +1,6 @@
 # /Users/jmaya/.config/tmuxinator/omi_test.yml
 
-name: OMI Test
+name: omi-test
 root: ~/
 
 # Controls whether the tmux session should be attached to automatically. Defaults to true.

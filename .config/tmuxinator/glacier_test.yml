@@ -1,6 +1,6 @@
 # /Users/jmaya/.config/tmuxinator/glacier_test.yml
 
-name: Glacier Test
+name: glacier-test
 root: ~/
 
 # Controls whether the tmux session should be attached to automatically. Defaults to true.

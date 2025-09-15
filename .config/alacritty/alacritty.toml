@@ -102,6 +102,7 @@ chars = "\u0017"
 
 [terminal.shell]
 program = "/bin/zsh"
+args = ["-l", "-c", "/opt/homebrew/bin/tmux new-session -A -s main"]
 
 
 [window]
