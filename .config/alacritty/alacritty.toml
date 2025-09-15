@@ -95,6 +95,11 @@ key = "v"
 mods = "Command"
 action = "Paste"
 
+[[keyboard.bindings]]
+key = "w"
+mods = "Command"
+chars = "\u0017"
+
 [terminal.shell]
 program = "/bin/zsh"
 
