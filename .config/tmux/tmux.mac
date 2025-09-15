@@ -7,8 +7,6 @@ setw -g mode-keys emacs
 
 # rebind prefix to ctrl-
 set -g prefix C-s
-source-file ~/.config/tmux/secrets.conf
 
 # Bitwarden
-set -g @plugin 'Alkindi42/tmux-bitwarden'
-set -g @bw-copy-to-clipboard 'on'
+source-file ~/.config/tmux/secrets.conf
