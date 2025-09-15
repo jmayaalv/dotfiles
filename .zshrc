@@ -8,11 +8,12 @@ fi
 
 # Catppuccinno machiato for fzf
 export FZF_DEFAULT_OPTS=" \
---color=bg+:#363A4F,bg:#24273A,spinner:#F4DBD6,hl:#ED8796 \
---color=fg:#CAD3F5,header:#ED8796,info:#C6A0F6,pointer:#F4DBD6 \
---color=marker:#B7BDF8,fg+:#CAD3F5,prompt:#C6A0F6,hl+:#ED8796 \
---color=selected-bg:#494D64 \
---color=border:#6E738D,label:#CAD3F5"
+--color=bg+:#252832,bg:#161821,spinner:#C4A5A5,hl:#BD5766 \
+--color=fg:#9AA3C5,header:#BD5766,info:#9670C6,pointer:#C4A5A5 \
+--color=marker:#878DA8,fg+:#9AA3C5,prompt:#9670C6,hl+:#BD5766 \
+--color=selected-bg:#343744 \
+--color=border:#4E535D,label:#9AA3C5"
+
 
 # this is a solution to emacs tramp timeout problem
 [ $TERM = "dumb" ] && unsetopt zle && PS1='$ '
