@@ -46,3 +46,14 @@
 
 ;; add snnipets
 (add-hook 'sql-mode-hook #'yas-minor-mode)
+
+
+;; event specific text (like "type") from being highlighted as font-lock-builtin-face
+(defun my-sql-override-faces ()
+  (font-lock-add-keywords nil
+                          '(("\\<date\\>" . (0 'default t))
+                            ("\\<type\\>" . (0 'default t)))
+                          'prepend))
+
+(add-hook 'sql-mode-hook 'my-sql-override-faces)
+(add-hook 'sql-interactive-mode-hook 'my-sql-override-faces)

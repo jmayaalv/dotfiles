@@ -1,4 +1,5 @@
 .DS_Store
+.config/raycast/extensions
 .config/claude/projects/
 .config/claude/shell-snapshots/
 .config/claude/statsig/
