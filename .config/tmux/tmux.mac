@@ -2,8 +2,6 @@
 set-option -g status-position top
 
 
-# Use emacs key bindings (no vi mode)
-setw -g mode-keys emacs
 
 # rebind prefix to ctrl-
 set -g prefix C-s
