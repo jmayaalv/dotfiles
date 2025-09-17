@@ -2,6 +2,9 @@
 
 (disable-theme 'zenburn)
 
+
+
+
 (use-package catppuccin-theme
   :init
   (setq catppuccin-flavor 'frappe)
@@ -9,7 +12,13 @@
                         (load-theme 'catppuccin)
                         (custom-set-faces
                          '(font-lock-type-face ((t (:foreground "#f5e0dc"))))
-                         '(clojure-keyword-face ((t (:foreground "#f5e0dc" :weight normal))))))))
+                         '(clojure-keyword-face ((t (:foreground "#f5e0dc" :weight normal)))))))
+  :config
+  ;; Configure LSP diagnostic attributes directly
+  (with-eval-after-load 'lsp-diagnostics
+    (setq lsp-diagnostics-attributes
+          `((unnecessary :underline (:color "#b7bdf8" :style wave))
+            (deprecated  :underline (:color "#b7bdf8" :style wave))))))
 
 ;;enable snippets
 (setq yas-snippet-dirs      '("~/.emacs.d/snippets"))
