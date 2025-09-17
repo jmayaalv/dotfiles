@@ -40,15 +40,15 @@
           "background": "p:plum",
           "foreground": "p:white",
           "style": "diamond",
-          "template": "{{ .UserName }} ",
-          "type": "session"
+            "template": " {{.Icon}} {{ .UserName }}",
+          "type": "os"
         },
         {
           "background": "p:blush",
           "foreground": "p:white",
           "powerline_symbol": "",
           "properties": {
-            "style": "folder"
+            "style": "full"
           },
           "style": "powerline",
           "template": " {{ .Path }} ",
