@@ -587,6 +587,16 @@
         (sql-user "imssbit3")
         (sql-database "imssbit3db"))
 
+       (sbi.test4
+        (sql-name "sbi.test4")
+        (sql-default-directory "/ssh:devel.jmayaalv@sbitest4:")
+        (sql-postgres-program "/usr/local/pgsql/bin/psql")
+        (sql-product 'postgres)
+        (sql-port 5432)
+        (sql-server "localhost")
+        (sql-user "imssbit4")
+       (sql-database "imssbit4db"))
+
        (sbi.prod
         (sql-name "sbi.prod")
         (sql-default-directory "/ssh:devel.jmayaalv@sbidb:")
@@ -698,6 +708,11 @@
   "Create a new sql connection to sbi test3"
   (interactive)
   (my-sql-connect  'postgres 'sbi.test3))
+
+(defun sql-sbi.test4 ()
+  "Create a new sql connection to sbi test4"
+  (interactive)
+  (my-sql-connect  'postgres 'sbi.test4))
 
 (defun sql-fnb.test1 ()
   "Create a new sql connection to fnb test1"
