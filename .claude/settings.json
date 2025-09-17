@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "postgres": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-postgres"],
+      "env": {
+        "PGHOST": "localhost",
+        "PGPORT": "5432",
+        "PGDATABASE": "devdb",
+        "PGUSER": "jmayaalv",
+        "PGPASSWORD": "lncdj4P!1"
+      }
+    }
+  }
+}

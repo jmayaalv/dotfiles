@@ -4,7 +4,12 @@ if [[ -f "/opt/homebrew/bin/brew" ]] then
 fi
 
 #java home
-export JAVA_HOME=${SDKMAN_CANDIDATES_DIR}/java/${CURRENT}
+#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
+export SDKMAN_DIR="$HOME/.sdkman"
+[[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
+
+export JAVA_HOME=${SDKMAN_DIR}/candidates/java/current
+
 
 # Catppuccinno machiato for fzf
 export FZF_DEFAULT_OPTS=" \
@@ -49,6 +54,7 @@ autoload -Uz compinit && compinit
 
 zinit cdreplay -q
 eval "$(oh-my-posh init zsh --config ~/.config/ohmyposh/zen.json)"
+
 
 # History
 HISTSIZE=5000
