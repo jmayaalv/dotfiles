@@ -55,10 +55,19 @@
                 lsp-headerline-breadcrumb-enable nil
                 lsp-completion-provider :capf
                 lsp-enable-symbol-highlighting t
-                ;; lsp-enable-completion-at-point nil ;; uncomment to use cider completion instead of lsp
                 ;;lsp-diagnostics-provider :none
-                lsp-eldoc-enable-hover t
+                eldoc-echo-area-use-multiline-p t       ; Allow multiple lines in echo area
+                eldoc-echo-area-prefer-doc-buffer t    ; Use doc buffer for long docs
+                lsp-eldoc-render-all t                  ; Show all available eldoc info
+                eldoc-doc-buffer-separator "\n"         ; Separator between sections
+                lsp-hover-enabled nil                   ; Disable LSP hover
+                lsp-eldoc-enable-hover nil
                 lsp-log-io nil
                 cljr-add-ns-to-blank-clj-files nil ;; disable clj-refactor adding ns to blank files
                 cljr-magic-requires nil ;; temp disable to avoid problem with trade component
                 lsp-enable-which-key-integration  t)
+
+(global-eldoc-mode 1)
+
+
+(define-key lsp-mode-map (kbd "C-c C-d") 'lsp-describe-thing-at-point)

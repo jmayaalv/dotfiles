@@ -11,6 +11,8 @@
   :hook (after-init . (lambda ()
                         (load-theme 'catppuccin)
                         (custom-set-faces
+                         '(cider-test-failure-face ((t (:foreground "#ed8796"))))
+                         '(cider-test-success-face ((t (:foreground "#a6da95"))))
                          '(font-lock-type-face ((t (:foreground "#f5e0dc"))))
                          '(clojure-keyword-face ((t (:foreground "#f5e0dc" :weight normal)))))))
   :config
