@@ -47,5 +47,3 @@ The command should:
 5. Add the new entry in the appropriate section
 6. Write the updated content back to the file
 7. Suggest committing the changes
-
-Remember to update the package version in `__init__.py` and `setup.py` if this is a new version.

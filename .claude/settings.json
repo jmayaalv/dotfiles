@@ -1,8 +1,11 @@
 {
+  "alwaysThinkingEnabled": false,
   "mcpServers": {
     "postgres": {
       "command": "npx",
-      "args": ["@modelcontextprotocol/server-postgres"],
+      "args": [
+        "@modelcontextprotocol/server-postgres"
+      ],
       "env": {
         "PGHOST": "localhost",
         "PGPORT": "5432",

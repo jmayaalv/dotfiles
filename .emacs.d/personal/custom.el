@@ -25,7 +25,8 @@
    '((claude-code-ide :url
                       "https://github.com/manzaltu/claude-code-ide.el")))
  '(safe-local-variable-values
-   '((cider-repl-set-type . "clojure-cli")
+   '((cider-inject-dependencies-at-startup)
+     (cider-repl-set-type . "clojure-cli")
      (cider-preferred-build-tool . "clojure-cli"))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
