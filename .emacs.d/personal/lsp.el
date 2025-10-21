@@ -35,7 +35,9 @@
 (set-face-foreground 'lsp-face-highlight-textual nil)
 (set-face-background 'lsp-face-highlight-textual nil)
 (set-face-attribute 'lsp-face-highlight-textual nil :weight 'extra-bold)
-(set-face-attribute 'lsp-face-highlight-textual nil :underline t)
+(set-face-attribute 'lsp-face-highlight-textual nil :underline nil)
+
+
 
 (setq gc-cons-threshold (* 100 1024 1024)
                 lsp-keymap-prefix "s-l"
@@ -54,7 +56,7 @@
                 lsp-enable-indentation nil
                 lsp-headerline-breadcrumb-enable nil
                 lsp-completion-provider :capf
-                lsp-enable-symbol-highlighting t
+                lsp-enable-symbol-highlighting nil
                 ;;lsp-diagnostics-provider :none
                 eldoc-echo-area-use-multiline-p t       ; Allow multiple lines in echo area
                 eldoc-echo-area-prefer-doc-buffer t    ; Use doc buffer for long docs
