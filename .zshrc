@@ -11,7 +11,6 @@ export SDKMAN_DIR="$HOME/.sdkman"
 export JAVA_HOME=${SDKMAN_DIR}/candidates/java/current
 
 
-
 # Catppuccinno machiato for fzf
 export FZF_DEFAULT_OPTS=" \
 --color=bg+:#252832,bg:#161821,spinner:#C4A5A5,hl:#BD5766 \
