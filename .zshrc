@@ -9,8 +9,8 @@ export SDKMAN_DIR="$HOME/.sdkman"
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
 
 export JAVA_HOME=${SDKMAN_DIR}/candidates/java/current
-#_export ATLASSIAN_USER_EMAIL="juan.maya@kane-group.com"
-#_export ATLASSIAN_API_TOKEN="***REMOVED***"
+#_export ATLASSIAN_USER_EMAIL="""
+#_export ATLASSIAN_API_TOKEN="""
 
 
 # Catppuccinno machiato for fzf
