@@ -100,6 +100,11 @@ key = "w"
 mods = "Command"
 chars = "\u0017"
 
+[[keyboard.bindings]]
+key = "Return"
+mods = "Shift"
+chars = "\n"
+
 [terminal.shell]
 program = "/bin/zsh"
 

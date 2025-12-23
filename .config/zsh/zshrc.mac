@@ -1,10 +1,37 @@
-export PATH=$HOME/bin:/usr/local/bin:/Applications/Tools/apache-maven-3.6.3/bin:$HOME/.config/eza/eza-community/completions:$PATH
-
+export PATH=$HOME/.local/bin:$PATH:$HOME/bin:/usr/local/bin:/Applications/Tools/apache-maven-3.6.3/bin:$HOME/.config/eza/eza-community/completions:$PATH
 if type brew &>/dev/null; then
     FPATH="$(brew --prefix)/share/zsh/site-functions:${FPATH}"
     autoload -Uz compinit
     compinit
 fi
+
+
+
+# aws
+# kubectl port forward
+kpf() {
+    if [[ $# -ne 4 ]]; then
+      echo "Usage: kpf <namespace> <pod-pattern> <local-port> <remote-port>"
+      echo "Example: kpf pdn-prospero edge-deployment 7000 7000"
+      return 1
+    fi
+
+    local namespace=$1
+    local pod_pattern=$2
+    local local_port=$3
+    local remote_port=$4
+    local pod=$(kubectl get pods -n $namespace | grep $pod_pattern | head -n 1 | awk '{print $1}')
+
+    if [[ -z "$pod" ]]; then
+      echo "No pod found matching pattern: $pod_pattern in namespace: $namespace"
+      return 1
+    fi
+
+    echo "Forwarding to pod: $pod"
+    kubectl port-forward -n $namespace $pod $local_port:$remote_port
+}
+
+
 
 alias federer='tmuxinator start federer'
 

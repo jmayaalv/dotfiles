@@ -14,6 +14,33 @@
     (message (format "new migration: %s on branch: %s" migration-file-path branch))))
 
 
+
+
+;; CONNECT TO DB
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; aws sso login --profile kane-nonprod-db_writer                                                                   ;;
+;; export TOKEN=$(aws rds generate-db-auth-token \                                                                  ;;
+;;                    --hostname qa-allan-gray-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com \ ;;
+;;                    --port 5432 \                                                                                 ;;
+;;                    --region eu-central-1 \                                                                       ;;
+;;                    --username db_writer \                                                                        ;;
+;;                    --profile kane-nonprod-db_writer)                                                             ;;
+;;                                                                                                                  ;;
+;; psql "host=qa-allan-gray-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com \                    ;;
+;;       port=5432 \                                                                                                ;;
+;;       sslmode=require \                                                                                          ;;
+;;       dbname=imsallangrayt1adb \                                                                                 ;;
+;;       user=db_writer \                                                                                           ;;
+;;       password=$TOKEN"                                                                                           ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun kane/aurora-get-auth-token (hostname profile)
+  (string-trim
+   (shell-command-to-string
+    (format "aws rds generate-db-auth-token --hostname %s --port 5432 --region eu-central-1 --username db_writer --profile %s"
+            hostname
+            profile))))
+
 ;; SQL servers
 (setq sql-connection-alist
       '((localhost.dev
@@ -46,289 +73,90 @@
          (sql-user "imstest")
          (sql-database "imsdb_test"))
 
-        (nav.prod
-         (sql-name "nav.prod")
-          (sql-default-directory "/ssh:devel.jmayaalv@navdb:")
+        (allangray.test1
+         (sql-name "allangray.test1")
+         (sql-product 'postgres)
+         (sql-server "qa-allan-gray-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
+         (sql-port 5432)
+         (sql-database "imsallangrayt1adb")
+         (sql-user "db_writer"))
+
+        (allangray.test2
+         (sql-name "allangray.test2")
+         (sql-product 'postgres)
+         (sql-server "qa-allan-gray-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
+         (sql-port 5432)
+         (sql-database "imsallangrayt2adb")
+         (sql-user "db_writer"))
+
+        (allangray.prod
+         (sql-name "allangray.prod")
+         (sql-product 'postgres)
+         (sql-server "pdn-allan-gray-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+         (sql-port 5432)
+         (sql-database "imsallangrayadb")
+         (sql-user "db_maintainer"))
+
+        (allangray.prod.ibm
+         (sql-name "allangray.prod.ibm")
          (sql-postgres-program "/usr/local/pgsql/bin/psql")
+         (sql-default-directory "/ssh:devel.jmayaalv@allangraydb:")
          (sql-product 'postgres)
          (sql-port 5432)
          (sql-server "localhost")
-         (sql-user "imsnavprod")
-         (sql-database "imsnavproddb"))
+         (sql-user "imsagrayprod")
+         (sql-database "imsagrayproddb"))
 
-       (axonic.test
-         (sql-name "axonic.test")
-         (sql-default-directory "/ssh:devel.jmayaalv@axonictest1:")
-         (sql-postgres-program "/usr/local/pgsql/bin/psql")
+        (agl.test1
+         (sql-name "agl.test1")
          (sql-product 'postgres)
+         (sql-server "qa-agl-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
-         (sql-server "localhost")
-         (sql-user "imsaxonict1")
-         (sql-database "imsaxonict1db"))
+         (sql-database "imsaglt1a")
+         (sql-user "db_writer"))
 
-       (axonic.prod
-        (sql-name "axonic.prod")
-        (sql-default-directory "/ssh:devel.jmayaalv@axonicdb:")
-        (sql-postgres-program "/usr/local/pgsql/bin/psql")
-        (sql-product 'postgres)
-        (sql-port 5432)
-        (sql-server "localhost")
-        (sql-user "imsaxonicprod")
-        (sql-database "imsaxonicproddb"))
-
-       (axonic.test2
-        (sql-name "axonic.test2")
-        (sql-default-directory "/ssh:devel.jmayaalv@axonictest2:")
-        (sql-postgres-program "/usr/local/pgsql/bin/psql")
-        (sql-product 'postgres)
-        (sql-port 5432)
-        (sql-server "localhost")
-        (sql-user "imsaxonict2")
-        (sql-database "imsaxonict2db"))
-
-        (oic.prod
-         (sql-name "oic.prod")
-         (sql-default-directory "/ssh:devel.jmayaalv@oicdb:")
-         (sql-postgres-program "/usr/local/pgsql/bin/psql")
+        (agl.test2
+         (sql-name "agl.test2")
          (sql-product 'postgres)
+         (sql-server "qa-agl-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
-         (sql-server "localhost")
-         (sql-user "imsoicprod")
-         (sql-database "imsoicproddb"))
+         (sql-database "imsaglt2a")
+         (sql-user "db_writer"))
 
-        (omi.prod
-         (sql-name "omi.prod")
-         (sql-default-directory "/ssh:devel.jmayaalv@omidb:")
-         (sql-postgres-program "/usr/local/pgsql/bin/psql")
+        (agl.test3
+         (sql-name "agl.test3")
          (sql-product 'postgres)
+         (sql-server "qa-agl-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
-         (sql-server "localhost")
-         (sql-user "imsomiprod")
-         (sql-database "imsomiproddb"))
+         (sql-database "imsaglt3a")
+         (sql-user "db_writer"))
 
-        (omi.ps
-         (sql-name "omi.ps")
-         (sql-default-directory "/ssh:devel.jmayaalv@omips:")
-         (sql-postgres-program "/usr/local/pgsql/bin/psql")
+        (agl.test4
+         (sql-name "agl.test4")
          (sql-product 'postgres)
+         (sql-server "qa-agl-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
-         (sql-server "localhost")
-         (sql-user "imsomiedgecheck")
-         (sql-database "imsomiedgecheckdb"))
+         (sql-database "imsaglt4a")
+         (sql-user "db_writer"))
 
-        (omnia.test
-         (sql-name "omnia.test")
-         (sql-default-directory "/ssh:devel.jmayaalv@omniatest:")
-         (sql-postgres-program "/usr/local/pgsql/bin/psql")
+        (agl.test5
+         (sql-name "agl.test5")
          (sql-product 'postgres)
+         (sql-server "qa-agl-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
-         (sql-server "localhost")
-         (sql-user "imsombps")
-         (sql-database "imsombpsdb"))
-
-        (oic.test1
-         (sql-name "oic.test1")
-         (sql-default-directory "/ssh:devel.jmayaalv@oictest1:")
-         (sql-postgres-program "/usr/local/pgsql/bin/psql")
-         (sql-product 'postgres)
-         (sql-port 5432)
-         (sql-server "localhost")
-         (sql-user "imsoictest1")
-         (sql-database "imsoictest1db"))
-
-        (oic.test2
-         (sql-name "oic.test2")
-         (sql-default-directory "/ssh:devel.jmayaalv@oictest2:")
-         (sql-postgres-program "/usr/local/pgsql/bin/psql")
-         (sql-product 'postgres)
-         (sql-port 5432)
-         (sql-server "localhost")
-         (sql-user "imsoictest2")
-         (sql-database "imsoictest2db"))
-
-        (oic.test3
-         (sql-name "oic.test3")
-         (sql-default-directory "/ssh:devel.jmayaalv@oictest3:")
-         (sql-postgres-program "/usr/local/pgsql/bin/psql")
-         (sql-product 'postgres)
-         (sql-port 5432)
-         (sql-server "localhost")
-         (sql-user "imsoictest3")
-         (sql-database "imsoictest3db"))
-
-        (gosaver.test1
-         (sql-name "gosaver.test1")
-         (sql-default-directory "/ssh:devel.jmayaalv@gosavertest1:")
-         (sql-postgres-program "/usr/local/pgsql/bin/psql")
-         (sql-product 'postgres)
-         (sql-port 5432)
-         (sql-server "localhost")
-         (sql-user "imsgosavertest1")
-         (sql-database "imsgosavertest1db"))
-
-        (gosaver.prod
-         (sql-name "gosaver.prod")
-         (sql-default-directory "/ssh:devel.jmayaalv@gosaverdb:")
-         (sql-postgres-program "/usr/local/pgsql/bin/psql")
-         (sql-product 'postgres)
-         (sql-port 5432)
-         (sql-server "localhost")
-         (sql-user "imsgosaverprod")
-         (sql-database "imsgosaverproddb"))
-
-        (veritas.test
-         (sql-name "veritas.test")
-         (sql-postgres-program "/usr/local/postgresql-12.2/bin/psql")
-         (sql-default-directory "/ssh:devel.jmayaalv@veritastest:")
-         (sql-product 'postgres)
-         (sql-port 5432)
-         (sql-server "localhost")
-         (sql-user "imsveritastest1")
-         (sql-database "imsveritastest1db"))
-
-        (veritas.prod
-         (sql-name "veritas.prod")
-         (sql-postgres-program "/usr/local/pgsql/bin/psql")
-         (sql-default-directory "/ssh:devel.jmayaalv@veritasprod:")
-         (sql-product 'postgres)
-         (sql-port 5432)
-         (sql-server "localhost")
-         (sql-user "imsveritasprod")
-         (sql-database "imsveritasproddb"))
-
-        (omi.test1
-         (sql-name "omi.test1")
-         (sql-postgres-program "/usr/local/pgsql/bin/psql")
-         (sql-default-directory "/ssh:devel.jmayaalv@omitest:")
-         (sql-product 'postgres)
-         (sql-port 5432)
-         (sql-server "localhost")
-         (sql-user "imsomitest1")
-         (sql-database "imsomitest1db"))
-
-       (omi.test2
-         (sql-name "omi.test2")
-         (sql-postgres-program "/usr/local/pgsql/bin/psql")
-         (sql-default-directory "/ssh:devel.jmayaalv@omitest2:")
-         (sql-product 'postgres)
-         (sql-port 5432)
-         (sql-server "localhost")
-         (sql-user "imsomitest2")
-         (sql-database "imsomitest2db"))
-
-      (omi.test4
-         (sql-name "omi.test4")
-         (sql-postgres-program "/usr/local/pgsql/bin/psql")
-         (sql-default-directory "/ssh:devel.jmayaalv@omitest4:")
-         (sql-product 'postgres)
-         (sql-port 5432)
-         (sql-server "localhost")
-         (sql-user "imsomitest4")
-         (sql-database "imsomitest4db"))
-
-        (northstar.prod
-         (sql-name "northstar.prod")
-         (sql-postgres-program "/usr/local/pgsql/bin/psql")
-         (sql-default-directory "/ssh:devel.jmayaalv@nsdb:")
-         (sql-product 'postgres)
-         (sql-port 5432)
-         (sql-server "localhost")
-         (sql-user "imsbcgprod")
-         (sql-database "imsbcgproddb"))
-
-
-       (northstar.test
-         (sql-name "northstar.test")
-         (sql-postgres-program "/usr/local/pgsql/bin/psql")
-         (sql-default-directory "/ssh:devel.jmayaalv@nstest1:")
-         (sql-product 'postgres)
-         (sql-port 5432)
-         (sql-server "localhost")
-         (sql-user "imsnfstest1db")
-         (sql-database "imsnfstest1"))
-
-        (sanlam.prod
-         (sql-name "sanlam.prod")
-         (sql-postgres-program "/usr/local/pgsql/bin/psql")
-         (sql-default-directory "/ssh:devel.jmayaalv@sanlamdb:")
-         (sql-product 'postgres)
-         (sql-port 5432)
-         (sql-server "localhost")
-         (sql-user "imssanlamprod")
-         (sql-database "imssanlamproddb"))
-
-       (sanlam.test
-         (sql-name "sanlam.test")
-         (sql-postgres-program "/usr/local/pgsql/bin/psql")
-         (sql-default-directory "/ssh:devel.jmayaalv@sanlamtest1:")
-         (sql-product 'postgres)
-         (sql-port 5432)
-         (sql-server "localhost")
-         (sql-user "imssgist1")
-         (sql-database "imssgist1db"))
-
-       (glacier.test
-         (sql-name "glacier.test1")
-         (sql-postgres-program "/usr/local/pgsql/bin/psql")
-         (sql-default-directory "/ssh:devel.jmayaalv@glaciertest1:")
-         (sql-product 'postgres)
-         (sql-port 5432)
-         (sql-server "localhost")
-         (sql-user "imsglaciertest1")
-         (sql-database "imsglaciertest1db"))
-
-       (glacier.test2
-         (sql-name "glacier.test2")
-         (sql-postgres-program "/usr/local/pgsql/bin/psql")
-         (sql-default-directory "/ssh:devel.jmayaalv@glaciertest2:")
-         (sql-product 'postgres)
-         (sql-port 5432)
-         (sql-server "localhost")
-         (sql-user "imsglaciertest2")
-         (sql-database "imsglaciertest2db"))
-
-       (glacier.test3
-        (sql-name "glacier.test3")
-        (sql-postgres-program "/usr/local/pgsql/bin/psql")
-        (sql-default-directory "/ssh:devel.jmayaalv@glaciertest3:")
-        (sql-product 'postgres)
-        (sql-port 5432)
-        (sql-server "localhost")
-        (sql-user "imsglaciert3")
-        (sql-database "imsglaciert3db"))
-
-       (glacier.test4
-        (sql-name "glacier.test4")
-        (sql-postgres-program "/usr/local/pgsql/bin/psql")
-        (sql-default-directory "/ssh:devel.jmayaalv@glaciertest4:")
-        (sql-product 'postgres)
-        (sql-port 5432)
-        (sql-server "localhost")
-        (sql-user "imsglaciertest4")
-        (sql-database "imsglaciertest4db"))
-
-        (glacier.prod
-         (sql-name "glacier.prod")
-         (sql-postgres-program "/usr/local/pgsql/bin/psql")
-         (sql-default-directory "/ssh:devel.jmayaalv@glacierdb:")
-         (sql-product 'postgres)
-         (sql-port 5432)
-         (sql-server "localhost")
-         (sql-user "imsglacierprod")
-         (sql-database "imsglacierproddb"))
-
-        (omnia.prod
-         (sql-name "omnia.prod")
-         (sql-postgres-program "/usr/local/pgsql/bin/psql")
-         (sql-default-directory "/ssh:devel.jmayaalv@omniaprod:")
-         (sql-product 'postgres)
-         (sql-port 5432)
-         (sql-server "localhost")
-         (sql-user "imsombprod")
-         (sql-database "imsombproddb"))
+         (sql-database "imsaglt5a")
+         (sql-user "db_writer"))
 
         (agl.prod
          (sql-name "agl.prod")
+         (sql-product 'postgres)
+         (sql-server "pdn-agl-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+         (sql-port 5432)
+         (sql-database "imsagladb")
+         (sql-user "db_maintainer"))
+
+        (agl.prod.ibm
+         (sql-name "agl.prod.ibm")
          (sql-postgres-program "/usr/local/pgsql/bin/psql")
          (sql-default-directory "/ssh:devel.jmayaalv@agldb:")
          (sql-product 'postgres)
@@ -337,267 +165,335 @@
          (sql-user "imsaglprod")
          (sql-database "imsaglproddb"))
 
-        (agl.test1
-         (sql-name "agl.test1")
-         (sql-postgres-program "/usr/local/pgsql/bin/psql")
-         (sql-default-directory "/ssh:devel.jmayaalv@agltest1:")
+        (axonic.test1
+         (sql-name "axonic.test1")
          (sql-product 'postgres)
+         (sql-server "qa-axonic-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
-         (sql-server "localhost")
-         (sql-user "imsdartatest1")
-         (sql-database "imsdartatest1db"))
+         (sql-database "imsaxonict1adb")
+         (sql-user "db_writer"))
 
-        (agl.test2
-         (sql-name "agl.test2")
-         (sql-postgres-program "/usr/local/pgsql/bin/psql")
-         (sql-default-directory "/ssh:devel.jmayaalv@agltest2:")
+        (axonic.test2
+         (sql-name "axonic.test2")
          (sql-product 'postgres)
+         (sql-server "qa-axonic-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
-         (sql-server "localhost")
-         (sql-user "imsdartatest2")
-         (sql-database "imsdartatest2db"))
+         (sql-database "imsaxonict2adb")
+         (sql-user "db_writer"))
 
-        (agl.test3
-         (sql-name "agl.test3")
-         (sql-postgres-program "/usr/local/pgsql/bin/psql")
-         (sql-default-directory "/ssh:devel.jmayaalv@agltest3:")
+        (axonic.prod
+         (sql-name "axonic.prod")
          (sql-product 'postgres)
+         (sql-server "pdn-axonic-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
-         (sql-server "localhost")
-         (sql-user "imsdartatest3")
-         (sql-database "imsdartatest3db"))
+         (sql-database "imsaxonicadb")
+         (sql-user "db_maintainer"))
 
-        (argus.prod
-         (sql-name "argus.prod")
-         (sql-postgres-program "/bin/psql")
-         (sql-default-directory "/ssh:devel.jmayaalv@argusprod:")
+        (fnb.test1
+         (sql-name "fnb.test1")
          (sql-product 'postgres)
+         (sql-server "qa-fnb-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
-         (sql-server "localhost")
-         (sql-user "imsargusprod")
-         (sql-database "imsargusproddb"))
+         (sql-database "imsfnbt1adb")
+         (sql-user "db_writer"))
 
-       (argus.test2
-         (sql-name "argus.test2")
+        (fnb.test1
+         (sql-name "fnb.test2")
+         (sql-product 'postgres)
+         (sql-server "qa-fnb-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
+         (sql-port 5432)
+         (sql-database "imsfnbt2adb")
+         (sql-user "db_writer"))
+
+        (glacier.test1
+         (sql-name "glacier.test1")
+         (sql-product 'postgres)
+         (sql-server "qa-glacier-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
+         (sql-port 5432)
+         (sql-database "imsglaciert1adb")
+         (sql-user "db_writer"))
+
+        (glacier.test2
+         (sql-name "glacier.test2")
+         (sql-product 'postgres)
+         (sql-server "qa-glacier-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
+         (sql-port 5432)
+         (sql-database "imsglaciert2adb")
+         (sql-user "db_writer"))
+
+        (glacier.test3
+         (sql-name "glacier.test3")
+         (sql-product 'postgres)
+         (sql-server "qa-glacier-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
+         (sql-port 5432)
+         (sql-database "imsglaciert3adb")
+         (sql-user "db_writer"))
+
+        (glacier.test4
+         (sql-name "glacier.test4")
+         (sql-product 'postgres)
+         (sql-server "qa-glacier-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
+         (sql-port 5432)
+         (sql-database "imsglaciert4adb")
+         (sql-user "db_writer"))
+
+        (glacier.prod
+         (sql-name "glacier.prod")
+         (sql-product 'postgres)
+         (sql-server "pdn-glacier-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.co")
+         (sql-port 5432)
+         (sql-database "imsglacieradb")
+         (sql-user "db_maintainer"))
+
+        (glacier.prod.ibm
+         (sql-name "glacier.prod.ibm")
          (sql-postgres-program "/usr/local/pgsql/bin/psql")
-         (sql-default-directory "/ssh:devel.jmayaalv@argustest2:")
+         (sql-default-directory "/ssh:devel.jmayaalv@glacierdb:")
          (sql-product 'postgres)
          (sql-port 5432)
          (sql-server "localhost")
-         (sql-user "imsargust2")
-         (sql-database "imsargust2db"))
+         (sql-user "imsglacierprod")
+         (sql-database "imsglacierproddb"))
+
+        (gosaver.test1
+         (sql-name "gosaver.test1")
+         (sql-product 'postgres)
+         (sql-server "qa-gosaver-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
+         (sql-port 5432)
+         (sql-database "imsgosavert1adb")
+         (sql-user "db_writer"))
+
+        (gosaver.prod
+         (sql-name "gosaver.prod")
+         (sql-product 'postgres)
+         (sql-server "pdn-gosaver-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+         (sql-port 5432)
+         (sql-database "imsgosaveradb")
+         (sql-user "db_writer"))
+
+        (gosaver.prod.ibm
+         (sql-name "gosaver.prod.ibm")
+         (sql-default-directory "/ssh:devel.jmayaalv@gosaverdb:")
+         (sql-postgres-program "/usr/local/pgsql/bin/psql")
+         (sql-product 'postgres)
+         (sql-port 5432)
+         (sql-server "localhost")
+         (sql-user "imsgosaverprod")
+         (sql-database "imsgosaverproddb"))
+
+        (lic.test1
+         (sql-name "lic.test1")
+         (sql-product 'postgres)
+         (sql-server "qa-lic-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
+         (sql-port 5432)
+         (sql-database "imslict1adb")
+         (sql-user "db_writer"))
+
+        (lic.prod
+         (sql-name "lic.prod")
+         (sql-product 'postgres)
+         (sql-server "pdn-lic-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+         (sql-port 5432)
+         (sql-database "imslicadb")
+         (sql-user "db_maintainer"))
+
+        (nav.prod
+         (sql-name "nav.prod")
+         (sql-product 'postgres)
+         (sql-server "pdn-nav-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+         (sql-port 5432)
+         (sql-database "imsnavadb")
+         (sql-user "db_maintainer"))
+
+        (omnia.prod
+         (sql-name "omnia.prod")
+         (sql-product 'postgres)
+         (sql-server "pdn-omnia-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+         (sql-port 5432)
+         (sql-database "imsomniaadb")
+         (sql-user "db_maintainer"))
+
+        (omnia.test1
+         (sql-name "omnia.test1")
+         (sql-product 'postgres)
+         (sql-server "qa-omnia-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
+         (sql-port 5432)
+         (sql-database "imsomniat1adb")
+         (sql-user "db_writer"))
+
+        (omi.prod
+         (sql-name "omi.prod")
+         (sql-product 'postgres)
+         (sql-server "pdn-omi-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+         (sql-port 5432)
+         (sql-database "imsomiadb")
+         (sql-user "db_maintainer"))
+
+        (omi.prod.ibm
+         (sql-name "omi.prod.ibm")
+         (sql-default-directory "/ssh:devel.jmayaalv@omidb:")
+         (sql-postgres-program "/usr/local/pgsql/bin/psql")
+         (sql-product 'postgres)
+         (sql-port 5432)
+         (sql-server "localhost")
+         (sql-user "imsomiprod")
+         (sql-database "imsomiproddb"))
+
+        (omi.test1
+         (sql-name "omi.test1")
+         (sql-product 'postgres)
+         (sql-server "qa-omi-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
+         (sql-port 5432)
+         (sql-database "imsomit1adb")
+         (sql-user "db_writer"))
+
+        (omi.test2
+         (sql-name "omi.test2")
+         (sql-product 'postgres)
+         (sql-server "qa-omi-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
+         (sql-port 5432)
+         (sql-database "imsomit2adb")
+         (sql-user "db_writer"))
+
+        (omi.test3
+         (sql-name "omi.test3")
+         (sql-product 'postgres)
+         (sql-server "qa-omi-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
+         (sql-port 5432)
+         (sql-database "imsomit3adb")
+         (sql-user "db_writer"))
+
+        (omi.test4
+         (sql-name "omi.test4")
+         (sql-product 'postgres)
+         (sql-server "qa-omi-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
+         (sql-port 5432)
+         (sql-database "imsomit4adb")
+         (sql-user "db_writer"))
 
         (plac.prod
          (sql-name "plac.prod")
-         (sql-postgres-program "/usr/local/pgsql/bin/psql")
-         (sql-default-directory "/ssh:devel.jmayaalv@placprod:")
          (sql-product 'postgres)
+         (sql-server "pdn-plac-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
-         (sql-server "localhost")
-         (sql-user "imsprovidenceprod")
-         (sql-database "imsprovidenceproddb"))
+         (sql-database "imsplacadb")
+         (sql-user "db_maintainer"))
 
-       (allangray.test1
-         (sql-name "allangray.test1")
-         (sql-postgres-program "/usr/local/pgsql/bin/psql")
-         (sql-default-directory "/ssh:devel.jmayaalv@allangraytest1:")
-         (sql-product 'postgres)
-         (sql-port 5432)
-         (sql-server "localhost")
-         (sql-user "imsagrayt1")
-         (sql-database "imsagrayt1db"))
-
-       (allangray.test2
-         (sql-name "allangray.test2")
-         (sql-postgres-program "/usr/local/pgsql/bin/psql")
-         (sql-default-directory "/ssh:devel.jmayaalv@allangraytest2:")
-         (sql-product 'postgres)
-         (sql-port 5432)
-         (sql-server "localhost")
-         (sql-user "imsagrayt2")
-         (sql-database "imsagrayt2db"))
-
-       (allangray.prod
-        (sql-name "allangray.prod")
-        (sql-postgres-program "/usr/local/pgsql/bin/psql")
-        (sql-default-directory "/ssh:devel.jmayaalv@allangraydb:")
-        (sql-product 'postgres)
-        (sql-port 5432)
-        (sql-server "localhost")
-        (sql-user "imsagrayprod")
-        (sql-database "imsagrayproddb"))
-
-       (plac.test
+        (plac.test1
          (sql-name "plac.test")
+         (sql-product 'postgres)
+         (sql-server "qa-plac-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
+         (sql-port 5432)
+         (sql-database "imsplact1adb")
+         (sql-user "db_writer"))
+
+        (provlife.test1
+         (sql-name "provlife.test1")
+         (sql-product 'postgres)
+         (sql-server "qa-provlife-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
+         (sql-port 5432)
+         (sql-database "imsprovlifet1adb")
+         (sql-user "db_writer"))
+
+        (provlife.test2
+         (sql-name "provlife.test2")
+         (sql-product 'postgres)
+         (sql-server "qa-provlife-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
+         (sql-port 5432)
+         (sql-database "imsprovlifet2adb")
+         (sql-user "db_writer"))
+
+        (provlife.test3
+         (sql-name "provlife.test3")
+         (sql-product 'postgres)
+         (sql-server "qa-provlife-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
+         (sql-port 5432)
+         (sql-database "imsprovlifet3adb")
+         (sql-user "db_writer"))
+
+        (provlife.prod
+         (sql-name "plac.prod")
+         (sql-product 'postgres)
+         (sql-server "pdn-provlife-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+         (sql-port 5432)
+         (sql-database "imsprovlifeadb")
+         (sql-user "db_maintainer"))
+
+        (provlife.prod.ibm
+         (sql-name "provlife.prod")
          (sql-postgres-program "/usr/local/pgsql/bin/psql")
-         (sql-default-directory "/ssh:devel.jmayaalv@plactest:")
+         (sql-default-directory "/ssh:devel.jmayaalv@provlifedb:")
          (sql-product 'postgres)
          (sql-port 5432)
          (sql-server "localhost")
-         (sql-user "imsprovidencetest")
-         (sql-database "imsprovidencetestdb"))
+         (sql-user "imsplifeprod")
+         (sql-database "imsplifeproddb"))
 
-       (provlife.test1
-        (sql-name "provlife.test1")
-        (sql-postgres-program "/usr/local/pgsql/bin/psql")
-        (sql-default-directory "/ssh:devel.jmayaalv@provlifetest1:")
-        (sql-product 'postgres)
-        (sql-port 5432)
-        (sql-server "localhost")
-        (sql-user "imsprovlifetest1")
-        (sql-database "imsprovlifetest1db"))
-
-       (provlife.test2
-        (sql-name "provlife.test2")
-        (sql-postgres-program "/usr/local/pgsql/bin/psql")
-        (sql-default-directory "/ssh:devel.jmayaalv@provlifetest2:")
-        (sql-product 'postgres)
-        (sql-port 5432)
-        (sql-server "localhost")
-        (sql-user "imsprovlifetest2")
-        (sql-database "imsprovlifetest2db"))
-
-       (provlife.test3
-        (sql-name "provlife.test3")
-        (sql-postgres-program "/usr/local/pgsql/bin/psql")
-        (sql-default-directory "/ssh:devel.jmayaalv@provlifetest3:")
-        (sql-product 'postgres)
-        (sql-port 5432)
-        (sql-server "localhost")
-        (sql-user "imsprovlifetest3")
-        (sql-database "imsprovlifetest3db"))
-
-       (provlife.prod
-        (sql-name "provlife.prod")
-        (sql-postgres-program "/usr/local/pgsql/bin/psql")
-        (sql-default-directory "/ssh:devel.jmayaalv@provlifedb:")
-        (sql-product 'postgres)
-        (sql-port 5432)
-        (sql-server "localhost")
-        (sql-user "imsplifeprod")
-        (sql-database "imsplifeproddb"))
-
-       (prospero.test
-         (sql-name "nextgen.test")
-         (sql-default-directory "/ssh:devel.jmayaalv@nextgentest1:")
-         (sql-postgres-program "/usr/local/pgsql/bin/psql")
+        (prospero.test1
+         (sql-name "prospero.test1")
          (sql-product 'postgres)
+         (sql-server "qa-prospero-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
-         (sql-server "localhost")
-         (sql-user "imsngt1")
-         (sql-database "imsngt1db"))
+         (sql-database "imsprosperot1adb")
+         (sql-user "db_writer"))
 
-       (prospero.prod
-        (sql-name "prospero.prod")
-        (sql-default-directory "/ssh:devel.jmayaalv@prosperodb:")
-        (sql-postgres-program "/usr/local/pgsql/bin/psql")
-        (sql-product 'postgres)
-        (sql-port 5432)
-        (sql-server "localhost")
-        (sql-user "imsprosprod")
-        (sql-database "imsprosproddb"))
+        (prospero.test2
+         (sql-name "prospero.test2")
+         (sql-product 'postgres)
+         (sql-server "qa-prospero-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
+         (sql-port 5432)
+         (sql-database "imsprosperot2adb")
+         (sql-user "db_writer"))
 
-       (secura.test1
-        (sql-name "secura.test1")
-        (sql-default-directory "/ssh:devel.jmayaalv@securatest1:")
-        (sql-postgres-program "/usr/local/pgsql/bin/psql")
-        (sql-product 'postgres)
-        (sql-port 5432)
-        (sql-server "localhost")
-        (sql-user "imssecurat1")
-        (sql-database "imssecurat1db"))
+        (prospero.prod
+         (sql-name "prospero.prod")
+         (sql-product 'postgres)
+         (sql-server "pdn-prospero-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+         (sql-port 5432)
+         (sql-database "imsprosperoadb")
+         (sql-user "db_maintainer"))
 
-       (secura.prod
-        (sql-name "secura.prod")
-        (sql-default-directory "/ssh:devel.jmayaalv@securaprod:")
-        (sql-postgres-program "/usr/local/pgsql/bin/psql")
-        (sql-product 'postgres)
-        (sql-port 5432)
-        (sql-server "localhost")
-        (sql-user "imssecuraprod")
-        (sql-database "imssecuraproddb"))
+        (sbi.test1
+         (sql-name "sbi.test1")
+         (sql-product 'postgres)
+         (sql-server "qa-sbi-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
+         (sql-port 5432)
+         (sql-database "imssbit1adb")
+         (sql-user "db_writer"))
 
-       (lic.test
-        (sql-name "lic.test")
-        (sql-default-directory "/ssh:devel.jmayaalv@lictest1:")
-        (sql-postgres-program "/usr/local/pgsql/bin/psql")
-        (sql-product 'postgres)
-        (sql-port 5432)
-        (sql-server "localhost")
-        (sql-user "imslict1")
-        (sql-database "imslict1db"))
+        (sbi.test2
+         (sql-name "sbi.test2")
+         (sql-product 'postgres)
+         (sql-server "qa-sbi-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
+         (sql-port 5432)
+         (sql-database "imssbit2adb")
+         (sql-user "db_writer"))
 
-       (lic.prod
-        (sql-name "lic.prod")
-        (sql-default-directory "/ssh:devel.jmayaalv@licprod:")
-        (sql-postgres-program "/usr/local/pgsql/bin/psql")
-        (sql-product 'postgres)
-        (sql-port 5432)
-        (sql-server "localhost")
-        (sql-user "imslicprod")
-        (sql-database "imslicproddb"))
+        (sbi.test3
+         (sql-name "sbi.test3")
+         (sql-product 'postgres)
+         (sql-server "qa-sbi-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
+         (sql-port 5432)
+         (sql-database "imssbit3adb")
+         (sql-user "db_writer"))
 
-       (fnb.test1
-        (sql-name "fnb.test1")
-        (sql-default-directory "/ssh:devel.jmayaalv@fnbtest1:")
-        (sql-postgres-program "/usr/local/pgsql/bin/psql")
-        (sql-product 'postgres)
-        (sql-port 5432)
-        (sql-server "localhost")
-        (sql-user "imsfnbt1")
-        (sql-database "imsfnbt1db"))
+        (sbi.test4
+         (sql-name "sbi.test4")
+         (sql-product 'postgres)
+         (sql-server "qa-sbi-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
+         (sql-port 5432)
+         (sql-database "imssbit4adb")
+         (sql-user "db_writer"))
 
-       (fnb.test2
-        (sql-name "fnb.test2")
-        (sql-default-directory "/ssh:devel.jmayaalv@fnbtest2:")
-        (sql-postgres-program "/usr/local/pgsql/bin/psql")
-        (sql-product 'postgres)
-        (sql-port 5432)
-        (sql-server "localhost")
-        (sql-user "imsfnbt2")
-        (sql-database "imsfnbt2db"))
+        (sbi.prod
+         (sql-name "sbi.prod")
+         (sql-product 'postgres)
+         (sql-server "pdn-sbi-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+         (sql-port 5432)
+         (sql-database "imssbiadb")
+         (sql-user "db_maintainer"))
 
-       (sbi.test1
-        (sql-name "sbi.test1")
-        (sql-default-directory "/ssh:devel.jmayaalv@sbitest1:")
-        (sql-postgres-program "/usr/local/pgsql/bin/psql")
-        (sql-product 'postgres)
-        (sql-port 5432)
-        (sql-server "localhost")
-        (sql-user "imssbit1")
-        (sql-database "imssbit1db"))
-
-       (sbi.test2
-        (sql-name "sbi.test2")
-        (sql-default-directory "/ssh:devel.jmayaalv@sbitest2:")
-        (sql-postgres-program "/usr/local/pgsql/bin/psql")
-        (sql-product 'postgres)
-        (sql-port 5432)
-        (sql-server "localhost")
-        (sql-user "imssbit2")
-        (sql-database "imssbit2db"))
-
-       (sbi.test3
-        (sql-name "sbi.test3")
-        (sql-default-directory "/ssh:devel.jmayaalv@sbitest3:")
-        (sql-postgres-program "/usr/local/pgsql/bin/psql")
-        (sql-product 'postgres)
-        (sql-port 5432)
-        (sql-server "localhost")
-        (sql-user "imssbit3")
-        (sql-database "imssbit3db"))
-
-       (sbi.test4
-        (sql-name "sbi.test4")
-        (sql-default-directory "/ssh:devel.jmayaalv@sbitest4:")
-        (sql-postgres-program "/usr/local/pgsql/bin/psql")
-        (sql-product 'postgres)
-        (sql-port 5432)
-        (sql-server "localhost")
-        (sql-user "imssbit4")
-       (sql-database "imssbit4db"))
-
-       (sbi.prod
+       (sbi.prod.aws
         (sql-name "sbi.prod")
         (sql-default-directory "/ssh:devel.jmayaalv@sbidb:")
         (sql-postgres-program "/usr/local/pgsql/bin/psql")
@@ -607,7 +503,69 @@
         (sql-user "imssbiprod")
         (sql-database "imssbiproddb"))
 
-       ))
+       (secura.test1
+        (sql-name "secura.test1")
+        (sql-product 'postgres)
+        (sql-server "qa-secura-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
+        (sql-port 5432)
+        (sql-database "imssecurat1adb")
+        (sql-user "db_writer"))
+
+       (secura.prod
+        (sql-name "secura.prod")
+        (sql-product 'postgres)
+        (sql-server "pdn-secura-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+        (sql-port 5432)
+        (sql-database "imssecuraadb")
+        (sql-user "db_maintainer"))
+
+       (sukoon.test1
+        (sql-name "sukoon.test1")
+        (sql-product 'postgres)
+        (sql-server "qa-sukoon-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
+        (sql-port 5432)
+        (sql-database "imssukoont1adb")
+        (sql-user "db_writer"))
+
+       (sukoon.test2
+        (sql-name "sukoon.test2")
+        (sql-product 'postgres)
+        (sql-server "qa-sukoon-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
+        (sql-port 5432)
+        (sql-database "imssukoont2adb")
+        (sql-user "db_writer"))
+
+       (sukoon.test3
+        (sql-name "sukoon.test3")
+        (sql-product 'postgres)
+        (sql-server "qa-sukoon-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
+        (sql-port 5432)
+        (sql-database "imssukoont3adb")
+        (sql-user "db_writer"))
+
+       (sukoon.prod
+        (sql-name "sukoon.prod")
+        (sql-product 'postgres)
+        (sql-server "pdn-sukoon-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+        (sql-port 5432)
+        (sql-database "imssukoonadb")
+        (sql-user "db_maintainer"))
+
+       (veritas.prod
+        (sql-name "veritas.prod")
+        (sql-product 'postgres)
+        (sql-server "pdn-veritas-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+        (sql-port 5432)
+        (sql-database "imsveritasadb")
+        (sql-user "db_maintainer"))
+
+       (vertias.test1
+        (sql-name "veritas.test1")
+        (sql-product 'postgres)
+        (sql-server "qa-veritas-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
+        (sql-port 5432)
+        (sql-database "imsveritast1adb")
+        (sql-user "db_writer"))))
 
  (defun sql-localhost.dev ()
    "Create a new sql connection to the local dev db."
@@ -619,45 +577,112 @@
   (interactive)
   (my-sql-connect  'postgres 'localhost.agl))
 
- (defun sql-allangray.test1 ()
+(defun sql-allangray.test1 ()
    "Create a new sql connection to allan gray test1 db."
    (interactive)
+   (setq sql-password
+         (kane/aurora-get-auth-token "qa-allan-gray-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com"
+                                     "kane-nonprod-db_writer"))
+   (setenv "PGPASSWORD" sql-password)
+   (setq sql-login-params '(server port database user))
    (my-sql-connect  'postgres 'allangray.test1))
+
+(defun sql-allangray.test2 ()
+  "Create a new sql connection to allan gray test1 db."
+  (interactive)
+  (setq sql-password
+        (kane/aurora-get-auth-token "qa-allan-gray-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com"
+                                    "kane-nonprod-db_writer"))
+  (setenv "PGPASSWORD" sql-password)
+  (setq sql-login-params '(server port database user))
+
+  (my-sql-connect  'postgres 'allangray.test2))
 
 (defun sql-allangray.prod ()
   "Create a new sql connection to allan gray prod db."
   (interactive)
   (my-sql-connect  'postgres 'allangray.prod))
 
+(defun sql-axonic.test1 ()
+  "Create a new sql connection to axonic test1 db."
+  (interactive)
+  (setq sql-password
+        (kane/aurora-get-auth-token "qa-axonic-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com"
+                                    "kane-nonprod-db_writer"))
+  (setenv "PGPASSWORD" sql-password)
+  (setq sql-login-params '(server port database user))
+  (my-sql-connect  'postgres 'axonic.test1))
+
+(defun sql-axonic.test2 ()
+  "Create a new sql connection to axonic test2 db."
+  (interactive)
+  (setq sql-password
+        (kane/aurora-get-auth-token "qa-axonic-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com"
+                                    "kane-nonprod-db_writer"))
+  (setenv "PGPASSWORD" sql-password)
+  (setq sql-login-params '(server port database user))
+  (my-sql-connect  'postgres 'axonic.test2))
+
 (defun sql-axonic.prod ()
   "Create a new sql connection to axonic prod db."
   (interactive)
   (my-sql-connect  'postgres 'axonic.prod))
 
-(defun sql-axonic.test ()
-  "Create a new sql connection to axonic test db."
-  (interactive)
-  (my-sql-connect  'postgres 'axonic.test))
-
-(defun sql-axonic.test2 ()
-  "Create a new sql connection to axonic test 2db."
-  (interactive)
-  (my-sql-connect  'postgres 'axonic.test2))
 
 (defun sql-agl.test1 ()
   "Create a new sql connection to agl test1 db."
   (interactive)
+  (setq sql-password
+        (kane/aurora-get-auth-token "qa-agl-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com"
+                                    "kane-nonprod-db_writer"))
+  (setenv "PGPASSWORD" sql-password)
+  (message "Token set: " sql-password)
+  (setq sql-login-params '(server port database user))
   (my-sql-connect  'postgres 'agl.test1))
 
 (defun sql-agl.test2 ()
   "Create a new sql connection to agl test2 db."
   (interactive)
+  (setq sql-password
+        (kane/aurora-get-auth-token "qa-agl-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com"
+                                    "kane-nonprod-db_writer"))
+  (setenv "PGPASSWORD" sql-password)
+  (message "Token set: " sql-password)
+  (setq sql-login-params '(server port database user))
   (my-sql-connect  'postgres 'agl.test2))
 
 (defun sql-agl.test3 ()
-  "Create a new sql connection to agl test3 db."
+  "Create a new sql connection to agl test5 db."
   (interactive)
+  (setq sql-password
+        (kane/aurora-get-auth-token "qa-agl-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com"
+                                    "kane-nonprod-db_writer"))
+  (setenv "PGPASSWORD" sql-password)
+  (message "Token set: " sql-password)
+  (setq sql-login-params '(server port database user))
   (my-sql-connect  'postgres 'agl.test3))
+
+(defun sql-agl.test4 ()
+  "Create a new sql connection to agl test4 db."
+  (interactive)
+  (setq sql-password
+        (kane/aurora-get-auth-token "qa-agl-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com"
+                                    "kane-nonprod-db_writer"))
+  (setenv "PGPASSWORD" sql-password)
+  (message "Token set: " sql-password)
+  (setq sql-login-params '(server port database user))
+  (my-sql-connect  'postgres 'agl.test4))
+
+(defun sql-agl.test5 ()
+  "Create a new sql connection to agl test5 db."
+  (interactive)
+  (setq sql-password
+        (kane/aurora-get-auth-token "qa-agl-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com"
+                                    "kane-nonprod-db_writer"))
+  (setenv "PGPASSWORD" sql-password)
+  (message "Token set: " sql-password)
+  (setq sql-login-params '(server port database user))
+  (my-sql-connect  'postgres 'agl.test5))
 
  (defun sql-allangray.test2 ()
   "Create a new sql connection to allan gray test2 db."
@@ -695,23 +720,46 @@
   (my-sql-connect  'postgres 'lic.prod))
 
 (defun sql-sbi.test1 ()
-  "Create a new sql connection to sbi test1"
+  "Create a new sql connection to sbi test1 db."
   (interactive)
+  (setq sql-password
+        (kane/aurora-get-auth-token "qa-sbi-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com"
+                                    "kane-nonprod-db_writer"))
+  (setenv "PGPASSWORD" sql-password)
+  (setq sql-login-params '(server port database user))
+
   (my-sql-connect  'postgres 'sbi.test1))
 
 (defun sql-sbi.test2 ()
-  "Create a new sql connection to sbi test2"
+  "Create a new sql connection to sbi test2 db."
   (interactive)
+  (setq sql-password
+        (kane/aurora-get-auth-token "qa-sbi-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com"
+                                    "kane-nonprod-db_writer"))
+  (setenv "PGPASSWORD" sql-password)
+  (setq sql-login-params '(server port database user))
+
   (my-sql-connect  'postgres 'sbi.test2))
 
 (defun sql-sbi.test3 ()
-  "Create a new sql connection to sbi test3"
+  "Create a new sql connection to sbi test3 db."
   (interactive)
+  (setq sql-password
+        (kane/aurora-get-auth-token "qa-sbi-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com"
+                                    "kane-nonprod-db_writer"))
+  (setenv "PGPASSWORD" sql-password)
+  (setq sql-login-params '(server port database user))
+
   (my-sql-connect  'postgres 'sbi.test3))
 
 (defun sql-sbi.test4 ()
-  "Create a new sql connection to sbi test4"
+  "Create a new sql connection to sbi test4 db."
   (interactive)
+  (setq sql-password
+        (kane/aurora-get-auth-token "qa-sbi-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com"
+                                    "kane-nonprod-db_writer"))
+  (setenv "PGPASSWORD" sql-password)
+  (setq sql-login-params '(server port database user))
   (my-sql-connect  'postgres 'sbi.test4))
 
 (defun sql-fnb.test1 ()
@@ -764,20 +812,36 @@
   (interactive)
   (my-sql-connect 'postgres 'gosaver.prod))
 
-(defun sql-oic.test1 ()
-  "Create a new sql connection to the oic test1 db."
+(defun sql-sukoon.test1 ()
+  "Create a new sql connection to sukoon test1 db."
   (interactive)
-  (my-sql-connect 'postgres 'oic.test1))
+  (setq sql-password
+        (kane/aurora-get-auth-token "qa-sukoon-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com"
+                                    "kane-nonprod-db_writer"))
+  (setenv "PGPASSWORD" sql-password)
+  (setq sql-login-params '(server port database user))
+  (my-sql-connect  'postgres 'sukoon.test1))
 
- (defun sql-oic.test2 ()
-   "Create a new sql connection to the oic test2 db."
-    (interactive)
-    (my-sql-connect 'postgres 'oic.test2))
+(defun sql-sukoon.test2 ()
+  "Create a new sql connection to sukoon test2 db."
+  (interactive)
+  (setq sql-password
+        (kane/aurora-get-auth-token "qa-sukoon-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com"
+                                    "kane-nonprod-db_writer"))
+  (setenv "PGPASSWORD" sql-password)
+  (setq sql-login-params '(server port database user))
+  (my-sql-connect  'postgres 'sukoon.test2))
 
- (defun sql-oic.test3 ()
-   "Create a new sql connection to the oic test3 db."
-    (interactive)
-    (my-sql-connect 'postgres 'oic.test3))
+(defun sql-sukoon.test3 ()
+  "Create a new sql connection to sukoon test3 db."
+  (interactive)
+  (setq sql-password
+        (kane/aurora-get-auth-token "qa-sukoon-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com"
+                                    "kane-nonprod-db_writer"))
+  (setenv "PGPASSWORD" sql-password)
+  (setq sql-login-params '(server port database user))
+  (my-sql-connect  'postgres 'sukoon.test3))
+
 
  (defun sql-glacier.prod ()
    "Create a new sql connection to the glacier prod db."

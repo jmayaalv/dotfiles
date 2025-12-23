@@ -1,18 +1,40 @@
 {
-  "alwaysThinkingEnabled": false,
-  "mcpServers": {
-    "postgres": {
-      "command": "npx",
-      "args": [
-        "@modelcontextprotocol/server-postgres"
-      ],
-      "env": {
-        "PGHOST": "localhost",
-        "PGPORT": "5432",
-        "PGDATABASE": "devdb",
-        "PGUSER": "jmayaalv",
-        "PGPASSWORD": "lncdj4P!1"
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "clj-paren-repair-claude-hook --cljfmt"
+          }
+        ]
       }
-    }
-  }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "clj-paren-repair-claude-hook --cljfmt"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "clj-paren-repair-claude-hook --cljfmt"
+          }
+        ]
+      }
+    ]
+  },
+  "enabledPlugins": {
+    "taches-cc-resources@taches-cc-resources": true
+  },
+  "alwaysThinkingEnabled": true
 }

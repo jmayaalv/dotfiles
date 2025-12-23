@@ -14,18 +14,21 @@
         discover-my-major dockerfile-mode doom-modeline easy-kill eat
         elisp-slime-nav epl exec-path-from-shell expand-region
         flycheck gist git-modes git-timemachine
-        gnu-elpa-keyring-update guru-mode hl-todo html-to-hiccup
+        gnu-elpa-keyring-update guru-mode helm hl-todo html-to-hiccup
         imenu-anywhere jet js2-mode json-mode key-chord linkin-org
-        lsp-treemacs magit move-text nlinum operate-on-number
+        lsp-mode lsp-treemacs magit move-text nlinum operate-on-number
         orderless projectile rainbow-delimiters rainbow-mode
-        restclient smartparens smartrep super-save try undo-tree
-        vertico volatile-highlights vterm web-mode yaml-mode
-        zenburn-theme zop-to-char))
+        restclient smartparens smartrep super-save transient try
+        undo-tree vertico volatile-highlights vterm web-mode
+        web-server yaml-mode zenburn-theme zop-to-char))
  '(package-vc-selected-packages
    '((claude-code-ide :url
                       "https://github.com/manzaltu/claude-code-ide.el")))
  '(safe-local-variable-values
-   '((cider-inject-dependencies-at-startup)
+   '((cider-ns-refresh-after-fn . "user/start")
+     (cider-ns-refresh-before-fn . "user/stop")
+     (projectile-grep-default-files quote ("*.clj" "*.cljs" "*.cljc"))
+     (cider-inject-dependencies-at-startup)
      (cider-repl-set-type . "clojure-cli")
      (cider-preferred-build-tool . "clojure-cli"))))
 (custom-set-faces
@@ -33,4 +36,7 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
+ '(cider-test-failure-face ((t (:foreground "#ed8796"))))
+ '(cider-test-success-face ((t (:foreground "#a6da95"))))
+ '(clojure-keyword-face ((t (:foreground "#f5e0dc" :weight normal))))
+ '(font-lock-type-face ((t (:foreground "#f5e0dc")))))
