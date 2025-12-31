@@ -10,7 +10,10 @@ export SDKMAN_DIR="$HOME/.sdkman"
 
 export JAVA_HOME=${SDKMAN_DIR}/candidates/java/current
 export ATLASSIAN_USER_EMAIL="juan.maya@kane-group.com"
-export ATLASSIAN_API_TOKEN="***REMOVED***"
+# Load Atlassian API token from secure location
+if [ -f ~/.secrets/atlassian_token ]; then
+  export ATLASSIAN_API_TOKEN=$(cat ~/.secrets/atlassian_token)
+fi
 
 
 # Catppuccinno machiato for fzf
