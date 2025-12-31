@@ -1,0 +1,1 @@
+{:database {:path "~/.config/clojure-skills/clojure-skills.db", :auto-migrate true}, :project {:root nil, :skills-dir "skills", :prompts-dir "prompts", :build-dir "_build"}, :search {:max-results 50, :context-lines 3}, :output {:format :json, :color true}, :permissions {:prompt false}}
