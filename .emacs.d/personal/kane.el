@@ -24,7 +24,11 @@
 ;;                    --port 5432 \                                                                                 ;;
 ;;                    --region eu-central-1 \                                                                       ;;
 ;;                    --username db_writer \                                                                        ;;
-;;                    --profile kane-nonprod-db_writer)                                                             ;;
+;;                    --profile kane-nonprod-db_writer)
+;; aws rds describe-db-clusters \
+;;--query 'DBClusters[*].[DBClusterIdentifier,Endpoint,Engine]' \
+;;--output table --profile kane-nonprod-dev
+;;
 ;;                                                                                                                  ;;
 ;; psql "host=qa-allan-gray-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com \                    ;;
 ;;       port=5432 \                                                                                                ;;
@@ -34,12 +38,124 @@
 ;;       password=$TOKEN"                                                                                           ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun kane/aurora-get-auth-token (hostname profile)
-  (string-trim
-   (shell-command-to-string
-    (format "aws rds generate-db-auth-token --hostname %s --port 5432 --region eu-central-1 --username db_writer --profile %s"
-            hostname
-            profile))))
+;; Aurora configuration
+(defvar kane-aurora-port 5432
+  "Default port for Aurora database connections.")
+
+(defvar kane-aurora-region "eu-central-1"
+  "AWS region for Aurora clusters.")
+
+;; IAM token cache - tokens are valid for 15 minutes
+(defvar kane-iam-token-cache (make-hash-table :test 'equal)
+  "Cache for IAM tokens. Key is (hostname . username), value is (token . timestamp).")
+
+(defvar kane-iam-token-ttl (* 14 60)
+  "IAM token time-to-live in seconds. Default 14 minutes (tokens valid for 15).")
+
+;; Last connection for quick reconnect
+(defvar kane-last-connection nil
+  "Last connection used with kane-sql for quick reconnect.")
+
+(defun kane/get-cached-token (hostname username)
+  "Get cached IAM token for HOSTNAME and USERNAME if still valid.
+Returns token string or nil if not cached or expired."
+  (let* ((cache-key (cons hostname username))
+         (cached (gethash cache-key kane-iam-token-cache)))
+    (when cached
+      (let ((token (car cached))
+            (timestamp (cdr cached))
+            (now (float-time)))
+        (if (< (- now timestamp) kane-iam-token-ttl)
+            token
+          ;; Token expired, remove from cache
+          (remhash cache-key kane-iam-token-cache)
+          nil)))))
+
+(defun kane/cache-token (hostname username token)
+  "Cache IAM TOKEN for HOSTNAME and USERNAME with current timestamp."
+  (let ((cache-key (cons hostname username)))
+    (puthash cache-key (cons token (float-time)) kane-iam-token-cache)))
+
+(defun kane/aurora-get-auth-token (hostname username profile)
+  "Generate AWS IAM auth token for HOSTNAME with USERNAME using PROFILE.
+Checks cache first; generates new token if needed. Returns nil on error."
+  (or (kane/get-cached-token hostname username)
+      (condition-case err
+          (let ((token (string-trim
+                        (shell-command-to-string
+                         (format "aws rds generate-db-auth-token --hostname %s --port %s --region %s --username %s --profile %s"
+                                 hostname
+                                 kane-aurora-port
+                                 kane-aurora-region
+                                 username
+                                 profile)))))
+            (if (string-prefix-p "An error occurred" token)
+                (progn
+                  (message "AWS IAM token generation failed. Check credentials: aws sso login --profile %s" profile)
+                  nil)
+              (progn
+                (kane/cache-token hostname username token)
+                token)))
+        (error
+         (message "Failed to generate IAM token: %s" (error-message-string err))
+         nil))))
+
+(defun kane/connection-needs-iam-p (connection-symbol)
+  "Return non-nil if CONNECTION-SYMBOL requires AWS IAM authentication.
+Detects Aurora clusters (both QA and prod) by hostname pattern.
+Excludes SSH tunnel connections (localhost)."
+  (let* ((conn-alist (cdr (assoc connection-symbol sql-connection-alist)))
+         (server (cadr (assoc 'sql-server conn-alist))))
+    (and server
+         (stringp server)
+         ;; Match any Aurora cluster (qa- or pdn-), but exclude localhost
+         (string-match-p "aurora-cluster" server)
+         (not (string= server "localhost")))))
+
+(defun kane/get-aws-profile (connection-symbol)
+  "Get the appropriate AWS profile for CONNECTION-SYMBOL.
+Maps database username to AWS profile:
+  db_writer -> kane-nonprod-db_writer
+  db_maintainer -> kane-prod-db_maintainer"
+  (let* ((conn-alist (cdr (assoc connection-symbol sql-connection-alist)))
+         (user (cadr (assoc 'sql-user conn-alist))))
+    (cond
+     ((string= user "db_writer") "kane-nonprod-db_writer")
+     ((string= user "db_maintainer") "kane-prod-db_maintainer")
+     (t "kane-nonprod-db_writer")))) ; default fallback
+
+(defun kane/format-connection-for-completion (connection-symbol)
+  "Format CONNECTION-SYMBOL for better completion display.
+Returns formatted string like 'agl          test1  [QA]'."
+  (let* ((name (symbol-name connection-symbol))
+         (parts (split-string name "\\."))
+         (client (car parts))
+         (env (or (cadr parts) ""))
+         (env-tag (cond
+                   ((kane/is-qa-connection-p connection-symbol) " [QA]")
+                   ((kane/is-prod-connection-p connection-symbol) " [PROD]")
+                   ((kane/is-localhost-connection-p connection-symbol) " [LOCAL]")
+                   (t ""))))
+    (format "%-12s %-6s%s" client env env-tag)))
+
+(defun kane/filter-connections (predicate)
+  "Return connections matching PREDICATE function."
+  (seq-filter predicate (mapcar #'car sql-connection-alist)))
+
+(defun kane/is-qa-connection-p (connection-symbol)
+  "Return non-nil if CONNECTION-SYMBOL is a QA/test environment."
+  (let ((name (symbol-name connection-symbol)))
+    (string-match-p "test\\|qa" name)))
+
+(defun kane/is-prod-connection-p (connection-symbol)
+  "Return non-nil if CONNECTION-SYMBOL is a production environment."
+  (let ((name (symbol-name connection-symbol)))
+    (string-match-p "prod" name)))
+
+(defun kane/is-localhost-connection-p (connection-symbol)
+  "Return non-nil if CONNECTION-SYMBOL is a localhost connection."
+  (let ((name (symbol-name connection-symbol)))
+    (string-prefix-p "localhost" name)))
 
 ;; SQL servers
 (setq sql-connection-alist
@@ -89,16 +205,16 @@
          (sql-database "imsallangrayt2adb")
          (sql-user "db_writer"))
 
+        ;; (allangray.prod
+        ;;  (sql-name "allangray.prod")
+        ;;  (sql-product 'postgres)
+        ;;  (sql-server "pdn-allan-gray-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+        ;;  (sql-port 5432)
+        ;;  (sql-database "imsallangraypdnadb")
+        ;;  (sql-user "db_maintainer"))
+
         (allangray.prod
          (sql-name "allangray.prod")
-         (sql-product 'postgres)
-         (sql-server "pdn-allan-gray-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
-         (sql-port 5432)
-         (sql-database "imsallangrayadb")
-         (sql-user "db_maintainer"))
-
-        (allangray.prod.ibm
-         (sql-name "allangray.prod.ibm")
          (sql-postgres-program "/usr/local/pgsql/bin/psql")
          (sql-default-directory "/ssh:devel.jmayaalv@allangraydb:")
          (sql-product 'postgres)
@@ -112,7 +228,7 @@
          (sql-product 'postgres)
          (sql-server "qa-agl-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
-         (sql-database "imsaglt1a")
+         (sql-database "imsaglt1adb")
          (sql-user "db_writer"))
 
         (agl.test2
@@ -120,7 +236,7 @@
          (sql-product 'postgres)
          (sql-server "qa-agl-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
-         (sql-database "imsaglt2a")
+         (sql-database "imsaglt2adb")
          (sql-user "db_writer"))
 
         (agl.test3
@@ -128,7 +244,7 @@
          (sql-product 'postgres)
          (sql-server "qa-agl-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
-         (sql-database "imsaglt3a")
+         (sql-database "imsaglt3adb")
          (sql-user "db_writer"))
 
         (agl.test4
@@ -136,7 +252,7 @@
          (sql-product 'postgres)
          (sql-server "qa-agl-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
-         (sql-database "imsaglt4a")
+         (sql-database "imsaglt4adb")
          (sql-user "db_writer"))
 
         (agl.test5
@@ -144,19 +260,19 @@
          (sql-product 'postgres)
          (sql-server "qa-agl-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
-         (sql-database "imsaglt5a")
+         (sql-database "imsaglt5adb")
          (sql-user "db_writer"))
+
+        ;; (agl.prod
+        ;;  (sql-name "agl.prod")
+        ;;  (sql-product 'postgres)
+        ;;  (sql-server "pdn-agl-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+        ;;  (sql-port 5432)
+        ;;  (sql-database "imsaglpdnadb")
+        ;;  (sql-user "db_maintainer"))
 
         (agl.prod
          (sql-name "agl.prod")
-         (sql-product 'postgres)
-         (sql-server "pdn-agl-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
-         (sql-port 5432)
-         (sql-database "imsagladb")
-         (sql-user "db_maintainer"))
-
-        (agl.prod.ibm
-         (sql-name "agl.prod.ibm")
          (sql-postgres-program "/usr/local/pgsql/bin/psql")
          (sql-default-directory "/ssh:devel.jmayaalv@agldb:")
          (sql-product 'postgres)
@@ -186,7 +302,7 @@
          (sql-product 'postgres)
          (sql-server "pdn-axonic-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
-         (sql-database "imsaxonicadb")
+         (sql-database "imsaxonicpdnadb")
          (sql-user "db_maintainer"))
 
         (fnb.test1
@@ -197,7 +313,7 @@
          (sql-database "imsfnbt1adb")
          (sql-user "db_writer"))
 
-        (fnb.test1
+        (fnb.test2
          (sql-name "fnb.test2")
          (sql-product 'postgres)
          (sql-server "qa-fnb-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
@@ -237,16 +353,16 @@
          (sql-database "imsglaciert4adb")
          (sql-user "db_writer"))
 
+        ;; (glacier.prod
+        ;;  (sql-name "glacier.prod")
+        ;;  (sql-product 'postgres)
+        ;;  (sql-server "pdn-glacier-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+        ;;  (sql-port 5432)
+        ;;  (sql-database "imsglacierpdnadb")
+        ;;  (sql-user "db_maintainer"))
+
         (glacier.prod
          (sql-name "glacier.prod")
-         (sql-product 'postgres)
-         (sql-server "pdn-glacier-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.co")
-         (sql-port 5432)
-         (sql-database "imsglacieradb")
-         (sql-user "db_maintainer"))
-
-        (glacier.prod.ibm
-         (sql-name "glacier.prod.ibm")
          (sql-postgres-program "/usr/local/pgsql/bin/psql")
          (sql-default-directory "/ssh:devel.jmayaalv@glacierdb:")
          (sql-product 'postgres)
@@ -268,7 +384,7 @@
          (sql-product 'postgres)
          (sql-server "pdn-gosaver-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
-         (sql-database "imsgosaveradb")
+         (sql-database "imsgosaverpdnadb")
          (sql-user "db_writer"))
 
         (gosaver.prod.ibm
@@ -302,7 +418,7 @@
          (sql-product 'postgres)
          (sql-server "pdn-nav-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
-         (sql-database "imsnavadb")
+         (sql-database "imsnavpdnadb")
          (sql-user "db_maintainer"))
 
         (omnia.prod
@@ -310,7 +426,7 @@
          (sql-product 'postgres)
          (sql-server "pdn-omnia-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
-         (sql-database "imsomniaadb")
+         (sql-database "imsomniapdnadb")
          (sql-user "db_maintainer"))
 
         (omnia.test1
@@ -321,16 +437,16 @@
          (sql-database "imsomniat1adb")
          (sql-user "db_writer"))
 
+        ;; (omi.prod
+        ;;  (sql-name "omi.prod")
+        ;;  (sql-product 'postgres)
+        ;;  (sql-server "pdn-omi-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+        ;;  (sql-port 5432)
+        ;;  (sql-database "imsomipdnadb")
+        ;;  (sql-user "db_maintainer"))
+
         (omi.prod
          (sql-name "omi.prod")
-         (sql-product 'postgres)
-         (sql-server "pdn-omi-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
-         (sql-port 5432)
-         (sql-database "imsomiadb")
-         (sql-user "db_maintainer"))
-
-        (omi.prod.ibm
-         (sql-name "omi.prod.ibm")
          (sql-default-directory "/ssh:devel.jmayaalv@omidb:")
          (sql-postgres-program "/usr/local/pgsql/bin/psql")
          (sql-product 'postgres)
@@ -376,7 +492,7 @@
          (sql-product 'postgres)
          (sql-server "pdn-plac-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
-         (sql-database "imsplacadb")
+         (sql-database "imsplacpdnadb")
          (sql-user "db_maintainer"))
 
         (plac.test1
@@ -411,15 +527,15 @@
          (sql-database "imsprovlifet3adb")
          (sql-user "db_writer"))
 
-        (provlife.prod
-         (sql-name "plac.prod")
-         (sql-product 'postgres)
-         (sql-server "pdn-provlife-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
-         (sql-port 5432)
-         (sql-database "imsprovlifeadb")
-         (sql-user "db_maintainer"))
+        ;; (provlife.prod
+        ;;  (sql-name "provlife.prod")
+        ;;  (sql-product 'postgres)
+        ;;  (sql-server "pdn-provlife-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+        ;;  (sql-port 5432)
+        ;;  (sql-database "imsprovlifepdnadb")
+        ;;  (sql-user "db_maintainer"))
 
-        (provlife.prod.ibm
+        (provlife.prod
          (sql-name "provlife.prod")
          (sql-postgres-program "/usr/local/pgsql/bin/psql")
          (sql-default-directory "/ssh:devel.jmayaalv@provlifedb:")
@@ -485,15 +601,15 @@
          (sql-database "imssbit4adb")
          (sql-user "db_writer"))
 
-        (sbi.prod
-         (sql-name "sbi.prod")
-         (sql-product 'postgres)
-         (sql-server "pdn-sbi-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
-         (sql-port 5432)
-         (sql-database "imssbiadb")
-         (sql-user "db_maintainer"))
+        ;; (sbi.prod
+        ;;  (sql-name "sbi.prod")
+        ;;  (sql-product 'postgres)
+        ;;  (sql-server "pdn-sbi-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+        ;;  (sql-port 5432)
+        ;;  (sql-database "imssbipdnadb")
+        ;;  (sql-user "db_maintainer"))
 
-       (sbi.prod.aws
+       (sbi.prod
         (sql-name "sbi.prod")
         (sql-default-directory "/ssh:devel.jmayaalv@sbidb:")
         (sql-postgres-program "/usr/local/pgsql/bin/psql")
@@ -516,7 +632,7 @@
         (sql-product 'postgres)
         (sql-server "pdn-secura-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
         (sql-port 5432)
-        (sql-database "imssecuraadb")
+        (sql-database "imssecurapdnadb")
         (sql-user "db_maintainer"))
 
        (sukoon.test1
@@ -545,18 +661,28 @@
 
        (sukoon.prod
         (sql-name "sukoon.prod")
+        (sql-default-directory "/ssh:devel.jmayaalv@oicdb:")
+        (sql-postgres-program "/usr/local/pgsql/bin/psql")
         (sql-product 'postgres)
-        (sql-server "pdn-sukoon-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
         (sql-port 5432)
-        (sql-database "imssukoonadb")
-        (sql-user "db_maintainer"))
+        (sql-server "localhost")
+        (sql-user "imsoicprod")
+        (sql-database "imsoicproddb"))
+
+       ;; (sukoon.prod
+       ;;  (sql-name "sukoon.prod")
+       ;;  (sql-product 'postgres)
+       ;;  (sql-server "pdn-sukoon-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+       ;;  (sql-port 5432)
+       ;;  (sql-database "imssukoonpdnadb")
+       ;;  (sql-user "db_maintainer"))
 
        (veritas.prod
         (sql-name "veritas.prod")
         (sql-product 'postgres)
         (sql-server "pdn-veritas-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
         (sql-port 5432)
-        (sql-database "imsveritasadb")
+        (sql-database "imsveritaspdnadb")
         (sql-user "db_maintainer"))
 
        (vertias.test1
@@ -567,406 +693,120 @@
         (sql-database "imsveritast1adb")
         (sql-user "db_writer"))))
 
- (defun sql-localhost.dev ()
-   "Create a new sql connection to the local dev db."
-   (interactive)
-   (my-sql-connect  'postgres 'localhost.dev))
+(defvar kane-sql-history nil
+  "History list for kane-sql database selections.")
 
-(defun sql-localhost.agl ()
-  "Create a new sql connection to the local agl db."
+(defun kane-sql (&optional filter-fn filter-desc)
+  "Connect to a database using interactive selection.
+Automatically handles AWS IAM authentication for Aurora QA clusters.
+Optional FILTER-FN filters connections; FILTER-DESC describes the filter."
   (interactive)
-  (my-sql-connect  'postgres 'localhost.agl))
+  (let* ((all-connections (mapcar #'car sql-connection-alist))
+         (connections (if filter-fn
+                          (seq-filter filter-fn all-connections)
+                        all-connections))
+         ;; Create formatted display -> symbol mapping
+         (display-alist (mapcar (lambda (conn)
+                                  (cons (kane/format-connection-for-completion conn) conn))
+                                connections))
+         (prompt (if filter-desc
+                     (format "Database (%s): " filter-desc)
+                   "Database connection: "))
+         (selected-display (completing-read prompt
+                                            (mapcar #'car display-alist)
+                                            nil t nil
+                                            'kane-sql-history))
+         (connection-name (cdr (assoc selected-display display-alist)))
+         (conn-alist (cdr (assoc connection-name sql-connection-alist)))
+         (server (cadr (assoc 'sql-server conn-alist)))
+         (username (cadr (assoc 'sql-user conn-alist))))
 
-(defun sql-allangray.test1 ()
-   "Create a new sql connection to allan gray test1 db."
-   (interactive)
-   (setq sql-password
-         (kane/aurora-get-auth-token "qa-allan-gray-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com"
-                                     "kane-nonprod-db_writer"))
-   (setenv "PGPASSWORD" sql-password)
-   (setq sql-login-params '(server port database user))
-   (my-sql-connect  'postgres 'allangray.test1))
+    ;; Save for quick reconnect
+    (setq kane-last-connection connection-name)
 
-(defun sql-allangray.test2 ()
-  "Create a new sql connection to allan gray test1 db."
+    ;; Handle IAM authentication for QA Aurora clusters
+    (if (kane/connection-needs-iam-p connection-name)
+        (let ((profile (kane/get-aws-profile connection-name))
+              (cached (kane/get-cached-token server username)))
+          (if cached
+              (progn
+                (setq sql-password cached)
+                (setenv "PGPASSWORD" sql-password)
+                (setq sql-login-params '(server port database user))
+                (message "Using cached IAM token for %s" server))
+            (progn
+              (message "Generating AWS IAM token for %s using profile %s..." server profile)
+              (let ((token (kane/aurora-get-auth-token server username profile)))
+                (if token
+                    (progn
+                      (setq sql-password token)
+                      (setenv "PGPASSWORD" sql-password)
+                      (setq sql-login-params '(server port database user))
+                      (message "IAM token generated successfully"))
+                  (error "Cannot connect: IAM token generation failed. Run: aws sso login --profile %s" profile))))))
+      ;; For non-IAM connections, reset to default login params
+      (progn
+        (setq sql-password nil)
+        (setenv "PGPASSWORD" "")
+        (setq sql-login-params '(server port database user password))))
+
+    ;; Connect using existing helper
+    (my-sql-connect 'postgres connection-name)))
+
+(defun kane-sql-reconnect ()
+  "Reconnect to the last database connection without prompting."
   (interactive)
-  (setq sql-password
-        (kane/aurora-get-auth-token "qa-allan-gray-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com"
-                                    "kane-nonprod-db_writer"))
-  (setenv "PGPASSWORD" sql-password)
-  (setq sql-login-params '(server port database user))
+  (if kane-last-connection
+      (let* ((connection-name kane-last-connection)
+             (conn-alist (cdr (assoc connection-name sql-connection-alist)))
+             (server (cadr (assoc 'sql-server conn-alist)))
+             (username (cadr (assoc 'sql-user conn-alist))))
 
-  (my-sql-connect  'postgres 'allangray.test2))
+        ;; Handle IAM authentication for QA Aurora clusters
+        (if (kane/connection-needs-iam-p connection-name)
+            (let ((profile (kane/get-aws-profile connection-name))
+                  (cached (kane/get-cached-token server username)))
+              (if cached
+                  (progn
+                    (setq sql-password cached)
+                    (setenv "PGPASSWORD" sql-password)
+                    (setq sql-login-params '(server port database user))
+                    (message "Using cached IAM token for %s" server))
+                (progn
+                  (message "Generating AWS IAM token for %s using profile %s..." server profile)
+                  (let ((token (kane/aurora-get-auth-token server username profile)))
+                    (if token
+                        (progn
+                          (setq sql-password token)
+                          (setenv "PGPASSWORD" sql-password)
+                          (setq sql-login-params '(server port database user))
+                          (message "IAM token generated successfully"))
+                      (error "Cannot connect: IAM token generation failed. Run: aws sso login --profile %s" profile))))))
+          ;; For non-IAM connections, reset to default login params
+          (progn
+            (setq sql-password nil)
+            (setenv "PGPASSWORD" "")
+            (setq sql-login-params '(server port database user password))))
 
-(defun sql-allangray.prod ()
-  "Create a new sql connection to allan gray prod db."
+        ;; Connect using existing helper
+        (message "Reconnecting to %s..." connection-name)
+        (my-sql-connect 'postgres connection-name))
+    (error "No previous connection to reconnect to. Use M-x kane-sql first")))
+
+(defun kane-sql-qa ()
+  "Connect to a QA/test database."
   (interactive)
-  (my-sql-connect  'postgres 'allangray.prod))
+  (kane-sql #'kane/is-qa-connection-p "QA/Test"))
 
-(defun sql-axonic.test1 ()
-  "Create a new sql connection to axonic test1 db."
+(defun kane-sql-prod ()
+  "Connect to a production database."
   (interactive)
-  (setq sql-password
-        (kane/aurora-get-auth-token "qa-axonic-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com"
-                                    "kane-nonprod-db_writer"))
-  (setenv "PGPASSWORD" sql-password)
-  (setq sql-login-params '(server port database user))
-  (my-sql-connect  'postgres 'axonic.test1))
+  (kane-sql #'kane/is-prod-connection-p "Production"))
 
-(defun sql-axonic.test2 ()
-  "Create a new sql connection to axonic test2 db."
+(defun kane-sql-localhost ()
+  "Connect to a localhost database."
   (interactive)
-  (setq sql-password
-        (kane/aurora-get-auth-token "qa-axonic-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com"
-                                    "kane-nonprod-db_writer"))
-  (setenv "PGPASSWORD" sql-password)
-  (setq sql-login-params '(server port database user))
-  (my-sql-connect  'postgres 'axonic.test2))
-
-(defun sql-axonic.prod ()
-  "Create a new sql connection to axonic prod db."
-  (interactive)
-  (my-sql-connect  'postgres 'axonic.prod))
-
-
-(defun sql-agl.test1 ()
-  "Create a new sql connection to agl test1 db."
-  (interactive)
-  (setq sql-password
-        (kane/aurora-get-auth-token "qa-agl-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com"
-                                    "kane-nonprod-db_writer"))
-  (setenv "PGPASSWORD" sql-password)
-  (message "Token set: " sql-password)
-  (setq sql-login-params '(server port database user))
-  (my-sql-connect  'postgres 'agl.test1))
-
-(defun sql-agl.test2 ()
-  "Create a new sql connection to agl test2 db."
-  (interactive)
-  (setq sql-password
-        (kane/aurora-get-auth-token "qa-agl-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com"
-                                    "kane-nonprod-db_writer"))
-  (setenv "PGPASSWORD" sql-password)
-  (message "Token set: " sql-password)
-  (setq sql-login-params '(server port database user))
-  (my-sql-connect  'postgres 'agl.test2))
-
-(defun sql-agl.test3 ()
-  "Create a new sql connection to agl test5 db."
-  (interactive)
-  (setq sql-password
-        (kane/aurora-get-auth-token "qa-agl-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com"
-                                    "kane-nonprod-db_writer"))
-  (setenv "PGPASSWORD" sql-password)
-  (message "Token set: " sql-password)
-  (setq sql-login-params '(server port database user))
-  (my-sql-connect  'postgres 'agl.test3))
-
-(defun sql-agl.test4 ()
-  "Create a new sql connection to agl test4 db."
-  (interactive)
-  (setq sql-password
-        (kane/aurora-get-auth-token "qa-agl-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com"
-                                    "kane-nonprod-db_writer"))
-  (setenv "PGPASSWORD" sql-password)
-  (message "Token set: " sql-password)
-  (setq sql-login-params '(server port database user))
-  (my-sql-connect  'postgres 'agl.test4))
-
-(defun sql-agl.test5 ()
-  "Create a new sql connection to agl test5 db."
-  (interactive)
-  (setq sql-password
-        (kane/aurora-get-auth-token "qa-agl-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com"
-                                    "kane-nonprod-db_writer"))
-  (setenv "PGPASSWORD" sql-password)
-  (message "Token set: " sql-password)
-  (setq sql-login-params '(server port database user))
-  (my-sql-connect  'postgres 'agl.test5))
-
- (defun sql-allangray.test2 ()
-  "Create a new sql connection to allan gray test2 db."
-  (interactive)
-  (my-sql-connect  'postgres 'allangray.test2))
-
- (defun sql-nav.prod ()
-   "Create a new sql connection to nav  db."
-   (interactive)
-   (my-sql-connect  'postgres 'nav.prod))
-
- (defun sql-localhost.test ()
-   "Create a new sql connection to the local test db."
-   (interactive)
-   (my-sql-connect  'postgres 'localhost.test))
-
- (defun sql-prospero.test ()
-   "Create a new sql connection to the next geokn test db"
-   (interactive)
-   (my-sql-connect  'postgres 'prospero.test))
-
-(defun sql-prospero.prod ()
-  "Create a new sql connection to prospero db."
-  (interactive)
-  (my-sql-connect  'postgres 'prospero.prod))
-
-(defun sql-lic.test ()
-  "Create a new sql connection to lic test1"
-  (interactive)
-  (my-sql-connect  'postgres 'lic.test))
-
-(defun sql-lic.prod ()
-  "Create a new sql connection to lic prod"
-  (interactive)
-  (my-sql-connect  'postgres 'lic.prod))
-
-(defun sql-sbi.test1 ()
-  "Create a new sql connection to sbi test1 db."
-  (interactive)
-  (setq sql-password
-        (kane/aurora-get-auth-token "qa-sbi-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com"
-                                    "kane-nonprod-db_writer"))
-  (setenv "PGPASSWORD" sql-password)
-  (setq sql-login-params '(server port database user))
-
-  (my-sql-connect  'postgres 'sbi.test1))
-
-(defun sql-sbi.test2 ()
-  "Create a new sql connection to sbi test2 db."
-  (interactive)
-  (setq sql-password
-        (kane/aurora-get-auth-token "qa-sbi-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com"
-                                    "kane-nonprod-db_writer"))
-  (setenv "PGPASSWORD" sql-password)
-  (setq sql-login-params '(server port database user))
-
-  (my-sql-connect  'postgres 'sbi.test2))
-
-(defun sql-sbi.test3 ()
-  "Create a new sql connection to sbi test3 db."
-  (interactive)
-  (setq sql-password
-        (kane/aurora-get-auth-token "qa-sbi-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com"
-                                    "kane-nonprod-db_writer"))
-  (setenv "PGPASSWORD" sql-password)
-  (setq sql-login-params '(server port database user))
-
-  (my-sql-connect  'postgres 'sbi.test3))
-
-(defun sql-sbi.test4 ()
-  "Create a new sql connection to sbi test4 db."
-  (interactive)
-  (setq sql-password
-        (kane/aurora-get-auth-token "qa-sbi-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com"
-                                    "kane-nonprod-db_writer"))
-  (setenv "PGPASSWORD" sql-password)
-  (setq sql-login-params '(server port database user))
-  (my-sql-connect  'postgres 'sbi.test4))
-
-(defun sql-fnb.test1 ()
-  "Create a new sql connection to fnb test1"
-  (interactive)
-  (my-sql-connect  'postgres 'fnb.test1))
-
-(defun sql-fnb.test2 ()
-  "Create a new sql connection to fnb test2"
-  (interactive)
-  (my-sql-connect  'postgres 'fnb.test2))
-
-(defun sql-sbi.prod ()
-  "Create a new sql connection to sbi prod"
-  (interactive)
-  (my-sql-connect  'postgres 'sbi.prod))
-
-(defun sql-oic.prod ()
-   "Create a new sql connection to the oic prod db."
-    (interactive)
-    (my-sql-connect 'postgres 'oic.prod))
-
-(defun sql-omnia.prod ()
-   "Create a new sql connection to the omnia prod db."
-   (interactive)
-   (my-sql-connect 'postgres 'omnia.prod))
-
- (defun sql-agl.prod ()
-   "Create a new sql connection to the agl prod db."
-   (interactive)
-   (my-sql-connect 'postgres 'agl.prod))
-
- (defun sql-omi.prod ()
-   "Create a new sql connection to the omi prod db."
-   (interactive)
-   (my-sql-connect 'postgres 'omi.prod))
-
-(defun sql-omi.ps ()
-  "Create a new sql connection to the omi ps db."
-  (interactive)
-  (my-sql-connect 'postgres 'omi.ps))
-
-(defun sql-gosaver.test1 ()
-  "Create a new sql connection to the gosaver test1 db."
-  (interactive)
-  (my-sql-connect 'postgres 'gosaver.test1))
-
-(defun sql-gosaver.prod ()
-  "Create a new sql connection to the gosaver prod db."
-  (interactive)
-  (my-sql-connect 'postgres 'gosaver.prod))
-
-(defun sql-sukoon.test1 ()
-  "Create a new sql connection to sukoon test1 db."
-  (interactive)
-  (setq sql-password
-        (kane/aurora-get-auth-token "qa-sukoon-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com"
-                                    "kane-nonprod-db_writer"))
-  (setenv "PGPASSWORD" sql-password)
-  (setq sql-login-params '(server port database user))
-  (my-sql-connect  'postgres 'sukoon.test1))
-
-(defun sql-sukoon.test2 ()
-  "Create a new sql connection to sukoon test2 db."
-  (interactive)
-  (setq sql-password
-        (kane/aurora-get-auth-token "qa-sukoon-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com"
-                                    "kane-nonprod-db_writer"))
-  (setenv "PGPASSWORD" sql-password)
-  (setq sql-login-params '(server port database user))
-  (my-sql-connect  'postgres 'sukoon.test2))
-
-(defun sql-sukoon.test3 ()
-  "Create a new sql connection to sukoon test3 db."
-  (interactive)
-  (setq sql-password
-        (kane/aurora-get-auth-token "qa-sukoon-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com"
-                                    "kane-nonprod-db_writer"))
-  (setenv "PGPASSWORD" sql-password)
-  (setq sql-login-params '(server port database user))
-  (my-sql-connect  'postgres 'sukoon.test3))
-
-
- (defun sql-glacier.prod ()
-   "Create a new sql connection to the glacier prod db."
-   (interactive)
-   (my-sql-connect 'postgres 'glacier.prod))
-
- (defun sql-argus.prod ()
-   "Create a new sql connection to the argus prod db."
-    (interactive)
-    (my-sql-connect 'postgres 'argus.prod))
-
- (defun sql-argus.test2 ()
-   "Create a new sql connection to the argus prod db."
-    (interactive)
-    (my-sql-connect 'postgres 'argus.test2))
-
- (defun sql-plac.prod ()
-   "Create a new sql connection to the plac prod db."
-    (interactive)
-    (my-sql-connect 'postgres 'plac.prod))
-
- (defun sql-plac.test ()
-   "Create a new sql connection to the plac test db."
-    (interactive)
-    (my-sql-connect 'postgres 'plac.test))
-
- (defun sql-glacier.test ()
-   "Create a new sql connection to the glacier test db."
-    (interactive)
-    (my-sql-connect 'postgres 'glacier.test))
-
- (defun sql-glacier.test2 ()
-   "Create a new sql connection to the glacier test2 db."
-    (interactive)
-    (my-sql-connect 'postgres 'glacier.test2))
-
- (defun sql-glacier.test3 ()
-  "Create a new sql connection to the glacier test3 db."
-  (interactive)
-  (my-sql-connect 'postgres 'glacier.test3))
-
-(defun sql-glacier.test4 ()
-  "Create a new sql connection to the glacier test4 db."
-  (interactive)
-  (my-sql-connect 'postgres 'glacier.test4))
-
- (defun sql-veritas.test ()
-   "Create a new sql connection to the veritas test db."
-    (interactive)
-    (my-sql-connect 'postgres 'veritas.test))
-
- (defun sql-veritas.prod ()
-   "Create a new sql connection to the veritas prod db."
-    (interactive)
-    (my-sql-connect 'postgres 'veritas.prod))
-
- (defun sql-sanlam.prod ()
-   "Create a new sql connection to the sanlam prod db."
-    (interactive)
-    (my-sql-connect 'postgres 'sanlam.prod))
-
-(defun sql-sanlam.test ()
-   "Create a new sql connection to the sanlam test 1 db."
-    (interactive)
-    (my-sql-connect 'postgres 'sanlam.test))
-
- (defun sql-northstar.prod ()
-   "Create a new sql connection to the sanlam prod db."
-    (interactive)
-    (my-sql-connect 'postgres 'northstar.prod))
-
- (defun sql-northstar.test ()
-   "Create a new sql connection to the northstar test db."
-    (interactive)
-    (my-sql-connect 'postgres 'northstar.test))
-
- (defun sql-omi.test1 ()
-   "Create a new sql connection to the omi test1 db."
-    (interactive)
-    (my-sql-connect 'postgres 'omi.test1))
-
- (defun sql-omi.test2 ()
-   "Create a new sql connection to the omi test2 db."
-    (interactive)
-    (my-sql-connect 'postgres 'omi.test2))
-
- (defun sql-omi.test4 ()
-   "Create a new sql connection to the omi test4 db."
-    (interactive)
-    (my-sql-connect 'postgres 'omi.test4))
-
-(defun sql-provlife.test1 ()
-  "Create a new sql connection to the providence life test1 db."
-  (interactive)
-  (my-sql-connect 'postgres 'provlife.test1))
-
-(defun sql-provlife.test2 ()
-  "Create a new sql connection to the providence life test2 db."
-  (interactive)
-  (my-sql-connect 'postgres 'provlife.test2))
-
-(defun sql-provlife.test3 ()
-  "Create a new sql connection to the providence life test3 db."
-  (interactive)
-  (my-sql-connect 'postgres 'provlife.test3))
-
-(defun sql-provlife.prod ()
-  "Create a new sql connection to the providence life prod db."
-  (interactive)
-  (my-sql-connect 'postgres 'provlife.prod))
-
- (defun sql-omnia.test ()
-   "Create a new sql connection to the omnia test db."
-    (interactive)
-    (my-sql-connect 'postgres 'omnia.test))
-
-(defun sql-secura.test1 ()
-  "Create a new sql connection to the secura test 1 db."
-  (interactive)
-  (my-sql-connect  'postgres 'secura.test1))
-
-(defun sql-secura.prod ()
-  "Create a new sql connection to the secura prod  db."
-  (interactive)
-  (my-sql-connect  'postgres 'secura.prod))
+  (kane-sql #'kane/is-localhost-connection-p "Localhost"))
 
 (defun my-sql-connect (product connection)
    "Create a new sql CONNECTION with a given PRODUCT."
@@ -979,3 +819,15 @@
   (eval `(let ,(cdr (assoc name sql-connection-alist))
            (flet ((sql-get-login (&rest what)))
                  (sql-product-interactive sql-product)))))
+
+
+;; Kane SQL prefix map
+(define-prefix-command 'kane-sql-map)
+(global-set-key (kbd "C-c M-k s") 'kane-sql-map)
+
+;; Keybindings for kane-sql functions
+(define-key kane-sql-map (kbd "s") 'kane-sql)
+(define-key kane-sql-map (kbd "r") 'kane-sql-reconnect)
+(define-key kane-sql-map (kbd "q") 'kane-sql-qa)
+(define-key kane-sql-map (kbd "p") 'kane-sql-prod)
+(define-key kane-sql-map (kbd "l") 'kane-sql-localhost)

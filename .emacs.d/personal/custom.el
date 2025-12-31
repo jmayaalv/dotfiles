@@ -15,14 +15,16 @@
         elisp-slime-nav epl exec-path-from-shell expand-region
         flycheck gist git-modes git-timemachine
         gnu-elpa-keyring-update guru-mode helm hl-todo html-to-hiccup
-        imenu-anywhere jet js2-mode json-mode key-chord linkin-org
-        lsp-mode lsp-treemacs magit move-text nlinum operate-on-number
-        orderless projectile rainbow-delimiters rainbow-mode
-        restclient smartparens smartrep super-save transient try
-        undo-tree vertico volatile-highlights vterm web-mode
-        web-server yaml-mode zenburn-theme zop-to-char))
+        hurl-mode imenu-anywhere jet js2-mode json-mode key-chord
+        kubed linkin-org lsp-mode lsp-treemacs magit move-text nlinum
+        operate-on-number orderless projectile rainbow-delimiters
+        rainbow-mode restclient smartparens smartrep super-save
+        transient try undo-tree vertico volatile-highlights vterm
+        web-mode web-server yaml-mode zenburn-theme zop-to-char))
  '(package-vc-selected-packages
-   '((claude-code-ide :url
+   '((hurl-mode :vc-backend Git :url
+                "https://github.com/JasZhe/hurl-mode")
+     (claude-code-ide :url
                       "https://github.com/manzaltu/claude-code-ide.el")))
  '(safe-local-variable-values
    '((cider-ns-refresh-after-fn . "user/start")
