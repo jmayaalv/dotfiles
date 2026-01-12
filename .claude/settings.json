@@ -36,5 +36,5 @@
   "enabledPlugins": {
     "taches-cc-resources@taches-cc-resources": true
   },
-  "alwaysThinkingEnabled": true
+    "alwaysThinkingEnabled": true
 }

@@ -25,7 +25,7 @@
 ;;                    --region eu-central-1 \                                                                       ;;
 ;;                    --username db_writer \                                                                        ;;
 ;;                    --profile kane-nonprod-db_writer)
-;; aws rds describe-db-clusters \
+; aws rds describe-db-clusters \
 ;;--query 'DBClusters[*].[DBClusterIdentifier,Endpoint,Engine]' \
 ;;--output table --profile kane-nonprod-dev
 ;;
@@ -205,23 +205,13 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-database "imsallangrayt2adb")
          (sql-user "db_writer"))
 
-        ;; (allangray.prod
-        ;;  (sql-name "allangray.prod")
-        ;;  (sql-product 'postgres)
-        ;;  (sql-server "pdn-allan-gray-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
-        ;;  (sql-port 5432)
-        ;;  (sql-database "imsallangraypdnadb")
-        ;;  (sql-user "db_maintainer"))
-
         (allangray.prod
-         (sql-name "allangray.prod")
-         (sql-postgres-program "/usr/local/pgsql/bin/psql")
-         (sql-default-directory "/ssh:devel.jmayaalv@allangraydb:")
-         (sql-product 'postgres)
-         (sql-port 5432)
-         (sql-server "localhost")
-         (sql-user "imsagrayprod")
-         (sql-database "imsagrayproddb"))
+          (sql-name "allangray.prod")
+          (sql-product 'postgres)
+          (sql-server "pdn-allan-gray-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+          (sql-port 5432)
+          (sql-database "imsallangraypdnadb")
+          (sql-user "db_maintainer"))
 
         (agl.test1
          (sql-name "agl.test1")
@@ -379,23 +369,13 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-database "imsgosavert1adb")
          (sql-user "db_writer"))
 
-        (gosaver.prod
-         (sql-name "gosaver.prod")
-         (sql-product 'postgres)
-         (sql-server "pdn-gosaver-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
-         (sql-port 5432)
-         (sql-database "imsgosaverpdnadb")
-         (sql-user "db_writer"))
-
-        (gosaver.prod.ibm
-         (sql-name "gosaver.prod.ibm")
-         (sql-default-directory "/ssh:devel.jmayaalv@gosaverdb:")
-         (sql-postgres-program "/usr/local/pgsql/bin/psql")
-         (sql-product 'postgres)
-         (sql-port 5432)
-         (sql-server "localhost")
-         (sql-user "imsgosaverprod")
-         (sql-database "imsgosaverproddb"))
+         (gosaver.prod
+          (sql-name "gosaver.prod")
+          (sql-product 'postgres)
+          (sql-server "pdn-gosaver-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+          (sql-port 5432)
+          (sql-database "imsgosaverpdnadb")
+          (sql-user "db_maintainer"))
 
         (lic.test1
          (sql-name "lic.test1")
@@ -410,7 +390,7 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-product 'postgres)
          (sql-server "pdn-lic-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
-         (sql-database "imslicadb")
+         (sql-database "imslicpdnadb")
          (sql-user "db_maintainer"))
 
         (nav.prod
@@ -437,23 +417,13 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-database "imsomniat1adb")
          (sql-user "db_writer"))
 
-        ;; (omi.prod
-        ;;  (sql-name "omi.prod")
-        ;;  (sql-product 'postgres)
-        ;;  (sql-server "pdn-omi-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
-        ;;  (sql-port 5432)
-        ;;  (sql-database "imsomipdnadb")
-        ;;  (sql-user "db_maintainer"))
-
         (omi.prod
-         (sql-name "omi.prod")
-         (sql-default-directory "/ssh:devel.jmayaalv@omidb:")
-         (sql-postgres-program "/usr/local/pgsql/bin/psql")
-         (sql-product 'postgres)
-         (sql-port 5432)
-         (sql-server "localhost")
-         (sql-user "imsomiprod")
-         (sql-database "imsomiproddb"))
+          (sql-name "omi.prod")
+          (sql-product 'postgres)
+          (sql-server "pdn-omi-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+          (sql-port 5432)
+          (sql-database "imsomipdnadb")
+          (sql-user "db_maintainer"))
 
         (omi.test1
          (sql-name "omi.test1")
@@ -527,23 +497,14 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-database "imsprovlifet3adb")
          (sql-user "db_writer"))
 
-        ;; (provlife.prod
-        ;;  (sql-name "provlife.prod")
-        ;;  (sql-product 'postgres)
-        ;;  (sql-server "pdn-provlife-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
-        ;;  (sql-port 5432)
-        ;;  (sql-database "imsprovlifepdnadb")
-        ;;  (sql-user "db_maintainer"))
+         (provlife.prod
+          (sql-name "provlife.prod")
+          (sql-product 'postgres)
+          (sql-server "pdn-provlife-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+          (sql-port 5432)
+          (sql-database "imsprovlifepdnadb")
+          (sql-user "db_maintainer"))
 
-        (provlife.prod
-         (sql-name "provlife.prod")
-         (sql-postgres-program "/usr/local/pgsql/bin/psql")
-         (sql-default-directory "/ssh:devel.jmayaalv@provlifedb:")
-         (sql-product 'postgres)
-         (sql-port 5432)
-         (sql-server "localhost")
-         (sql-user "imsplifeprod")
-         (sql-database "imsplifeproddb"))
 
         (prospero.test1
          (sql-name "prospero.test1")
@@ -601,23 +562,14 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-database "imssbit4adb")
          (sql-user "db_writer"))
 
-        ;; (sbi.prod
-        ;;  (sql-name "sbi.prod")
-        ;;  (sql-product 'postgres)
-        ;;  (sql-server "pdn-sbi-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
-        ;;  (sql-port 5432)
-        ;;  (sql-database "imssbipdnadb")
-        ;;  (sql-user "db_maintainer"))
+         (sbi.prod
+          (sql-name "sbi.prod")
+          (sql-product 'postgres)
+          (sql-server "pdn-sbi-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+          (sql-port 5432)
+          (sql-database "imssbipdnadb")
+          (sql-user "db_maintainer"))
 
-       (sbi.prod
-        (sql-name "sbi.prod")
-        (sql-default-directory "/ssh:devel.jmayaalv@sbidb:")
-        (sql-postgres-program "/usr/local/pgsql/bin/psql")
-        (sql-product 'postgres)
-        (sql-port 5432)
-        (sql-server "localhost")
-        (sql-user "imssbiprod")
-        (sql-database "imssbiproddb"))
 
        (secura.test1
         (sql-name "secura.test1")
@@ -659,23 +611,14 @@ Returns formatted string like 'agl          test1  [QA]'."
         (sql-database "imssukoont3adb")
         (sql-user "db_writer"))
 
-       (sukoon.prod
-        (sql-name "sukoon.prod")
-        (sql-default-directory "/ssh:devel.jmayaalv@oicdb:")
-        (sql-postgres-program "/usr/local/pgsql/bin/psql")
-        (sql-product 'postgres)
-        (sql-port 5432)
-        (sql-server "localhost")
-        (sql-user "imsoicprod")
-        (sql-database "imsoicproddb"))
 
-       ;; (sukoon.prod
-       ;;  (sql-name "sukoon.prod")
-       ;;  (sql-product 'postgres)
-       ;;  (sql-server "pdn-sukoon-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
-       ;;  (sql-port 5432)
-       ;;  (sql-database "imssukoonpdnadb")
-       ;;  (sql-user "db_maintainer"))
+        (sukoon.prod
+         (sql-name "sukoon.prod")
+         (sql-product 'postgres)
+         (sql-server "pdn-sukoon-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+         (sql-port 5432)
+         (sql-database "imssukoonpdnadb")
+         (sql-user "db_maintainer"))
 
        (veritas.prod
         (sql-name "veritas.prod")
@@ -732,6 +675,7 @@ Optional FILTER-FN filters connections; FILTER-DESC describes the filter."
               (progn
                 (setq sql-password cached)
                 (setenv "PGPASSWORD" sql-password)
+                (setenv "PGSSLMODE" "require")
                 (setq sql-login-params '(server port database user))
                 (message "Using cached IAM token for %s" server))
             (progn
@@ -741,6 +685,7 @@ Optional FILTER-FN filters connections; FILTER-DESC describes the filter."
                     (progn
                       (setq sql-password token)
                       (setenv "PGPASSWORD" sql-password)
+                      (setenv "PGSSLMODE" "require")
                       (setq sql-login-params '(server port database user))
                       (message "IAM token generated successfully"))
                   (error "Cannot connect: IAM token generation failed. Run: aws sso login --profile %s" profile))))))
@@ -748,6 +693,7 @@ Optional FILTER-FN filters connections; FILTER-DESC describes the filter."
       (progn
         (setq sql-password nil)
         (setenv "PGPASSWORD" "")
+        (setenv "PGSSLMODE" "")
         (setq sql-login-params '(server port database user password))))
 
     ;; Connect using existing helper
@@ -770,6 +716,7 @@ Optional FILTER-FN filters connections; FILTER-DESC describes the filter."
                   (progn
                     (setq sql-password cached)
                     (setenv "PGPASSWORD" sql-password)
+                    (setenv "PGSSLMODE" "require")
                     (setq sql-login-params '(server port database user))
                     (message "Using cached IAM token for %s" server))
                 (progn
@@ -779,6 +726,7 @@ Optional FILTER-FN filters connections; FILTER-DESC describes the filter."
                         (progn
                           (setq sql-password token)
                           (setenv "PGPASSWORD" sql-password)
+                          (setenv "PGSSLMODE" "require")
                           (setq sql-login-params '(server port database user))
                           (message "IAM token generated successfully"))
                       (error "Cannot connect: IAM token generation failed. Run: aws sso login --profile %s" profile))))))
@@ -786,6 +734,7 @@ Optional FILTER-FN filters connections; FILTER-DESC describes the filter."
           (progn
             (setq sql-password nil)
             (setenv "PGPASSWORD" "")
+            (setenv "PGSSLMODE" "")
             (setq sql-login-params '(server port database user password))))
 
         ;; Connect using existing helper

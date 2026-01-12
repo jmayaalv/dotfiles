@@ -31,6 +31,94 @@ kpf() {
     kubectl port-forward -n $namespace $pod $local_port:$remote_port
 }
 
+# Generate Aurora DB auth token
+db-token() {
+    if [[ $# -ne 3 ]]; then
+        echo "Usage: db-token <client> <user> <profile>"
+        echo "Example: db-token provlife db_maintainer kane-prod"
+        return 1
+    fi
+
+    local client=$1
+    local user=$2
+    local profile=$3
+    local cluster_name="pdn-${client}-aurora-cluster"
+
+    # Query AWS RDS to get cluster endpoint
+    local endpoint=$(aws rds describe-db-clusters \
+        --query 'DBClusters[*].[DBClusterIdentifier,Endpoint,Engine]' \
+        --output table \
+        --profile $profile 2>/dev/null | \
+        grep "$cluster_name" | \
+        awk -F'|' '{print $3}' | \
+        tr -d '[:space:]')
+
+    if [[ -z "$endpoint" ]]; then
+        echo "No cluster found matching: $cluster_name for profile: $profile"
+        return 1
+    fi
+
+    echo "Found cluster: $cluster_name"
+    echo "Endpoint: $endpoint"
+
+    # Generate auth token
+    export TOKEN=$(aws rds generate-db-auth-token \
+        --hostname $endpoint \
+        --port 5432 \
+        --region eu-central-1 \
+        --username $user \
+        --profile $profile)
+
+    echo $TOKEN
+    echo -n $TOKEN | pbcopy
+    echo "Token copied to clipboard"
+}
+
+# Connect to Aurora DB with auth token
+db-connect() {
+    if [[ $# -ne 4 ]]; then
+        echo "Usage: db-connect <client> <dbname> <user> <profile>"
+        echo "Example: db-connect sukoon imssukoonpdnadb db_maintainer kane-prod"
+        return 1
+    fi
+
+    local client=$1
+    local dbname=$2
+    local user=$3
+    local profile=$4
+    local cluster_name="pdn-${client}-aurora-cluster"
+
+    # Query AWS RDS to get cluster endpoint
+    local endpoint=$(aws rds describe-db-clusters \
+        --query 'DBClusters[*].[DBClusterIdentifier,Endpoint,Engine]' \
+        --output table \
+        --profile $profile 2>/dev/null | \
+        grep "$cluster_name" | \
+        awk -F'|' '{print $3}' | \
+        tr -d '[:space:]')
+
+    if [[ -z "$endpoint" ]]; then
+        echo "No cluster found matching: $cluster_name for profile: $profile"
+        return 1
+    fi
+
+    echo "Found cluster: $cluster_name"
+    echo "Endpoint: $endpoint"
+
+    # Generate auth token
+    local token=$(aws rds generate-db-auth-token \
+        --hostname $endpoint \
+        --port 5432 \
+        --region eu-central-1 \
+        --username $user \
+        --profile $profile)
+
+    echo "Connecting to database: $dbname"
+
+    # Connect with psql
+    psql "host=$endpoint port=5432 sslmode=require dbname=$dbname user=$user password=$token"
+}
+
 
 
 alias federer='tmuxinator start federer'
