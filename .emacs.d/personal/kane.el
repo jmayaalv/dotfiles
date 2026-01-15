@@ -692,8 +692,8 @@ Optional FILTER-FN filters connections; FILTER-DESC describes the filter."
       ;; For non-IAM connections, reset to default login params
       (progn
         (setq sql-password nil)
-        (setenv "PGPASSWORD" "")
-        (setenv "PGSSLMODE" "")
+        (setenv "PGPASSWORD" nil)
+        (setenv "PGSSLMODE" nil)
         (setq sql-login-params '(server port database user password))))
 
     ;; Connect using existing helper
@@ -733,8 +733,8 @@ Optional FILTER-FN filters connections; FILTER-DESC describes the filter."
           ;; For non-IAM connections, reset to default login params
           (progn
             (setq sql-password nil)
-            (setenv "PGPASSWORD" "")
-            (setenv "PGSSLMODE" "")
+            (setenv "PGPASSWORD" nil)
+            (setenv "PGSSLMODE" nil)
             (setq sql-login-params '(server port database user password))))
 
         ;; Connect using existing helper
