@@ -42,7 +42,14 @@ db-token() {
     local client=$1
     local user=$2
     local profile=$3
-    local cluster_name="pdn-${client}-aurora-cluster"
+
+    # Determine environment prefix based on profile
+    local env_prefix="pdn"
+    if [[ "$profile" == *"nonprod"* ]]; then
+        env_prefix="qa"
+    fi
+
+    local cluster_name="${env_prefix}-${client}-aurora-cluster"
 
     # Query AWS RDS to get cluster endpoint
     local endpoint=$(aws rds describe-db-clusters \
@@ -86,7 +93,14 @@ db-connect() {
     local dbname=$2
     local user=$3
     local profile=$4
-    local cluster_name="pdn-${client}-aurora-cluster"
+
+    # Determine environment prefix based on profile
+    local env_prefix="pdn"
+    if [[ "$profile" == *"nonprod"* ]]; then
+        env_prefix="qa"
+    fi
+
+    local cluster_name="${env_prefix}-${client}-aurora-cluster"
 
     # Query AWS RDS to get cluster endpoint
     local endpoint=$(aws rds describe-db-clusters \
