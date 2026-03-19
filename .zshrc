@@ -86,10 +86,6 @@ zstyle ':fzf-tab:*' continuous-trigger 'tab'
 
 
 
-# Shell integrations
-eval "$(fzf --zsh)"
-eval "$(zoxide init --cmd cd zsh)"
-
 export CARAPACE_BRIDGES='zsh,fish,bash,inshellisense' # optional
 source <(carapace _carapace)
 
@@ -118,3 +114,6 @@ export PATH="/Users/jmayaalv/.antigravity/antigravity/bin:$PATH"
 export PATH="$PATH:/Users/jmayaalv/.lmstudio/bin"
 # End of LM Studio CLI section
 
+# Shell integrations
+eval "$(fzf --zsh)"
+eval "$(zoxide init --cmd cd zsh)"
