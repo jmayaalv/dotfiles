@@ -4,8 +4,10 @@
 .config/claude/shell-snapshots/
 .config/claude/statsig/
 .config/claude/todos/
+.config/claude/local.sh
 .config/tmux/plugins/
 .emacs.d/personal/*.elc
 /.config/tmux/secrets.conf
 .clojure/.cpcache/
+.claude
 .secrets/
