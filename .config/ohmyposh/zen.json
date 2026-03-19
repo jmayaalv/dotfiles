@@ -26,14 +26,6 @@
           "template": " {{ .HEAD }} {{if .BranchStatus }} {{ .BranchStatus }}{{ end }}{{ if .Working.Changed }}  {{ .Working.String }}{{ end }}{{ if and (.Working.Changed) (.Staging.Changed) }} |{{ end }}{{ if .Staging.Changed }}  {{ .Staging.String }}{{ end }}{{ if gt .StashCount 0 }}  {{ .StashCount }}{{ end }} ",
           "leading_diamond": "",
           "type": "git"
-        },
-        {
-          "background": "p:salmon",
-          "foreground": "p:white",
-          "style": "diamond",
-          "template": "  {{ .HostName }} ",
-          "type": "session",
-          "leading_diamond": ""
         }
       ],
       "type": "rprompt"
@@ -45,7 +37,7 @@
           "background": "p:plum",
           "foreground": "p:white",
           "style": "diamond",
-          "template": " {{.Icon}} {{ .UserName }}",
+          "template": " {{ if contains \"mini\" (lower .HostName) }}󰒆{{ else }}{{ .Icon }}{{ end }} {{ .UserName }}",
           "type": "os"
         },
         {
