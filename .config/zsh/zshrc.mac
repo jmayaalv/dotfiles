@@ -135,6 +135,16 @@ db-connect() {
 
 
 
+# SDKMAN
+if [[ -z "$SDKMAN_DIR" ]] || [[ ! -d "$SDKMAN_DIR" ]]; then
+  if command -v brew &>/dev/null && brew_sdk="$(brew --prefix sdkman-cli 2>/dev/null)/libexec" && [[ -d "$brew_sdk" ]]; then
+    export SDKMAN_DIR="$brew_sdk"
+  elif [[ -d "$HOME/.sdkman" ]]; then
+    export SDKMAN_DIR="$HOME/.sdkman"
+  fi
+fi
+[[ -s "${SDKMAN_DIR}/bin/sdkman-init.sh" ]] && source "${SDKMAN_DIR}/bin/sdkman-init.sh"
+
 alias federer='tmuxinator start federer'
 
 alias medusa='tmuxinator start medusa'
