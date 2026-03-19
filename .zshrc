@@ -86,10 +86,6 @@ zstyle ':fzf-tab:*' continuous-trigger 'tab'
 
 
 
-# Shell integrations
-eval "$(fzf --zsh)"
-eval "$(zoxide init --cmd cd zsh)"
-
 export CARAPACE_BRIDGES='zsh,fish,bash,inshellisense' # optional
 source <(carapace _carapace)
 
@@ -113,3 +109,7 @@ fi
 
 # Added by Antigravity
 export PATH="/Users/jmayaalv/.antigravity/antigravity/bin:$PATH"
+
+# Shell integrations
+eval "$(fzf --zsh)"
+eval "$(zoxide init --cmd cd zsh)"

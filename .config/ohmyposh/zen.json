@@ -1,32 +1,37 @@
 {
   "$schema": "https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/schema.json",
-    "palette": {
-        "white": "#494D64",
-        "tan": "#EE99A0",
-        "teal": "#8BD5CA",
-        "plum": "#C6A0F6",
-        "blush": "#F5BDE6",
-        "salmon": "#F5A97F",
-        "sky": "#91D7E3",
-        "teal_blue": "#7DC4E4"
-
+  "palette": {
+    "white": "#494D64",
+    "tan": "#EE99A0",
+    "teal": "#8BD5CA",
+    "plum": "#C6A0F6",
+    "blush": "#F5BDE6",
+    "salmon": "#F5A97F",
+    "sky": "#91D7E3",
+    "teal_blue": "#7DC4E4"
   },
   "blocks": [
     {
       "alignment": "right",
       "segments": [
-         {
+        {
+          "background": "p:salmon",
+          "foreground": "p:white",
+          "style": "diamond",
+          "template": "  {{ .HostName }} ",
+          "type": "session",
+          "leading_diamond": ""
+        },
+        {
           "background": "p:teal_blue",
           "foreground": "p:white",
           "properties": {
-              "branch_icon": "\uf126 ",
-              "fetch_status": true,
-              "fetch_upstream_icon": true
+            "branch_icon": " ",
+            "fetch_status": true,
+            "fetch_upstream_icon": true
           },
-            "style": "diamond",
-                      "template": " {{ .HEAD }} {{if .BranchStatus }} {{ .BranchStatus }}{{ end }}{{ if .Working.Changed }} \uf044 {{ .Working.String }}{{ end }}{{ if and (.Working.Changed) (.Staging.Changed) }} |{{ end }}{{ if .Staging.Changed }} \uf046 {{ .Staging.String }}{{ end }}{{ if gt .StashCount 0 }} \ueb4b {{ .StashCount }}{{ end }} ",
-
-
+          "style": "diamond",
+          "template": " {{ .HEAD }} {{if .BranchStatus }} {{ .BranchStatus }}{{ end }}{{ if .Working.Changed }}  {{ .Working.String }}{{ end }}{{ if and (.Working.Changed) (.Staging.Changed) }} |{{ end }}{{ if .Staging.Changed }}  {{ .Staging.String }}{{ end }}{{ if gt .StashCount 0 }}  {{ .StashCount }}{{ end }} ",
           "leading_diamond": "",
           "type": "git"
         }
@@ -40,7 +45,7 @@
           "background": "p:plum",
           "foreground": "p:white",
           "style": "diamond",
-            "template": " {{.Icon}} {{ .UserName }}",
+          "template": " {{.Icon}} {{ .UserName }}",
           "type": "os"
         },
         {
@@ -65,7 +70,6 @@
       ],
       "type": "prompt"
     }
-
   ],
   "final_space": true,
   "version": 3

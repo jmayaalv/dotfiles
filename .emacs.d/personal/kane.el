@@ -25,7 +25,7 @@
 ;;                    --region eu-central-1 \                                                                       ;;
 ;;                    --username db_writer \                                                                        ;;
 ;;                    --profile kane-nonprod-db_writer)
-; aws rds describe-db-clusters \
+ ;;aws rds describe-db-clusters \
 ;;--query 'DBClusters[*].[DBClusterIdentifier,Endpoint,Engine]' \
 ;;--output table --profile kane-nonprod-dev
 ;;
@@ -253,23 +253,14 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-database "imsaglt5adb")
          (sql-user "db_writer"))
 
-        ;; (agl.prod
-        ;;  (sql-name "agl.prod")
-        ;;  (sql-product 'postgres)
-        ;;  (sql-server "pdn-agl-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
-        ;;  (sql-port 5432)
-        ;;  (sql-database "imsaglpdnadb")
-        ;;  (sql-user "db_maintainer"))
-
         (agl.prod
-         (sql-name "agl.prod")
-         (sql-postgres-program "/usr/local/pgsql/bin/psql")
-         (sql-default-directory "/ssh:devel.jmayaalv@agldb:")
-         (sql-product 'postgres)
-         (sql-port 5432)
-         (sql-server "localhost")
-         (sql-user "imsaglprod")
-         (sql-database "imsaglproddb"))
+          (sql-name "agl.prod")
+          (sql-product 'postgres)
+          (sql-server "pdn-agl-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+          (sql-port 5432)
+          (sql-database "imsaglpdnadb")
+          (sql-user "db_maintainer"))
+
 
         (axonic.test1
          (sql-name "axonic.test1")
@@ -343,25 +334,15 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-database "imsglaciert4adb")
          (sql-user "db_writer"))
 
-        ;; (glacier.prod
-        ;;  (sql-name "glacier.prod")
-        ;;  (sql-product 'postgres)
-        ;;  (sql-server "pdn-glacier-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
-        ;;  (sql-port 5432)
-        ;;  (sql-database "imsglacierpdnadb")
-        ;;  (sql-user "db_maintainer"))
+         (glacier.prod
+          (sql-name "glacier.prod")
+          (sql-product 'postgres)
+          (sql-server "pdn-glacier-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+          (sql-port 5432)
+          (sql-database "imsglacierpdnadb")
+          (sql-user "db_maintainer"))
 
-        (glacier.prod
-         (sql-name "glacier.prod")
-         (sql-postgres-program "/usr/local/pgsql/bin/psql")
-         (sql-default-directory "/ssh:devel.jmayaalv@glacierdb:")
-         (sql-product 'postgres)
-         (sql-port 5432)
-         (sql-server "localhost")
-         (sql-user "imsglacierprod")
-         (sql-database "imsglacierproddb"))
-
-        (gosaver.test1
+         (gosaver.test1
          (sql-name "gosaver.test1")
          (sql-product 'postgres)
          (sql-server "qa-gosaver-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
@@ -527,7 +508,7 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-product 'postgres)
          (sql-server "pdn-prospero-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
-         (sql-database "imsprosperoadb")
+         (sql-database "imsprosperopdnadb")
          (sql-user "db_maintainer"))
 
         (sbi.test1
