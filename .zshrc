@@ -91,6 +91,7 @@ source <(carapace _carapace)
 
 #Common aliases
 alias main='tmux new -s main'
+alias mini='tmux new -s mini'
 alias vi='vim'
 alias ls='eza'
 alias clj-new='clojure -X:new :name'
@@ -112,4 +113,5 @@ export PATH="/Users/jmayaalv/.antigravity/antigravity/bin:$PATH"
 
 # Shell integrations
 eval "$(fzf --zsh)"
+export _ZO_DOCTOR=0
 eval "$(zoxide init --cmd cd zsh)"
