@@ -5,6 +5,22 @@ DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 echo "Setting up dotfiles from $DOTFILES_DIR..."
 
+# Install GitHub CLI
+if command -v gh &>/dev/null; then
+  echo "GitHub CLI already installed, skipping."
+else
+  echo "Installing GitHub CLI..."
+  brew install gh
+fi
+
+# Install Fira Code font
+if fc-list | grep -qi "Fira Code"; then
+  echo "Fira Code font already installed, skipping."
+else
+  echo "Installing Fira Code font..."
+  brew install --cask font-fira-code
+fi
+
 # Install Prelude (Emacs distribution) if not already present
 if [ ! -d "$HOME/.emacs.d/.git" ]; then
   echo "Installing Emacs Prelude..."

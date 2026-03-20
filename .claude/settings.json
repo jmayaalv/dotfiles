@@ -33,8 +33,15 @@
       }
     ]
   },
-  "enabledPlugins": {
-    "taches-cc-resources@taches-cc-resources": true
+  "enabledPlugins": {},
+  "extraKnownMarketplaces": {
+    "understand-anything": {
+      "source": {
+        "source": "github",
+        "repo": "Lum1104/Understand-Anything"
+      }
+    }
   },
-  "alwaysThinkingEnabled": true
+  "alwaysThinkingEnabled": true,
+  "skipDangerousModePermissionPrompt": true
 }
