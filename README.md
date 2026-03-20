@@ -8,8 +8,7 @@ Personal configuration files managed with [GNU Stow](https://www.gnu.org/softwar
 cd ~
 git clone <repository-url> dotfiles
 cd dotfiles
-stow .
-source ~/.zshrc
+./setup.sh
 ```
 
 ## Structure
@@ -65,15 +64,13 @@ source ~/.zshrc
    cd dotfiles
    ```
 
-2. Use stow to symlink configurations:
+2. Run the setup script:
    ```bash
-   # Install all configurations
-   stow .
-
-   # Or install specific configurations
-   stow .config
-   stow .emacs.d
+   ./setup.sh
    ```
+   This will:
+   - Clone [Emacs Prelude](https://github.com/bbatsov/prelude) into `~/.emacs.d/` (if not already installed)
+   - Run `stow .` to symlink all configurations
 
 3. Restart your shell or source the configuration:
    ```bash
@@ -107,6 +104,7 @@ stow -D .config
 - The `.zshrc` includes Zinit plugin manager setup and various environment configurations
 - Tmuxinator configurations include multiple pre-configured session layouts
 - Make sure to backup existing configurations before stowing
+- **Emacs**: Uses [Prelude](https://github.com/bbatsov/prelude) as the base distribution (installed separately by `setup.sh`). Personal config lives in `.emacs.d/personal/` and is symlinked into the Prelude directory by stow.
 
 ## Dependencies
 
