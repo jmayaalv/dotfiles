@@ -45,5 +45,9 @@
     }
   },
   "alwaysThinkingEnabled": true,
-  "skipDangerousModePermissionPrompt": true
+  "skipDangerousModePermissionPrompt": true,
+  "statusLine": {
+    "type": "command",
+    "command": "bash /Users/jmayaalv/.claude/statusline-command.sh"
+  }
 }

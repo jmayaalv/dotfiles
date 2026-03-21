@@ -9,5 +9,10 @@
 .emacs.d/personal/*.elc
 /.config/tmux/secrets.conf
 .clojure/.cpcache/
-.claude
+.claude/*
+!.claude/CLAUDE.md
+!.claude/commands/
+!.claude/agents/
+!.claude/settings.json
+!.claude/skills
 .secrets/
