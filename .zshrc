@@ -98,6 +98,7 @@ alias clj-new='clojure -X:new :name'
 alias clj-new-lib='clojure -X:new  :template lib :name'
 alias tlocal='tmux new -s local'
 alias attach='tmux attach-session -t'
+alias bbc='/opt/homebrew/Cellar/bb/0.3.2/bin/bb'
 
 # OS-specific configurations
 if [[ "$OSTYPE" == "darwin"* ]]; then

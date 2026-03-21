@@ -33,8 +33,10 @@
       }
     ]
   },
-  "enabledPlugins": {
-    "taches-cc-resources@taches-cc-resources": true
-  },
-  "alwaysThinkingEnabled": true
+  "enabledPlugins": {},
+  "alwaysThinkingEnabled": true,
+  "statusLine": {
+    "type": "command",
+    "command": "bash /Users/jmayaalv/.claude/statusline-command.sh"
+  }
 }
