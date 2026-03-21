@@ -15,4 +15,5 @@
 !.claude/agents/
 !.claude/settings.json
 !.claude/skills
+!.claude/statusline-command.sh
 .secrets/
