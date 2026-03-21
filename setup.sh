@@ -13,12 +13,36 @@ else
   brew install gh
 fi
 
+# Install Bitbucket CLI
+if command -v bb &>/dev/null; then
+  echo "Bitbucket CLI already installed, skipping."
+else
+  echo "Installing Bitbucket CLI..."
+  brew install philipkram/tap/bb
+fi
+
 # Install Fira Code font
 if fc-list | grep -qi "Fira Code"; then
   echo "Fira Code font already installed, skipping."
 else
   echo "Installing Fira Code font..."
   brew install --cask font-fira-code
+fi
+
+# Install Bun
+if command -v bun &>/dev/null; then
+  echo "Bun already installed, skipping."
+else
+  echo "Installing Bun..."
+  brew tap oven-sh/bun && brew install bun
+fi
+
+# Install Leiningen
+if command -v lein &>/dev/null; then
+  echo "Leiningen already installed, skipping."
+else
+  echo "Installing Leiningen..."
+  brew install leiningen
 fi
 
 # Install Prelude (Emacs distribution) if not already present

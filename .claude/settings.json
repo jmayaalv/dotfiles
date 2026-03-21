@@ -33,7 +33,9 @@
       }
     ]
   },
-  "enabledPlugins": {},
+  "enabledPlugins": {
+    "telegram@claude-plugins-official": true
+  },
   "extraKnownMarketplaces": {
     "understand-anything": {
       "source": {
