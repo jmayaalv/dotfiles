@@ -34,7 +34,16 @@
     ]
   },
   "enabledPlugins": {},
+  "extraKnownMarketplaces": {
+    "understand-anything": {
+      "source": {
+        "source": "github",
+        "repo": "Lum1104/Understand-Anything"
+      }
+    }
+  },
   "alwaysThinkingEnabled": true,
+  "skipDangerousModePermissionPrompt": true,
   "statusLine": {
     "type": "command",
     "command": "bash /Users/jmayaalv/.claude/statusline-command.sh"

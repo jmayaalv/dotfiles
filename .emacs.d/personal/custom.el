@@ -4,8 +4,8 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
-   '("09b833239444ac3230f591e35e3c28a4d78f1556b107bafe0eb32b5977204d93"
-     "f9d423fcd4581f368b08c720f04d206ee80b37bfb314fa37e279f554b6f415e9"
+   '("f9d423fcd4581f368b08c720f04d206ee80b37bfb314fa37e279f554b6f415e9"
+     "ba98102679e7ed71a0b79c9a490328370b6b20537e04730bf0028bdd8a2418a9"
      default))
  '(package-selected-packages
    '(ag all-the-icons anzu beacon browse-kill-ring catppuccin-theme cider
