@@ -98,10 +98,11 @@ alias clj-new='clojure -X:new :name'
 alias clj-new-lib='clojure -X:new  :template lib :name'
 alias tlocal='tmux new -s local'
 alias attach='tmux attach-session -t'
-alias claude='claude --channels "plugin:telegram@claude-plugins-official"'
+alias claude-ch='claude --channels "plugin:telegram@claude-plugins-official"'
 alias bbc='/opt/homebrew/Cellar/bb/0.3.2/bin/bb'
 alias bitbucket='/opt/homebrew/Cellar/bb/0.3.2/bin/bb'
 alias emacs="/Applications/Emacs.app/Contents/MacOS/Emacs"
+alias cat='bat'
 
 # OS-specific configurations
 if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -123,3 +124,6 @@ export PATH="$PATH:/Users/jmayaalv/.lmstudio/bin"
 eval "$(fzf --zsh)"
 export _ZO_DOCTOR=0
 eval "$(zoxide init --cmd cd zsh)"
+
+# TestContainers — Docker Desktop Mac (docker.raw.sock requires socket override for Ryuk)
+export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock

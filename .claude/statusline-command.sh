@@ -10,7 +10,9 @@ cwd_short=$(echo "$cwd" | sed "s|$HOME|~|")
 
 remaining=$(echo "$input" | jq -r '.context_window.remaining_percentage // empty')
 five_hour=$(echo "$input" | jq -r '.rate_limits.five_hour.used_percentage // empty')
+five_hour_resets=$(echo "$input" | jq -r '.rate_limits.five_hour.resets_at // empty')
 seven_day=$(echo "$input" | jq -r '.rate_limits.seven_day.used_percentage // empty')
+seven_day_resets=$(echo "$input" | jq -r '.rate_limits.seven_day.resets_at // empty')
 
 parts=()
 
@@ -37,7 +39,7 @@ if [ -n "$remaining" ]; then
   parts+=("$(printf "ctx:${color}%d%%\033[0m" "$remaining_int") left")
 fi
 
-# 5-hour window used
+# 5-hour window used + reset time
 if [ -n "$five_hour" ]; then
   five_int=$(printf '%.0f' "$five_hour")
   if [ "$five_int" -ge 90 ]; then
@@ -47,10 +49,15 @@ if [ -n "$five_hour" ]; then
   else
     color='\033[0;32m'
   fi
-  parts+=("$(printf "5h:${color}%d%%\033[0m" "$five_int") used")
+  five_label="$(printf "5h:${color}%d%%\033[0m" "$five_int") used"
+  if [ -n "$five_hour_resets" ]; then
+    reset_time=$(date -r "$five_hour_resets" "+%H:%M" 2>/dev/null)
+    [ -n "$reset_time" ] && five_label="$five_label $(printf '\033[0;37m(resets %s)\033[0m' "$reset_time")"
+  fi
+  parts+=("$five_label")
 fi
 
-# 7-day window used
+# 7-day window used + reset time
 if [ -n "$seven_day" ]; then
   seven_int=$(printf '%.0f' "$seven_day")
   if [ "$seven_int" -ge 90 ]; then
@@ -60,7 +67,12 @@ if [ -n "$seven_day" ]; then
   else
     color='\033[0;32m'
   fi
-  parts+=("$(printf "7d:${color}%d%%\033[0m" "$seven_int") used")
+  seven_label="$(printf "7d:${color}%d%%\033[0m" "$seven_int") used"
+  if [ -n "$seven_day_resets" ]; then
+    reset_time=$(date -r "$seven_day_resets" "+%a %H:%M" 2>/dev/null)
+    [ -n "$reset_time" ] && seven_label="$seven_label $(printf '\033[0;37m(resets %s)\033[0m' "$reset_time")"
+  fi
+  parts+=("$seven_label")
 fi
 
 # Join parts with separator

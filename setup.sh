@@ -45,12 +45,28 @@ else
   brew install leiningen
 fi
 
+# Install bat
+if command -v bat &>/dev/null; then
+  echo "bat already installed, skipping."
+else
+  echo "Installing bat..."
+  brew install bat
+fi
+
 # Install Prelude (Emacs distribution) if not already present
 if [ ! -d "$HOME/.emacs.d/.git" ]; then
   echo "Installing Emacs Prelude..."
   git clone https://github.com/bbatsov/prelude.git "$HOME/.emacs.d"
 else
   echo "Emacs Prelude already installed, skipping."
+fi
+
+# Install TPM (Tmux Plugin Manager)
+if [ -d "$HOME/.tmux/plugins/tpm" ]; then
+  echo "TPM already installed, skipping."
+else
+  echo "Installing TPM..."
+  git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
 fi
 
 # Stow all dotfiles

@@ -33,8 +33,13 @@
       }
     ]
   },
+  "statusLine": {
+    "type": "command",
+    "command": "bash /Users/jmayaalv/.claude/statusline-command.sh"
+  },
   "enabledPlugins": {
-    "telegram@claude-plugins-official": true
+    "telegram@claude-plugins-official": true,
+    "superpowers@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "understand-anything": {
@@ -45,9 +50,5 @@
     }
   },
   "alwaysThinkingEnabled": true,
-  "skipDangerousModePermissionPrompt": true,
-  "statusLine": {
-    "type": "command",
-    "command": "bash /Users/jmayaalv/.claude/statusline-command.sh"
-  }
+  "skipDangerousModePermissionPrompt": true
 }

@@ -3,8 +3,10 @@ set-option -g status-position top
 
 
 
-# rebind prefix to ctrl-
-set -g prefix C-s
+# rebind prefix based on machine
+if-shell "hostname | grep -qi mac-mini" \
+  "set -g prefix C-b" \
+  "set -g prefix C-s"
 
 # Bitwarden
 source-file ~/.config/tmux/secrets.conf
