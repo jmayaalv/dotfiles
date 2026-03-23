@@ -53,6 +53,22 @@ else
   brew install bat
 fi
 
+# Install libvterm (needed by Emacs vterm)
+if brew list libvterm &>/dev/null; then
+  echo "libvterm already installed, skipping."
+else
+  echo "Installing libvterm..."
+  brew install libvterm
+fi
+
+# Install cmake (needed to build vterm module)
+if command -v cmake &>/dev/null; then
+  echo "cmake already installed, skipping."
+else
+  echo "Installing cmake..."
+  brew install cmake
+fi
+
 # Install Prelude (Emacs distribution) if not already present
 if [ ! -d "$HOME/.emacs.d/.git" ]; then
   echo "Installing Emacs Prelude..."
@@ -73,5 +89,12 @@ fi
 echo "Stowing dotfiles..."
 cd "$DOTFILES_DIR"
 stow --target="$HOME" .
+
+# Adopt any real files that should be managed by stow.
+# This handles the case where directories like ~/.emacs.d/personal/ already exist
+# (e.g. from Prelude clone) and files were created there directly instead of in the
+# dotfiles repo. --adopt moves the real file into the repo and replaces it with a symlink.
+echo "Adopting any unmanaged files into stow..."
+stow --adopt --target="$HOME" .
 
 echo "Done. Restart your shell or run: source ~/.zshrc"
