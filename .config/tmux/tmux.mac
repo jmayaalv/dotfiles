@@ -1,8 +1,3 @@
-# set bar on top
-set-option -g status-position top
-
-
-
 # prefix is set in tmux.conf based on hostname
 
 # Bitwarden

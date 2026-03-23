@@ -101,7 +101,7 @@ alias attach='tmux attach-session -t'
 alias claude-ch='claude --channels "plugin:telegram@claude-plugins-official"'
 alias bbc='/opt/homebrew/Cellar/bb/0.3.2/bin/bb'
 alias bitbucket='/opt/homebrew/Cellar/bb/0.3.2/bin/bb'
-alias emacs="/Applications/Emacs.app/Contents/MacOS/Emacs"
+alias emacs="/Applications/Emacs.app/Contents/MacOS/Emacs -nw"
 alias cat='bat'
 
 # OS-specific configurations
