@@ -69,6 +69,14 @@ else
   brew install cmake
 fi
 
+# Install clojure-lsp
+if command -v clojure-lsp &>/dev/null; then
+  echo "clojure-lsp already installed, skipping."
+else
+  echo "Installing clojure-lsp..."
+  brew install clojure-lsp/brew/clojure-lsp-native
+fi
+
 # Install Prelude (Emacs distribution) if not already present
 if [ ! -d "$HOME/.emacs.d/.git" ]; then
   echo "Installing Emacs Prelude..."
