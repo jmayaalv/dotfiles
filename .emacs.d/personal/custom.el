@@ -9,20 +9,23 @@
      default))
  '(package-selected-packages
    '(ag all-the-icons anzu beacon browse-kill-ring catppuccin-theme cider
-        claude-code claude-code-ide clojure-snippets company
-        consult-lsp crux csv-mode diff-hl diminish dimmer dirvish
-        discover discover-my-major dockerfile-mode doom-modeline
-        easy-kill eat elisp-slime-nav epl exec-path-from-shell
-        expand-region flycheck gist git-modes git-timemachine
-        gnu-elpa-keyring-update guru-mode helm hl-todo html-to-hiccup
-        hurl-mode imenu-anywhere jet js2-mode json-mode key-chord
-        kubed linkin-org lsp-mode lsp-treemacs magit move-text nlinum
-        operate-on-number orderless projectile rainbow-delimiters
-        rainbow-mode restclient smartparens smartrep super-save
-        transient try undo-tree vertico volatile-highlights vterm
-        web-mode web-server yaml-mode zenburn-theme zop-to-char))
+        claude-code claude-code-ide claudemacs clojure-snippets
+        company consult-lsp crux csv-mode diff-hl diminish dimmer
+        dirvish discover discover-my-major dockerfile-mode
+        doom-modeline easy-kill eat elisp-slime-nav epl
+        exec-path-from-shell expand-region flycheck gist git-modes
+        git-timemachine gnu-elpa-keyring-update guru-mode helm hl-todo
+        html-to-hiccup hurl-mode imenu-anywhere jet js2-mode json-mode
+        key-chord kubed linkin-org lsp-mode lsp-treemacs magit monet
+        move-text nlinum operate-on-number orderless projectile
+        rainbow-delimiters rainbow-mode restclient smartparens
+        smartrep super-save transient try undo-tree vertico
+        volatile-highlights vterm web-mode web-server yaml-mode
+        zenburn-theme zop-to-char))
  '(package-vc-selected-packages
-   '((claude-code :url "https://github.com/stevemolitor/claude-code.el")
+   '((claude-code :vc-backend Git :url
+                  "https://github.com/stevemolitor/claude-code.el")
+     (monet :url "https://github.com/stevemolitor/monet")
      (hurl-mode :vc-backend Git :url
                 "https://github.com/JasZhe/hurl-mode")
      (claude-code-ide :url

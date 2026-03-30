@@ -151,9 +151,15 @@
 ;;; Dimmer
 ;;  subtle visual indication which window is currently active by dimming the
 ;;  faces on the others.
-(prelude-require-package 'dimmer)
-(setq dimmer-fraction 0.5)
-(dimmer-mode t)
+
+
+(use-package dimmer
+  :ensure t
+  :config
+  (setq dimmer-fraction 0.5)
+  (dimmer-mode 1))
+
+
 
 
 ;;; Beacon
@@ -161,7 +167,9 @@
 (beacon-mode 1)
 (setq beacon-blink-duration 0.5)
 (setq beacon-blink-delay 0.5)
-(add-to-list 'beacon-dont-blink-major-modes '('term-mode 'ediff-mode 'ediff))
+(setq beacon-blink-when-window-scrolls nil)
+(add-to-list 'beacon-dont-blink-major-modes '('term-mode 'ediff-mode 'ediff 'eat))
+
 
 ;; Spinner
 (prelude-require-package 'spinner)
@@ -239,3 +247,7 @@
 ;;company
 (with-eval-after-load 'company
   (global-set-key (kbd "TAB") 'company-indent-or-complete-common))
+
+
+;;markdown
+(setq markdown-command "pandoc")

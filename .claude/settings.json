@@ -33,6 +33,10 @@
       }
     ]
   },
+  "statusLine": {
+    "type": "command",
+    "command": "bash /Users/jmayaalv/.claude/statusline-command.sh"
+  },
   "enabledPlugins": {},
   "extraKnownMarketplaces": {
     "understand-anything": {
@@ -44,8 +48,5 @@
   },
   "alwaysThinkingEnabled": true,
   "skipDangerousModePermissionPrompt": true,
-  "statusLine": {
-    "type": "command",
-    "command": "bash /Users/jmayaalv/.claude/statusline-command.sh"
-  }
+  "autoDreamEnabled": true
 }

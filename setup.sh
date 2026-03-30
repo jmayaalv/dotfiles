@@ -13,6 +13,14 @@ else
   brew install gh
 fi
 
+# Install pandoc
+if command -v pandoc &>/dev/null; then
+  echo "pandoc already installed, skipping."
+else
+  echo "Installing pandoc..."
+  brew install pandoc
+fi
+
 # Install Fira Code font
 if fc-list | grep -qi "Fira Code"; then
   echo "Fira Code font already installed, skipping."
