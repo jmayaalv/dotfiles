@@ -4,8 +4,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
-   '("f9d423fcd4581f368b08c720f04d206ee80b37bfb314fa37e279f554b6f415e9"
-     "ba98102679e7ed71a0b79c9a490328370b6b20537e04730bf0028bdd8a2418a9"
+   '("ba98102679e7ed71a0b79c9a490328370b6b20537e04730bf0028bdd8a2418a9"
      default))
  '(package-selected-packages
    '(ag all-the-icons anzu beacon browse-kill-ring catppuccin-theme cider
@@ -42,7 +41,4 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(cider-test-failure-face ((t (:foreground "#ed8796"))))
- '(cider-test-success-face ((t (:foreground "#a6da95"))))
- '(clojure-keyword-face ((t (:foreground "#f5e0dc" :weight normal))))
- '(font-lock-type-face ((t (:foreground "#f5e0dc")))))
+ )

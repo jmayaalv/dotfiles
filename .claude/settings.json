@@ -37,7 +37,10 @@
     "type": "command",
     "command": "bash /Users/jmayaalv/.claude/statusline-command.sh"
   },
-  "enabledPlugins": {},
+  "enabledPlugins": {
+    "telegram@claude-plugins-official": true,
+    "superpowers@claude-plugins-official": true
+  },
   "extraKnownMarketplaces": {
     "understand-anything": {
       "source": {

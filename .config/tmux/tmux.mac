@@ -1,10 +1,4 @@
-# set bar on top
-set-option -g status-position top
-
-
-
-# rebind prefix to ctrl-
-set -g prefix C-s
+# prefix is set in tmux.conf based on hostname
 
 # Bitwarden
 source-file ~/.config/tmux/secrets.conf

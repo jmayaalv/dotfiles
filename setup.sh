@@ -29,6 +29,54 @@ else
   brew install --cask font-fira-code
 fi
 
+# Install Bun
+if command -v bun &>/dev/null; then
+  echo "Bun already installed, skipping."
+else
+  echo "Installing Bun..."
+  brew tap oven-sh/bun && brew install bun
+fi
+
+# Install Leiningen
+if command -v lein &>/dev/null; then
+  echo "Leiningen already installed, skipping."
+else
+  echo "Installing Leiningen..."
+  brew install leiningen
+fi
+
+# Install bat
+if command -v bat &>/dev/null; then
+  echo "bat already installed, skipping."
+else
+  echo "Installing bat..."
+  brew install bat
+fi
+
+# Install libvterm (needed by Emacs vterm)
+if brew list libvterm &>/dev/null; then
+  echo "libvterm already installed, skipping."
+else
+  echo "Installing libvterm..."
+  brew install libvterm
+fi
+
+# Install cmake (needed to build vterm module)
+if command -v cmake &>/dev/null; then
+  echo "cmake already installed, skipping."
+else
+  echo "Installing cmake..."
+  brew install cmake
+fi
+
+# Install clojure-lsp
+if command -v clojure-lsp &>/dev/null; then
+  echo "clojure-lsp already installed, skipping."
+else
+  echo "Installing clojure-lsp..."
+  brew install clojure-lsp/brew/clojure-lsp-native
+fi
+
 # Install Prelude (Emacs distribution) if not already present
 if [ ! -d "$HOME/.emacs.d/.git" ]; then
   echo "Installing Emacs Prelude..."
@@ -37,9 +85,24 @@ else
   echo "Emacs Prelude already installed, skipping."
 fi
 
+# Install TPM (Tmux Plugin Manager)
+if [ -d "$HOME/.tmux/plugins/tpm" ]; then
+  echo "TPM already installed, skipping."
+else
+  echo "Installing TPM..."
+  git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
+fi
+
 # Stow all dotfiles
 echo "Stowing dotfiles..."
 cd "$DOTFILES_DIR"
 stow --target="$HOME" .
+
+# Adopt any real files that should be managed by stow.
+# This handles the case where directories like ~/.emacs.d/personal/ already exist
+# (e.g. from Prelude clone) and files were created there directly instead of in the
+# dotfiles repo. --adopt moves the real file into the repo and replaces it with a symlink.
+echo "Adopting any unmanaged files into stow..."
+stow --adopt --target="$HOME" .
 
 echo "Done. Restart your shell or run: source ~/.zshrc"
