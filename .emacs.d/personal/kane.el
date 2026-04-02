@@ -751,6 +751,58 @@ Optional FILTER-FN filters connections; FILTER-DESC describes the filter."
                  (sql-product-interactive sql-product)))))
 
 
+;; Testcontainer support
+(defun kane/docker-postgres-port ()
+  "Get the host port mapped to 5432 from a running postgres:15 container.
+Returns port number as integer, or signals error if no container found."
+  (let* ((output (string-trim
+                  (shell-command-to-string
+                   "docker ps --filter \"ancestor=postgres:15\" --format \"{{.Ports}}\"")))
+         (lines (seq-remove #'string-empty-p (split-string output "\n"))))
+    (cond
+     ((null lines) (error "No postgres:15 container running"))
+     ((= 1 (length lines))
+      (kane/parse-docker-port (car lines)))
+     (t
+      (let ((selected (completing-read "Container port mapping: " lines nil t)))
+        (kane/parse-docker-port selected))))))
+
+(defun kane/parse-docker-port (port-string)
+  "Extract host port from PORT-STRING like '0.0.0.0:32781->5432/tcp'."
+  (if (string-match ":\\([0-9]+\\)->5432" port-string)
+      (string-to-number (match-string 1 port-string))
+    (error "Could not parse port from: %s" port-string)))
+
+(defun kane-sql-testcontainer ()
+  "Connect to a Testcontainers Postgres database.
+Auto-detects the mapped port from Docker."
+  (interactive)
+  (let* ((port (kane/docker-postgres-port)))
+    (setq sql-password "test")
+    (setenv "PGPASSWORD" "test")
+    (setenv "PGSSLMODE" nil)
+    (setq sql-login-params '(server port database user))
+    (let ((sql-connection-alist
+           (cons `(testcontainer
+                   (sql-name "testcontainer")
+                   (sql-product 'postgres)
+                   (sql-server "localhost")
+                   (sql-port ,port)
+                   (sql-database "test")
+                   (sql-user "test"))
+                 sql-connection-alist)))
+      (my-sql-connect 'postgres 'testcontainer))))
+
+(defun kane-sql-testcontainer-destroy ()
+  "Stop and remove all postgres:15 Docker containers."
+  (interactive)
+  (let ((output (string-trim
+                 (shell-command-to-string
+                  "docker ps -a --filter \"ancestor=postgres:15\" --format \"{{.ID}}\" | xargs docker rm -f 2>&1"))))
+    (if (string-empty-p output)
+        (message "No postgres:15 containers found")
+      (message "Removed: %s" output))))
+
 ;; Kane SQL prefix map
 (define-prefix-command 'kane-sql-map)
 (global-set-key (kbd "C-c M-k s") 'kane-sql-map)
@@ -761,3 +813,5 @@ Optional FILTER-FN filters connections; FILTER-DESC describes the filter."
 (define-key kane-sql-map (kbd "q") 'kane-sql-qa)
 (define-key kane-sql-map (kbd "p") 'kane-sql-prod)
 (define-key kane-sql-map (kbd "l") 'kane-sql-localhost)
+(define-key kane-sql-map (kbd "t") 'kane-sql-testcontainer)
+(define-key kane-sql-map (kbd "T") 'kane-sql-testcontainer-destroy)

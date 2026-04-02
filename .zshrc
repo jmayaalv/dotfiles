@@ -127,3 +127,8 @@ eval "$(zoxide init --cmd cd zsh)"
 
 # TestContainers — Docker Desktop Mac (docker.raw.sock requires socket override for Ryuk)
 export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock
+# The following lines have been added by Docker Desktop to enable Docker CLI completions.
+fpath=(/Users/jmayaalv/.docker/completions $fpath)
+autoload -Uz compinit
+compinit
+# End of Docker CLI completions
