@@ -4,20 +4,23 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
-   '("f9d423fcd4581f368b08c720f04d206ee80b37bfb314fa37e279f554b6f415e9"
+   '("f654d73d7a0761cc4f7d99fffe4b16fce1b2d95844f37bc786e455cec744ac75"
+     "c4df9006b9eb32599d758800a32f3487c2cdf13826084511783b47d419024af2"
+     "f9d423fcd4581f368b08c720f04d206ee80b37bfb314fa37e279f554b6f415e9"
      "ba98102679e7ed71a0b79c9a490328370b6b20537e04730bf0028bdd8a2418a9"
      default))
  '(package-selected-packages
-   '(ag all-the-icons anzu beacon browse-kill-ring catppuccin-theme cider
-        claude-code claude-code-ide claudemacs clojure-mode
-        clojure-snippets company consult-lsp crux csv-mode diff-hl
-        diminish dimmer dirvish discover discover-my-major
-        dockerfile-mode doom-modeline easy-kill eat elisp-slime-nav
-        epl exec-path-from-shell expand-region flycheck gist git-modes
-        git-timemachine gnu-elpa-keyring-update guru-mode helm hl-todo
-        html-to-hiccup hurl-mode imenu-anywhere jet js2-mode json-mode
-        key-chord kubed linkin-org lsp-mode lsp-treemacs magit
-        magit-section markdown-mode monet move-text nerd-icons nlinum
+   '(ag agent-shell all-the-icons anzu beacon browse-kill-ring
+        catppuccin-theme cider claude-code claude-code-ide claudemacs
+        clojure-mode clojure-snippets company consult-lsp crux
+        csv-mode diff-hl diminish dimmer dirvish discover
+        discover-my-major dockerfile-mode doom-modeline easy-kill eat
+        elisp-slime-nav epl exec-path-from-shell expand-region expreg
+        flycheck gist git-modes git-timemachine
+        gnu-elpa-keyring-update guru-mode helm hl-todo html-to-hiccup
+        hurl-mode imenu-anywhere jet js2-mode json-mode key-chord
+        kubed linkin-org lsp-mode lsp-treemacs magit magit-section
+        markdown-mode monet move-text nerd-icons nlinum
         operate-on-number orderless posframe projectile
         rainbow-delimiters rainbow-mode restclient smartparens
         smartrep super-save transient treemacs try undo-tree vertico
@@ -32,7 +35,10 @@
      (claude-code-ide :url
                       "https://github.com/manzaltu/claude-code-ide.el")))
  '(safe-local-variable-values
-   '((cider-clojure-cli-global-options . "-A:dev -J-Dguardrails.enabled")
+   '((cider-project-root . "/Users/jmayaalv/Developer/ms-edge/edge")
+     (cider-preferred-build-tool . "lein")
+     (cider-clojure-cli-global-options
+      . "-A:dev -J-Dguardrails.enabled")
      (cider-ns-refresh-after-fn . "user/start")
      (cider-ns-refresh-before-fn . "user/stop")
      (projectile-grep-default-files quote ("*.clj" "*.cljs" "*.cljc"))
@@ -46,4 +52,5 @@
  ;; If there is more than one, they won't work right.
  '(cider-test-failure-face ((t (:foreground "#ed8796"))))
  '(cider-test-success-face ((t (:foreground "#a6da95"))))
- '(clojure-keyword-face ((t (:foreground "#f5e0dc" :weight normal)))))
+ '(clojure-keyword-face ((t (:foreground "#f5e0dc" :weight normal))))
+ '(font-lock-type-face ((t (:foreground "#f5e0dc")))))

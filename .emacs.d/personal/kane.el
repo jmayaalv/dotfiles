@@ -253,6 +253,14 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-database "imsaglt5adb")
          (sql-user "db_writer"))
 
+        (agl.test6
+         (sql-name "agl.test6")
+         (sql-product 'postgres)
+         (sql-server "qa-agl-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
+         (sql-port 5432)
+         (sql-database "imsaglt6adb")
+         (sql-user "db_writer"))
+
         (agl.prod
           (sql-name "agl.prod")
           (sql-product 'postgres)

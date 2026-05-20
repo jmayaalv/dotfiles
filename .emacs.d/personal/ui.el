@@ -251,3 +251,18 @@
 
 ;;markdown
 (setq markdown-command "pandoc")
+
+
+(use-package expreg
+  :ensure t
+  :bind (("C-=" . expreg-expand)
+         ("C--" . expreg-contract))
+  :config
+  (defvar expreg-repeat-map
+    (let ((map (make-sparse-keymap)))
+      (define-key map "=" #'expreg-expand)
+      (define-key map "=" #'expreg-contract)
+      map))
+  (put 'expreg-expand 'repeat-map 'expreg-repeat-map)
+  (put 'expreg-contract 'repeat-map 'expreg-repeat-map)
+  )

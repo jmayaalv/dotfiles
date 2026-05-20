@@ -17,3 +17,4 @@
 !.claude/skills
 !.claude/statusline-command.sh
 .secrets/
+/.agent-shell/
