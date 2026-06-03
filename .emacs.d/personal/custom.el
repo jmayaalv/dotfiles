@@ -35,7 +35,8 @@
      (claude-code-ide :url
                       "https://github.com/manzaltu/claude-code-ide.el")))
  '(safe-local-variable-values
-   '((cider-project-root . "/Users/jmayaalv/Developer/ms-edge/edge")
+   '((cider-clojure-cli-global-options . "-A:dev")
+     (cider-project-root . "/Users/jmayaalv/Developer/ms-edge/edge")
      (cider-preferred-build-tool . "lein")
      (cider-clojure-cli-global-options
       . "-A:dev -J-Dguardrails.enabled")

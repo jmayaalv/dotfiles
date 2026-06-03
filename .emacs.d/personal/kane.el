@@ -76,6 +76,37 @@ Returns token string or nil if not cached or expired."
   (let ((cache-key (cons hostname username)))
     (puthash cache-key (cons token (float-time)) kane-iam-token-cache)))
 
+(defvar kane-aws-profiles
+  '("kane-nonprod-db_writer" "kane-prod-db_maintainer")
+  "AWS SSO profiles available for interactive login.")
+
+(defun kane/aws-sso-login (profile &optional callback)
+  "Run `aws sso login --profile PROFILE' asynchronously.
+On success clears the IAM token cache and, if CALLBACK is non-nil,
+invokes it with no arguments."
+  (interactive
+   (list (completing-read "AWS Profile: " kane-aws-profiles nil nil nil nil
+                          (car kane-aws-profiles))))
+  (let* ((buf (get-buffer-create "*aws-sso-login*"))
+         (proc (start-process "aws-sso-login" buf
+                              "aws" "sso" "login" "--profile" profile)))
+    (with-current-buffer buf (erase-buffer))
+    (display-buffer buf)
+    (message "Running aws sso login --profile %s (browser will open)..." profile)
+    (set-process-sentinel
+     proc
+     (lambda (_p event)
+       (cond
+        ((string-match "finished" event)
+         (clrhash kane-iam-token-cache)
+         (message "AWS SSO login complete for %s; IAM token cache cleared."
+                  profile)
+         (when callback (funcall callback)))
+        ((string-match "exited abnormally\\|killed\\|failed" event)
+         (message "AWS SSO login failed for %s; see *aws-sso-login* buffer."
+                  profile)))))
+    proc))
+
 (defun kane/aurora-get-auth-token (hostname username profile)
   "Generate AWS IAM auth token for HOSTNAME with USERNAME using PROFILE.
 Checks cache first; generates new token if needed. Returns nil on error."
@@ -633,6 +664,7 @@ Returns formatted string like 'agl          test1  [QA]'."
 Automatically handles AWS IAM authentication for Aurora QA clusters.
 Optional FILTER-FN filters connections; FILTER-DESC describes the filter."
   (interactive)
+  (catch 'kane-sql-deferred
   (let* ((all-connections (mapcar #'car sql-connection-alist))
          (connections (if filter-fn
                           (seq-filter filter-fn all-connections)
@@ -677,7 +709,14 @@ Optional FILTER-FN filters connections; FILTER-DESC describes the filter."
                       (setenv "PGSSLMODE" "require")
                       (setq sql-login-params '(server port database user))
                       (message "IAM token generated successfully"))
-                  (error "Cannot connect: IAM token generation failed. Run: aws sso login --profile %s" profile))))))
+                  (if (y-or-n-p
+                       (format "IAM token generation failed. Run aws sso login --profile %s now? "
+                               profile))
+                      (progn
+                        (kane/aws-sso-login profile
+                                            (lambda () (kane-sql-reconnect)))
+                        (throw 'kane-sql-deferred nil))
+                    (error "Cannot connect: IAM token generation failed. Run: aws sso login --profile %s" profile)))))))
       ;; For non-IAM connections, reset to default login params
       (progn
         (setq sql-password nil)
@@ -686,7 +725,7 @@ Optional FILTER-FN filters connections; FILTER-DESC describes the filter."
         (setq sql-login-params '(server port database user password))))
 
     ;; Connect using existing helper
-    (my-sql-connect 'postgres connection-name)))
+    (my-sql-connect 'postgres connection-name))))
 
 (defun kane-sql-reconnect ()
   "Reconnect to the last database connection without prompting."
@@ -760,34 +799,52 @@ Optional FILTER-FN filters connections; FILTER-DESC describes the filter."
 
 
 ;; Testcontainer support
-(defun kane/docker-postgres-port ()
-  "Get the host port mapped to 5432 from a running postgres:15 container.
-Returns port number as integer, or signals error if no container found."
+(defun kane/docker-postgres-container-id ()
+  "Return ID of a running postgres:15 container, prompting if more than one."
   (let* ((output (string-trim
                   (shell-command-to-string
-                   "docker ps --filter \"ancestor=postgres:15\" --format \"{{.Ports}}\"")))
+                   "docker ps --filter \"ancestor=postgres:15\" --format \"{{.ID}}\t{{.Names}}\t{{.Ports}}\"")))
          (lines (seq-remove #'string-empty-p (split-string output "\n"))))
     (cond
      ((null lines) (error "No postgres:15 container running"))
      ((= 1 (length lines))
-      (kane/parse-docker-port (car lines)))
+      (car (split-string (car lines) "\t")))
      (t
-      (let ((selected (completing-read "Container port mapping: " lines nil t)))
-        (kane/parse-docker-port selected))))))
+      (car (split-string (completing-read "Container: " lines nil t) "\t"))))))
 
-(defun kane/parse-docker-port (port-string)
-  "Extract host port from PORT-STRING like '0.0.0.0:32781->5432/tcp'."
-  (if (string-match ":\\([0-9]+\\)->5432" port-string)
-      (string-to-number (match-string 1 port-string))
-    (error "Could not parse port from: %s" port-string)))
+(defun kane/docker-container-port (container-id internal-port)
+  "Return host port mapped to INTERNAL-PORT for CONTAINER-ID."
+  (let ((output (string-trim
+                 (shell-command-to-string
+                  (format "docker port %s %d"
+                          (shell-quote-argument container-id) internal-port)))))
+    (if (string-match ":\\([0-9]+\\)\\'" output)
+        (string-to-number (match-string 1 output))
+      (error "Could not get port for container %s: %s" container-id output))))
+
+(defun kane/docker-container-env (container-id var)
+  "Return value of environment VAR set on CONTAINER-ID, or nil."
+  (let* ((output (string-trim
+                  (shell-command-to-string
+                   (format "docker inspect --format='{{range .Config.Env}}{{println .}}{{end}}' %s"
+                           (shell-quote-argument container-id)))))
+         (prefix (concat var "=")))
+    (cl-some (lambda (line)
+               (when (string-prefix-p prefix line)
+                 (substring line (length prefix))))
+             (split-string output "\n"))))
 
 (defun kane-sql-testcontainer ()
   "Connect to a Testcontainers Postgres database.
-Auto-detects the mapped port from Docker."
+Auto-detects port, database, user, and password from the running container."
   (interactive)
-  (let* ((port (kane/docker-postgres-port)))
-    (setq sql-password "test")
-    (setenv "PGPASSWORD" "test")
+  (let* ((container-id (kane/docker-postgres-container-id))
+         (port (kane/docker-container-port container-id 5432))
+         (db (or (kane/docker-container-env container-id "POSTGRES_DB") "postgres"))
+         (user (or (kane/docker-container-env container-id "POSTGRES_USER") "postgres"))
+         (password (or (kane/docker-container-env container-id "POSTGRES_PASSWORD") "")))
+    (setq sql-password password)
+    (setenv "PGPASSWORD" password)
     (setenv "PGSSLMODE" nil)
     (setq sql-login-params '(server port database user))
     (let ((sql-connection-alist
@@ -796,8 +853,8 @@ Auto-detects the mapped port from Docker."
                    (sql-product 'postgres)
                    (sql-server "localhost")
                    (sql-port ,port)
-                   (sql-database "test")
-                   (sql-user "test"))
+                   (sql-database ,db)
+                   (sql-user ,user))
                  sql-connection-alist)))
       (my-sql-connect 'postgres 'testcontainer))))
 
@@ -823,3 +880,4 @@ Auto-detects the mapped port from Docker."
 (define-key kane-sql-map (kbd "l") 'kane-sql-localhost)
 (define-key kane-sql-map (kbd "t") 'kane-sql-testcontainer)
 (define-key kane-sql-map (kbd "T") 'kane-sql-testcontainer-destroy)
+(define-key kane-sql-map (kbd "a") 'kane/aws-sso-login)

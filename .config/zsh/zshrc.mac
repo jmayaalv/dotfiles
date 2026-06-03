@@ -45,7 +45,9 @@ db-token() {
 
     # Determine environment prefix based on profile
     local env_prefix="pdn"
-    if [[ "$profile" == *"nonprod"* ]]; then
+    if [[ "$profile" == *"ps"* ]]; then
+        env_prefix="ps"
+    elif [[ "$profile" == *"nonprod"* ]]; then
         env_prefix="qa"
     fi
 
@@ -96,7 +98,9 @@ db-connect() {
 
     # Determine environment prefix based on profile
     local env_prefix="pdn"
-    if [[ "$profile" == *"nonprod"* ]]; then
+    if [[ "$profile" == *"ps"* ]]; then
+        env_prefix="ps"
+    elif [[ "$profile" == *"nonprod"* ]]; then
         env_prefix="qa"
     fi
 
@@ -131,6 +135,62 @@ db-connect() {
 
     # Connect with psql
     psql "host=$endpoint port=5432 sslmode=require dbname=$dbname user=$user password=$token"
+}
+
+# Dump Aurora DB with auth token (custom format, compressed)
+# Extra args after the first 4 are passed straight to pg_dump.
+# Example: db-dump prospero imsprosperot1adb db_maintainer kane-nonprod \
+#            -n ims -t 'ims.trd_*' -t 'ims.cal_*' -t 'ims.prc_*'
+db-dump() {
+    if [[ $# -lt 4 ]]; then
+        echo "Usage: db-dump <client> <dbname> <user> <profile> [pg_dump-args...]"
+        echo "Example: db-dump prospero imsprosperot1adb db_maintainer kane-nonprod -n ims -t 'ims.trd_*'"
+        return 1
+    fi
+
+    local client=$1 dbname=$2 user=$3 profile=$4
+    shift 4
+
+    local env_prefix="pdn"
+    if [[ "$profile" == *"ps"* ]]; then
+        env_prefix="ps"
+    elif [[ "$profile" == *"nonprod"* ]]; then
+        env_prefix="qa"
+    fi
+
+    local cluster_name="${env_prefix}-${client}-aurora-cluster"
+
+    local endpoint=$(aws rds describe-db-clusters \
+        --query 'DBClusters[*].[DBClusterIdentifier,Endpoint,Engine]' \
+        --output table --profile $profile 2>/dev/null | \
+        grep "$cluster_name" | awk -F'|' '{print $3}' | tr -d '[:space:]')
+
+    if [[ -z "$endpoint" ]]; then
+        echo "No cluster found matching: $cluster_name for profile: $profile"
+        return 1
+    fi
+
+    echo "Found cluster: $cluster_name"
+    echo "Endpoint: $endpoint"
+
+    local token=$(aws rds generate-db-auth-token \
+        --hostname $endpoint --port 5432 --region eu-central-1 \
+        --username $user --profile $profile)
+
+    local outfile="${dbname}_$(date +%Y%m%d_%H%M%S).dump"
+    echo "Dumping database: $dbname -> $outfile"
+
+    PGPASSWORD=$token PGSSLMODE=require pg_dump \
+        -h $endpoint -p 5432 -U $user -d $dbname \
+        -Fc -Z 9 -v -f "$outfile" "$@"
+
+    local rc=$?
+    if [[ $rc -eq 0 ]]; then
+        echo "Dump complete: $outfile ($(du -h "$outfile" | awk '{print $1}'))"
+    else
+        echo "pg_dump failed with status $rc"
+        return $rc
+    fi
 }
 
 
