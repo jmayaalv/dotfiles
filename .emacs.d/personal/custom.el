@@ -9,23 +9,7 @@
      "f9d423fcd4581f368b08c720f04d206ee80b37bfb314fa37e279f554b6f415e9"
      "ba98102679e7ed71a0b79c9a490328370b6b20537e04730bf0028bdd8a2418a9"
      default))
- '(package-selected-packages
-   '(ag agent-shell all-the-icons anzu beacon browse-kill-ring
-        catppuccin-theme cider claude-code claude-code-ide claudemacs
-        clojure-mode clojure-snippets company consult-lsp crux
-        csv-mode diff-hl diminish dimmer dirvish discover
-        discover-my-major dockerfile-mode doom-modeline easy-kill eat
-        elisp-slime-nav epl exec-path-from-shell expand-region expreg
-        flycheck gist git-modes git-timemachine
-        gnu-elpa-keyring-update guru-mode helm hl-todo html-to-hiccup
-        hurl-mode imenu-anywhere jet js2-mode json-mode key-chord
-        kubed linkin-org lsp-mode lsp-treemacs magit magit-section
-        markdown-mode monet move-text nerd-icons nlinum
-        operate-on-number orderless posframe projectile
-        rainbow-delimiters rainbow-mode restclient smartparens
-        smartrep super-save transient treemacs try undo-tree vertico
-        volatile-highlights vterm web-mode web-server websocket
-        wfnames with-editor yaml-mode zenburn-theme zop-to-char))
+ '(package-selected-packages '(hurl-mode monet))
  '(package-vc-selected-packages
    '((claude-code :vc-backend Git :url
                   "https://github.com/stevemolitor/claude-code.el")

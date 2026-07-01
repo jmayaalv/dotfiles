@@ -266,3 +266,10 @@
   (put 'expreg-expand 'repeat-map 'expreg-repeat-map)
   (put 'expreg-contract 'repeat-map 'expreg-repeat-map)
   )
+
+
+(use-package buffer-move
+  :bind (("M-<up>"    . buf-move-up)
+         ("M-<down>"  . buf-move-down)
+         ("M-<left>"  . buf-move-left)
+         ("M-<right>" . buf-move-right)))
