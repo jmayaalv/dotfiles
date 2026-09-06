@@ -13,77 +13,21 @@ echo "Setting up dotfiles from $DOTFILES_DIR ($OS)..."
 
 if [ "$OS" = macos ]; then
 
-# Install GitHub CLI
-if command -v gh &>/dev/null; then
-  echo "GitHub CLI already installed, skipping."
-else
-  echo "Installing GitHub CLI..."
-  brew install gh
-fi
-
-# Install pandoc
-if command -v pandoc &>/dev/null; then
-  echo "pandoc already installed, skipping."
-else
-  echo "Installing pandoc..."
-  brew install pandoc
-fi
-
-# Install Fira Code font
-if fc-list | grep -qi "Fira Code"; then
-  echo "Fira Code font already installed, skipping."
-else
-  echo "Installing Fira Code font..."
-  brew install --cask font-fira-code
-fi
-
-# Install Bun
-if command -v bun &>/dev/null; then
-  echo "Bun already installed, skipping."
-else
-  echo "Installing Bun..."
-  brew tap oven-sh/bun && brew install bun
-fi
-
-# Install Leiningen
-if command -v lein &>/dev/null; then
-  echo "Leiningen already installed, skipping."
-else
-  echo "Installing Leiningen..."
-  brew install leiningen
-fi
-
-# Install bat
-if command -v bat &>/dev/null; then
-  echo "bat already installed, skipping."
-else
-  echo "Installing bat..."
-  brew install bat
-fi
-
-# Install libvterm (needed by Emacs vterm)
-if brew list libvterm &>/dev/null; then
-  echo "libvterm already installed, skipping."
-else
-  echo "Installing libvterm..."
-  brew install libvterm
-fi
-
-# Install cmake (needed to build vterm module)
-if command -v cmake &>/dev/null; then
-  echo "cmake already installed, skipping."
-else
-  echo "Installing cmake..."
-  brew install cmake
-fi
-
-# Install clojure-lsp
-if command -v clojure-lsp &>/dev/null; then
-  echo "clojure-lsp already installed, skipping."
-else
-  echo "Installing clojure-lsp..."
-  brew install clojure-lsp/brew/clojure-lsp-native
-fi
+# Homebrew packages come from tools/Brewfile. `brew bundle` is idempotent and
+# skips anything already installed, so the per-tool `command -v` guards this
+# block used to carry are no longer needed.
+#
+# Regenerate the Brewfile from what is actually installed with
+# tools/save-packages.
+#
+# Developer tooling that mise owns (clojure, java, node, gh, ...) is not in the
+# Brewfile — mise installs it below on both platforms.
+command -v brew >/dev/null || {
+  echo "Homebrew not found. Install it from https://brew.sh and re-run." >&2
+  exit 1
+}
+echo "Installing Homebrew packages..."
+brew bundle install --file="$DOTFILES_DIR/tools/Brewfile"
 
 else # Linux (Omarchy)
 

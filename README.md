@@ -52,17 +52,12 @@ stowed by name on Linux only, so macOS never sees them — they're excluded from
 
 ### Prerequisites
 
-1. Install [GNU Stow](https://www.gnu.org/software/stow/):
-   ```bash
-   # macOS (using Homebrew)
-   brew install stow
+`setup.sh` installs [GNU Stow](https://www.gnu.org/software/stow/) itself — it
+is listed in both `tools/Brewfile` and `tools/packages.txt`. All you need first
+is the platform's package manager:
 
-   # Ubuntu/Debian
-   sudo apt install stow
-
-   # Arch Linux
-   sudo pacman -S stow
-   ```
+- **macOS**: [Homebrew](https://brew.sh)
+- **Omarchy / Arch**: nothing extra; `omarchy pkg add` or `pacman` is already there
 
 ### Setup
 
@@ -78,8 +73,11 @@ stowed by name on Linux only, so macOS never sees them — they're excluded from
    ./setup.sh
    ```
    This will:
+   - Install packages — `tools/Brewfile` on macOS, `tools/packages.txt` on Linux
+   - Install developer tooling with `mise install` from `.config/mise/config.toml`
    - Clone [Emacs Prelude](https://github.com/bbatsov/prelude) into `~/.emacs.d/` (if not already installed)
-   - Run `stow .` to symlink all configurations
+   - Clone [TPM](https://github.com/tmux-plugins/tpm) for tmux plugins
+   - Run `stow .` to symlink all configurations, plus `stow omarchy` on Linux
 
 3. Restart your shell or source the configuration:
    ```bash
@@ -134,19 +132,24 @@ Two layers, deliberately separate:
 | Layer | Managed by | Scope | Where |
 |---|---|---|---|
 | Developer tooling — clojure, java, node, gh, claude, codex | **mise** | both platforms | `.config/mise/config.toml` |
-| System & desktop packages — fuzzel, openvpn, stow, fonts | pacman | Linux only | `tools/packages.txt` |
+| System & desktop packages | pacman | Linux | `tools/packages.txt` |
+| System & desktop packages | Homebrew | macOS | `tools/Brewfile` |
 
 **mise owns the dev tools.** It works identically on macOS and Linux, so
-versions are defined once. `setup.sh` runs `mise install` on both platforms.
-Don't add these to the OS package lists — `gh` installed via pacman is just
+versions are defined once and `setup.sh` runs `mise install` on both. Don't add
+these to the OS package lists — `gh` installed via pacman or brew is just
 shadowed by mise's copy on `PATH` anyway.
 
-**`tools/packages.txt` is generated**, not hand-maintained:
+**The OS package lists are generated**, not hand-maintained. One command on
+either platform:
 
 ```bash
-tools/save-packages           # rewrite it from what's installed here
-tools/save-packages --check   # list anything installed but not yet recorded
+tools/save-packages           # rewrite the list for this machine
+tools/save-packages --check   # report anything installed but not recorded
 ```
+
+On macOS that runs `brew bundle dump`; on Linux it computes the pacman delta
+described below. `setup.sh` consumes whichever applies.
 
 It records only what this machine has *beyond a stock Omarchy install*, by
 diffing `pacman -Qqe` against Omarchy's own `omarchy-*.packages` manifests, the

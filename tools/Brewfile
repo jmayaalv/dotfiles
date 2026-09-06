@@ -1,0 +1,24 @@
+# Homebrew packages for macOS. Read by setup.sh via `brew bundle`.
+#
+# Regenerate from what is actually installed:
+#   tools/save-packages          (on macOS this runs `brew bundle dump`)
+#
+# Developer tooling that mise owns — clojure, java, node, gh, claude, codex —
+# is deliberately absent. mise installs those on both platforms from
+# .config/mise/config.toml, and its copies win on PATH anyway.
+
+tap "oven-sh/bun"
+tap "clojure-lsp/brew"
+
+# Required by setup.sh itself to link the dotfiles.
+brew "stow"
+
+brew "bat"
+brew "bun"
+brew "cmake"
+brew "leiningen"
+brew "libvterm"
+brew "pandoc"
+brew "clojure-lsp/brew/clojure-lsp-native"
+
+cask "font-fira-code"

@@ -1,18 +1,45 @@
 #!/bin/bash
-# Record which packages this machine has beyond a stock Omarchy install.
+# Record what this machine has installed, so a new machine can reproduce it.
 #
-#   tools/save-packages           rewrite tools/packages.txt
-#   tools/save-packages --check   show what changed, write nothing (exit 1 if drift)
+#   tools/save-packages           write the list for this platform
+#   tools/save-packages --check   report drift, write nothing (exit 1 if any)
 #
-# The list is what `setup.sh` installs on a new machine. It is generated, but
-# safe to hand-edit: anything you add is kept, since the file is regenerated
-# from the union of the computed delta and whatever is already committed.
+# macOS -> tools/Brewfile     via `brew bundle dump`
+# Linux -> tools/packages.txt via a pacman delta against Omarchy's manifests
+#
+# Developer tooling is NOT recorded by either: mise owns that, in
+# .config/mise/config.toml, and it is already cross-platform.
 
 set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OUT="$REPO/tools/packages.txt"
+BREWFILE="$REPO/tools/Brewfile"
 OMARCHY_INSTALL=${OMARCHY_PATH:-/usr/share/omarchy}/install
+
+if [[ $(uname -s) == Darwin ]]; then
+  command -v brew >/dev/null || { echo "Homebrew not found" >&2; exit 1; }
+  if [[ ${1:-} == --check ]]; then
+    # `brew bundle check` reports whether everything in the Brewfile is
+    # installed; it does not report the reverse, so diff a fresh dump instead.
+    tmp=$(mktemp)
+    brew bundle dump --force --file="$tmp" >/dev/null
+    if diff -q <(grep -vE '^\s*(#|$)' "$BREWFILE" | sort) \
+               <(grep -vE '^\s*(#|$)' "$tmp" | sort) >/dev/null; then
+      echo "Brewfile is up to date"; rm -f "$tmp"; exit 0
+    fi
+    echo "Brewfile is out of date:"
+    diff <(grep -vE '^\s*(#|$)' "$BREWFILE" | sort) \
+         <(grep -vE '^\s*(#|$)' "$tmp" | sort) | grep -E '^[<>]' | sed 's/^/  /'
+    rm -f "$tmp"; exit 1
+  fi
+  # Dump overwrites the header comment, so restore it afterwards.
+  header=$(sed -n '1,/^$/p' "$BREWFILE")
+  brew bundle dump --force --file="$BREWFILE"
+  printf '%s\n%s\n' "$header" "$(cat "$BREWFILE")" >"$BREWFILE.tmp" && mv "$BREWFILE.tmp" "$BREWFILE"
+  echo "wrote $BREWFILE"
+  exit 0
+fi
 
 command -v pacman >/dev/null || { echo "not an Arch system" >&2; exit 1; }
 
