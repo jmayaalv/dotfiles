@@ -1,0 +1,7 @@
+[tools]
+claude = "latest"
+clojure = "latest"
+codex = "latest"
+gh = "latest"
+java = "latest"
+node = "latest"

@@ -127,6 +127,37 @@ root one.
 DOTFILES_VM=1 ./setup.sh   # also stow omarchy-vm (see below)
 ```
 
+### How packages are remembered
+
+Two layers, deliberately separate:
+
+| Layer | Managed by | Scope | Where |
+|---|---|---|---|
+| Developer tooling — clojure, java, node, gh, claude, codex | **mise** | both platforms | `.config/mise/config.toml` |
+| System & desktop packages — fuzzel, openvpn, stow, fonts | pacman | Linux only | `tools/packages.txt` |
+
+**mise owns the dev tools.** It works identically on macOS and Linux, so
+versions are defined once. `setup.sh` runs `mise install` on both platforms.
+Don't add these to the OS package lists — `gh` installed via pacman is just
+shadowed by mise's copy on `PATH` anyway.
+
+**`tools/packages.txt` is generated**, not hand-maintained:
+
+```bash
+tools/save-packages           # rewrite it from what's installed here
+tools/save-packages --check   # list anything installed but not yet recorded
+```
+
+It records only what this machine has *beyond a stock Omarchy install*, by
+diffing `pacman -Qqe` against Omarchy's own `omarchy-*.packages` manifests, the
+`base`/`base-devel` groups, and a small list of Arch-ARM base packages that
+Omarchy's x86 manifests don't mention. Hand-edits survive regeneration — the
+file is rebuilt from the union of the computed delta and what's already
+committed, so a package missing on one machine isn't dropped for the others.
+
+Run `tools/save-packages` after installing something you want everywhere, and
+commit the result.
+
 Not in the Arch repos for aarch64: `pandoc`, `bun`, `clojure-lsp`. Install
 those by hand if needed.
 

@@ -87,20 +87,34 @@ fi
 
 else # Linux (Omarchy)
 
-# Omarchy wraps pacman and is a no-op for packages already present, so the
-# per-tool `command -v` guards the macOS branch needs aren't required here.
+# System and desktop packages come from tools/packages.txt, which is generated
+# from what this machine has beyond a stock Omarchy install. Regenerate it with
+# tools/save-packages after installing something worth keeping.
 #
-# Not in the Arch repos for this arch: pandoc, bun, clojure-lsp. Install those
-# by hand if you need them.
+# Developer tooling (clojure, java, node, gh, ...) is NOT here — mise owns that,
+# below, because mise works identically on macOS. Installing e.g. github-cli via
+# pacman would just be shadowed by mise's copy on PATH.
 echo "Installing packages..."
+pkgs=$(grep -vE '^\s*(#|$)' "$DOTFILES_DIR/tools/packages.txt")
 if command -v omarchy &>/dev/null; then
-  omarchy pkg add stow fuzzel jq librsvg github-cli ttf-fira-code \
-    leiningen bat clojure libvterm cmake
+  # shellcheck disable=SC2086
+  omarchy pkg add $pkgs
 else
-  sudo pacman -S --needed stow fuzzel jq librsvg github-cli ttf-fira-code \
-    leiningen bat clojure libvterm cmake
+  # shellcheck disable=SC2086
+  sudo pacman -S --needed $pkgs
 fi
 
+fi
+
+# Developer tooling, from .config/mise/config.toml. mise is cross-platform, so
+# this is the one place clojure/java/node/gh versions are defined for every
+# machine — the OS package managers above deliberately do not install them.
+if command -v mise &>/dev/null; then
+  echo "Installing dev tools via mise..."
+  mise install
+else
+  echo "mise not found. Install it (https://mise.jdx.dev) and re-run to get"
+  echo "clojure, java, node, gh and friends."
 fi
 
 # Install Prelude (Emacs distribution) if not already present
