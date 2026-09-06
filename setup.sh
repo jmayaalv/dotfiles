@@ -141,8 +141,16 @@ stow "${stow_args[@]}" --target="$HOME" .
 # This handles the case where directories like ~/.emacs.d/personal/ already exist
 # (e.g. from Prelude clone) and files were created there directly instead of in the
 # dotfiles repo. --adopt moves the real file into the repo and replaces it with a symlink.
-echo "Adopting any unmanaged files into stow..."
-stow --adopt "${stow_args[@]}" --target="$HOME" .
+# --adopt moves the file that is already on disk INTO the repo. That is what we
+# want on macOS, where a conflicting file is something Prelude or an app wrote.
+# It is wrong on Omarchy, where ~/.bash_profile and ~/.config/tmux/tmux.conf are
+# pristine /etc/skel copies: adopting them would overwrite the real macOS
+# versions in this repo and push distro defaults to every other machine.
+# On Linux, plain stow aborts on conflict instead — resolve those by hand.
+if [ "$OS" = macos ]; then
+  echo "Adopting any unmanaged files into stow..."
+  stow --adopt --target="$HOME" .
+fi
 
 # Omarchy desktop config lives in its own stow package so `stow .` on macOS
 # never sees it. See .stow-local-ignore.
