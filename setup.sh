@@ -127,9 +127,12 @@ cd "$DOTFILES_DIR"
 # at the active theme's generated colors. Stowing the macOS version (which
 # hardcodes colors) breaks theming, and --adopt below would pull the importer
 # into the repo on top of the macOS file. Leave it to Omarchy.
+# stow matches a pattern containing "/" against the full package-relative path,
+# so this excludes exactly that one file and still links the sibling theme
+# files. A bare '^alacritty$' silently matches nothing — verified with -n -v.
 stow_args=()
 if [ "$OS" = linux ]; then
-  stow_args=(--ignore='^alacritty$')
+  stow_args=(--ignore='^\.config/alacritty/alacritty\.toml$')
 fi
 
 stow "${stow_args[@]}" --target="$HOME" .
