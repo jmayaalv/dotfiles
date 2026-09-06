@@ -100,11 +100,12 @@ stowed by name on Linux only, so macOS never sees them — they're excluded from
 
 To unlink configurations:
 ```bash
-# Remove all symlinks
+# Remove all symlinks from the root package
 stow -D .
 
-# Remove specific configuration
-stow -D .config
+# Remove a platform package (Linux)
+stow -D omarchy
+stow -D omarchy-vm
 ```
 
 ## Notes
@@ -128,6 +129,31 @@ DOTFILES_VM=1 ./setup.sh   # also stow omarchy-vm (see below)
 
 Not in the Arch repos for aarch64: `pandoc`, `bun`, `clojure-lsp`. Install
 those by hand if needed.
+
+### Files the root package skips on Linux
+
+These conflict on Omarchy and are macOS-specific or owned by the distro, so
+`setup.sh` passes `--ignore` for them on Linux. They are untouched on macOS.
+
+| File | Why |
+|---|---|
+| `.config/alacritty/alacritty.toml` | Omarchy's version imports the active theme's generated colors; the macOS one hardcodes them |
+| `.bash_profile` | Omarchy ships its own in `/etc/skel` |
+| `.config/tmux/tmux.conf` | same — and `tmux.conf` already sources `tmux.mac` / `tmux.linux` by `uname` |
+| `.claude/settings.json` | hooks reference macOS-only tooling (`clj-paren-repair-claude-hook`) |
+| `.emacs.d/personal/prelude-modules.el`, `preload/.gitkeep` | Prelude writes these directly |
+
+Two gotchas worth knowing if you add to that list:
+
+- **stow's ignore patterns.** A pattern containing `/` is matched against the
+  full package-relative path; one without is matched against the basename.
+  `--ignore='^alacritty$'` silently matches nothing. Always confirm with
+  `stow -n -v` before trusting an ignore.
+- **`--adopt` runs on macOS only.** It moves the file already on disk *into*
+  the repo, which is right when a local app wrote it, and wrong on Omarchy
+  where the conflicting file is a pristine `/etc/skel` copy — adopting there
+  would overwrite the real macOS versions and push distro defaults everywhere.
+  On Linux, plain stow aborts on conflict instead; resolve those by hand.
 
 ### What the `omarchy` package adds
 
