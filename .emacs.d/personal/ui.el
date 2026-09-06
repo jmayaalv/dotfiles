@@ -159,6 +159,29 @@
   (setq dimmer-fraction 0.5)
   (dimmer-mode 1))
 
+;; dimmer dims the colour-bearing face attributes (:box, :underline, ...) by
+;; pulling :color out of the attribute plist and handing it to
+;; `color-defined-p', which requires a string. Emacs also allows that :color to
+;; be the symbol `foreground-color', meaning "use the face's own foreground" --
+;; so any theme using that form makes dimmer log
+;;
+;;   dimmer--dim-face-attribute: Wrong type argument: stringp, foreground-color
+;;
+;; on every redisplay, which floods *Messages*. Skip the attribute when its
+;; colour is symbolic rather than a string; there is nothing to dim in that
+;; case, since the real colour comes from :foreground, which dimmer already
+;; handles separately. `dimmer-color-bearing-attributes' is a defconst upstream,
+;; so it cannot be narrowed through configuration.
+(with-eval-after-load 'dimmer
+  (define-advice dimmer--dim-face-attribute
+      (:around (orig face attribute target-color frac) skip-symbolic-colors)
+    (let* ((value (face-attribute face attribute nil t))
+           (color (cond ((stringp value) value)
+                        ((and (listp value) (plist-member value :color))
+                         (plist-get value :color)))))
+      (unless (and color (not (stringp color)))
+        (funcall orig face attribute target-color frac)))))
+
 
 
 
