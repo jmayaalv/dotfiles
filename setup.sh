@@ -122,14 +122,24 @@ fi
 # Stow all dotfiles
 echo "Stowing dotfiles..."
 cd "$DOTFILES_DIR"
-stow --target="$HOME" .
+
+# On Omarchy, alacritty.toml is owned by the distro: it is an importer pointing
+# at the active theme's generated colors. Stowing the macOS version (which
+# hardcodes colors) breaks theming, and --adopt below would pull the importer
+# into the repo on top of the macOS file. Leave it to Omarchy.
+stow_args=()
+if [ "$OS" = linux ]; then
+  stow_args=(--ignore='^alacritty$')
+fi
+
+stow "${stow_args[@]}" --target="$HOME" .
 
 # Adopt any real files that should be managed by stow.
 # This handles the case where directories like ~/.emacs.d/personal/ already exist
 # (e.g. from Prelude clone) and files were created there directly instead of in the
 # dotfiles repo. --adopt moves the real file into the repo and replaces it with a symlink.
 echo "Adopting any unmanaged files into stow..."
-stow --adopt --target="$HOME" .
+stow --adopt "${stow_args[@]}" --target="$HOME" .
 
 # Omarchy desktop config lives in its own stow package so `stow .` on macOS
 # never sees it. See .stow-local-ignore.
