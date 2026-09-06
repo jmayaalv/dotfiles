@@ -1,4 +1,11 @@
-(when (window-system)
+;; `set-frame-font' signals rather than degrading when the font is missing, and
+;; an error here aborts the rest of init.el — every personal file after this one
+;; silently fails to load. Check the font exists first, so a machine without
+;; Fira Code just keeps its default instead of losing the whole config.
+;;
+;; On Omarchy this is also a soft default: omarchy.el loads later (alphabetically
+;; after fonts.el) and syncs the font with the desktop theme.
+(when (and (window-system) (find-font (font-spec :name "Fira Code")))
   (set-frame-font "Fira Code"))
 
 (let ((alist '((33 . ".\\(?:\\(?:==\\|!!\\)\\|[!=]\\)")

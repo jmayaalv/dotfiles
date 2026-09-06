@@ -9,7 +9,7 @@
      "f9d423fcd4581f368b08c720f04d206ee80b37bfb314fa37e279f554b6f415e9"
      "ba98102679e7ed71a0b79c9a490328370b6b20537e04730bf0028bdd8a2418a9"
      default))
- '(package-selected-packages '(hurl-mode monet))
+ '(package-selected-packages '(all-the-icons hurl-mode monet))
  '(package-vc-selected-packages
    '((claude-code :vc-backend Git :url
                   "https://github.com/stevemolitor/claude-code.el")

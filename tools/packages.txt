@@ -22,6 +22,7 @@ pkgconf
 rlwrap
 stow
 tailscale
+ttf-fira-code
 ttf-jetbrains-mono-nerd
 v4l2loopback-dkms
 vim
