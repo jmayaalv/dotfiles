@@ -127,12 +127,25 @@ cd "$DOTFILES_DIR"
 # at the active theme's generated colors. Stowing the macOS version (which
 # hardcodes colors) breaks theming, and --adopt below would pull the importer
 # into the repo on top of the macOS file. Leave it to Omarchy.
-# stow matches a pattern containing "/" against the full package-relative path,
-# so this excludes exactly that one file and still links the sibling theme
-# files. A bare '^alacritty$' silently matches nothing — verified with -n -v.
+# Files in the root package that stay macOS-only. stow matches a pattern
+# containing "/" against the full package-relative path; a pattern without one
+# is matched against the basename, so '^alacritty$' silently matches nothing —
+# verified with `stow -n -v`.
 stow_args=()
 if [ "$OS" = linux ]; then
-  stow_args=(--ignore='^\.config/alacritty/alacritty\.toml$')
+  stow_args=(
+    # Omarchy owns this: it imports the active theme's generated colors,
+    # whereas the macOS version hardcodes them.
+    --ignore='^\.config/alacritty/alacritty\.toml$'
+    # Omarchy ships its own /etc/skel versions of these.
+    --ignore='^\.bash_profile$'
+    --ignore='^\.config/tmux/tmux\.conf$'
+    # Machine-local: hooks reference macOS-only tooling.
+    --ignore='^\.claude/settings\.json$'
+    # Prelude writes these directly into ~/.emacs.d/personal.
+    --ignore='^\.emacs\.d/personal/prelude-modules\.el$'
+    --ignore='^\.emacs\.d/personal/preload/\.gitkeep$'
+  )
 fi
 
 stow "${stow_args[@]}" --target="$HOME" .
