@@ -251,6 +251,36 @@ change:
 
 Left or right click toggles; middle click opens `nm-connection-editor`.
 
+#### Split tunnelling
+
+The server pushes `redirect-gateway`, so by default the tunnel takes a default
+route at metric 50 and *all* traffic leaves through Frankfurt — which shows up
+as the weather widget reporting the wrong city, and every site geolocating you
+to the exit node. It also pushes the internal `10.17.x` subnets separately, so
+the default route can be dropped without losing access to anything:
+
+```bash
+nmcli connection modify kane-fra ipv4.never-default yes
+nmcli connection modify kane-fra ipv6.never-default yes
+```
+
+General traffic then uses the normal interface while internal subnets still go
+over the tunnel.
+
+Note this also stops systemd-resolved sending any queries to the VPN's DNS
+server, since the link no longer carries a default route and the server pushes
+no search domain. Internal hosts stay reachable by IP. To resolve internal
+*names* too, add the internal zone as a routing domain — the `~` prefix routes
+queries there without appending it as a search suffix:
+
+```bash
+nmcli connection modify kane-fra ipv4.dns-search "~internal.example.com"
+```
+
+The NetworkManager profile itself is machine-local and not in this repo (it
+holds the password). On a new machine, re-import the `.ovpn` and re-apply the
+settings above.
+
 Two things learned building it, worth keeping:
 
 - **Omarchy has no secret agent.** The bar is Quickshell, not GNOME Shell or
