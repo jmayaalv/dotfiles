@@ -1,0 +1,63 @@
+#!/bin/bash
+# Fuzzy-search open windows and focus the one you pick.
+#
+#   window-switcher              windows on the current workspace only
+#   window-switcher --all        every workspace, scratchpad included
+#
+# Uses fuzzel in dmenu mode. Focus goes through the Lua dispatch form, which is
+# what Omarchy's Hyprland expects — plain `hyprctl dispatch focuswindow` is
+# parsed as Lua and fails.
+
+set -euo pipefail
+
+command -v fuzzel >/dev/null || { echo "fuzzel is not installed: sudo pacman -S fuzzel" >&2; exit 1; }
+
+scope=current
+case "${1:-}" in
+  --all) scope=all ;;
+  --current | "") scope=current ;;
+  *) echo "usage: ${0##*/} [--current|--all]" >&2; exit 2 ;;
+esac
+
+if [[ $scope == all ]]; then
+  ws_filter=-1          # sentinel: match every workspace
+  prompt='window (all) ❯ '
+else
+  ws_filter=$(hyprctl activeworkspace -j | jq -r '.id')
+  prompt='window ❯ '
+fi
+
+# address <US> display-text, so the address never shows in the picker
+US=$'\x1f'
+mapfile -t rows < <(
+  hyprctl clients -j | jq -r --arg us "$US" --argjson ws "$ws_filter" '
+    .[]
+    | select(.mapped and (.title // "") != "")
+    | select($ws == -1 or .workspace.id == $ws)
+    | "\(.address)\($us)[\(.workspace.name)]  \(.class)  —  \(.title)"
+  '
+)
+
+((${#rows[@]})) || exit 0
+
+declare -A addr_of
+display=()
+for row in "${rows[@]}"; do
+  addr_of["${row#*$US}"]="${row%%$US*}"
+  display+=("${row#*$US}")
+done
+
+# Colours come from the current Omarchy theme, rendered by the theme system
+# from ~/.config/omarchy/themed/fuzzel.ini.tpl. Falls back to fuzzel's own
+# config if a theme hasn't rendered one yet.
+themed_config="$HOME/.local/state/omarchy/current/theme/fuzzel.ini"
+config_args=()
+[[ -f $themed_config ]] && config_args=(--config "$themed_config")
+
+choice=$(printf '%s\n' "${display[@]}" | fuzzel --dmenu "${config_args[@]}" --prompt "$prompt" || true)
+[[ -n ${choice:-} ]] || exit 0
+
+addr=${addr_of["$choice"]:-}
+[[ -n $addr ]] || exit 0
+
+hyprctl dispatch "hl.dsp.focus({ window = \"address:$addr\" })" >/dev/null

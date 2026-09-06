@@ -24,8 +24,17 @@ cd dotfiles
 │   └── tmuxinator/         # Tmuxinator session configurations
 ├── .emacs.d/               # Emacs configuration directory
 ├── .psqlrc                 # PostgreSQL configuration
-└── .zshrc                  # Zsh shell configuration
+├── .zshrc                  # Zsh shell configuration
+│
+├── omarchy/                # Omarchy (Linux) desktop config — separate package
+├── omarchy-vm/             # VM-specific display/input tuning — opt-in
+└── tools/                  # Helper scripts (not stowed)
 ```
+
+Everything above `omarchy/` is the **root package**, stowed with `stow .` on
+every platform. `omarchy/` and `omarchy-vm/` are **separate stow packages**
+stowed by name on Linux only, so macOS never sees them — they're excluded from
+`stow .` by `.stow-local-ignore`.
 
 ## Applications Configured
 
@@ -105,6 +114,73 @@ stow -D .config
 - Tmuxinator configurations include multiple pre-configured session layouts
 - Make sure to backup existing configurations before stowing
 - **Emacs**: Uses [Prelude](https://github.com/bbatsov/prelude) as the base distribution (installed separately by `setup.sh`). Personal config lives in `.emacs.d/personal/` and is symlinked into the Prelude directory by stow.
+
+## Omarchy (Linux)
+
+`setup.sh` detects the OS: macOS gets the Homebrew installs, Linux gets the
+equivalent `omarchy pkg add` set, then stows the `omarchy` package on top of the
+root one.
+
+```bash
+./setup.sh                 # root package + omarchy package
+DOTFILES_VM=1 ./setup.sh   # also stow omarchy-vm (see below)
+```
+
+Not in the Arch repos for aarch64: `pandoc`, `bun`, `clojure-lsp`. Install
+those by hand if needed.
+
+### What the `omarchy` package adds
+
+| File | What it does |
+|---|---|
+| `.config/hypr/bindings.lua` | `SUPER+Z` / `SUPER+ALT+Z` window switcher bindings |
+| `.config/hypr/looknfeel.lua` | Dims inactive windows (`dim_strength = 0.30`), scratchpad exempt |
+| `.config/omarchy/shell.json` | Bar layout: clock format, Tailscale widget |
+| `.config/omarchy/themed/fuzzel.ini.tpl` | Makes fuzzel follow the active Omarchy theme |
+| `.config/omarchy/themed/omarchy-colors.el.tpl` | Emacs colors from the active theme |
+| `.config/omarchy/backgrounds/catppuccin/` | Generated wallpapers |
+| `.local/bin/window-switcher` | fuzzel-based window switcher |
+
+### `omarchy-vm` — opt in only
+
+Tuned for an **aarch64 QEMU VM on Apple Silicon**, and wrong on real hardware:
+
+- `monitors.lua` hardcodes `scale = 2` / `GDK_SCALE=2` and branches on the
+  `omarchy.qemu_virgl=1` kernel option. Omarchy regenerates this for the real
+  display; forcing it gives you wrong scaling.
+- `input.lua` sets `scroll_factor = 0.3`, because the VM's trackpad arrives as
+  `qemu-virtio-tablet` (an absolute pointer), so `input.touchpad.*` and
+  `accel_profile` don't apply. On a laptop you want the touchpad settings.
+
+### Window switcher
+
+```
+window-switcher           # current workspace       (SUPER+Z)
+window-switcher --all     # all workspaces + scratchpad  (SUPER+ALT+Z)
+```
+
+Focuses via `hyprctl dispatch "hl.dsp.focus({ window = \"address:…\" })"`.
+Omarchy's Hyprland parses dispatch arguments as **Lua**, so the plain
+`hyprctl dispatch focuswindow address:…` form fails.
+
+Don't bother with `hyprpm` plugins that register custom dispatchers (e.g.
+`hyprland-easymotion`) — they build and load, but are unreachable from the Lua
+config layer: `hl.dsp` is a fixed table of built-ins, `hyprctl keyword` is
+rejected with *"keyword can't work with non-legacy parsers"*, and `hl.plugin`
+exposes only `load`.
+
+### Wallpapers
+
+```bash
+cd tools
+python3 gen_cyberpunk.py 7 > /tmp/w.svg && rsvg-convert -w 3456 -h 2170 -o out.png /tmp/w.svg
+python3 gen_geometric.py 3 > /tmp/w.svg && rsvg-convert -w 3456 -h 2170 -o out.png /tmp/w.svg
+```
+
+The argument is a seed — change it to re-roll the skyline, star field, and
+scattered elements while keeping the Catppuccin palette. `W, H` at the top of
+each script set the resolution. Needs `librsvg`. Cycle with
+`omarchy theme bg next`.
 
 ## Dependencies
 

@@ -3,7 +3,15 @@ set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-echo "Setting up dotfiles from $DOTFILES_DIR..."
+case "$(uname -s)" in
+  Darwin) OS=macos ;;
+  Linux) OS=linux ;;
+  *) echo "Unsupported OS: $(uname -s)" >&2; exit 1 ;;
+esac
+
+echo "Setting up dotfiles from $DOTFILES_DIR ($OS)..."
+
+if [ "$OS" = macos ]; then
 
 # Install GitHub CLI
 if command -v gh &>/dev/null; then
@@ -77,6 +85,24 @@ else
   brew install clojure-lsp/brew/clojure-lsp-native
 fi
 
+else # Linux (Omarchy)
+
+# Omarchy wraps pacman and is a no-op for packages already present, so the
+# per-tool `command -v` guards the macOS branch needs aren't required here.
+#
+# Not in the Arch repos for this arch: pandoc, bun, clojure-lsp. Install those
+# by hand if you need them.
+echo "Installing packages..."
+if command -v omarchy &>/dev/null; then
+  omarchy pkg add stow fuzzel jq librsvg github-cli ttf-fira-code \
+    leiningen bat clojure libvterm cmake
+else
+  sudo pacman -S --needed stow fuzzel jq librsvg github-cli ttf-fira-code \
+    leiningen bat clojure libvterm cmake
+fi
+
+fi
+
 # Install Prelude (Emacs distribution) if not already present
 if [ ! -d "$HOME/.emacs.d/.git" ]; then
   echo "Installing Emacs Prelude..."
@@ -104,5 +130,34 @@ stow --target="$HOME" .
 # dotfiles repo. --adopt moves the real file into the repo and replaces it with a symlink.
 echo "Adopting any unmanaged files into stow..."
 stow --adopt --target="$HOME" .
+
+# Omarchy desktop config lives in its own stow package so `stow .` on macOS
+# never sees it. See .stow-local-ignore.
+if [ "$OS" = linux ] && command -v omarchy &>/dev/null; then
+  echo "Stowing Omarchy config..."
+  # Create these first: if they don't exist, stow folds the whole tree into a
+  # single symlink and Omarchy can no longer write plugins/, hooks/, themes/.
+  mkdir -p "$HOME/.config/hypr" "$HOME/.config/omarchy/themed" \
+    "$HOME/.config/omarchy/backgrounds" "$HOME/.local/bin"
+  stow --target="$HOME" omarchy
+
+  # Machine-specific: display scaling and pointer tuning for an aarch64 QEMU VM.
+  # Wrong on real hardware, so opt in with DOTFILES_VM=1.
+  if [ "${DOTFILES_VM:-0}" = 1 ]; then
+    echo "Stowing VM-specific config..."
+    stow --target="$HOME" omarchy-vm
+  fi
+
+  # Renders .config/omarchy/themed/*.tpl, including fuzzel.ini.
+  omarchy theme set "$(omarchy theme current)" || true
+  hyprctl reload
+  errors=$(hyprctl configerrors 2>&1 || true)
+  if [ -n "${errors// /}" ]; then
+    echo "Hyprland config errors:" >&2
+    echo "$errors" >&2
+    exit 1
+  fi
+  echo "Hyprland config OK. SUPER+Z / SUPER+ALT+Z switch windows."
+fi
 
 echo "Done. Restart your shell or run: source ~/.zshrc"

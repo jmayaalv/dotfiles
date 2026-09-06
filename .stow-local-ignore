@@ -1,0 +1,36 @@
+# Ignore list for the ROOT stow package (`stow .`).
+#
+# Providing this file REPLACES stow's built-in default ignore list, so the
+# defaults are repeated here verbatim before the additions at the bottom.
+
+# --- stow defaults -----------------------------------------------------
+RCS
+.+,v
+
+CVS
+\.\#.+
+\.cvsignore
+
+\.svn
+_darcs
+\.hg
+
+\.git
+\.gitignore
+\.gitmodules
+
+.+~
+\#.*\#
+
+^/README.*
+^/LICENSE.*
+^/COPYING
+
+# --- additions ---------------------------------------------------------
+# Platform-specific stow packages, stowed by name instead of via `stow .`
+# (see setup.sh). Without these they would be linked as ~/omarchy etc.
+^/omarchy$
+^/omarchy-vm$
+
+# Helper scripts that belong in the repo, not in $HOME.
+^/tools$
