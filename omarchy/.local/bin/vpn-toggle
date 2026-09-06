@@ -1,0 +1,67 @@
+#!/bin/bash
+# Connect or disconnect a NetworkManager VPN, reporting the result as a desktop
+# notification since this is normally run from a keybinding with no terminal.
+#
+#   vpn-toggle [connection-name]   default: kane-fra
+#   vpn-toggle --status            print state and exit, no toggle
+
+set -uo pipefail
+
+STATUS_ONLY=0
+if [[ ${1:-} == --status ]]; then
+  STATUS_ONLY=1
+  shift
+fi
+
+CONN=${1:-kane-fra}
+GLYPH=
+
+notify() { # headline, description, urgency
+  if command -v omarchy-notification-send >/dev/null; then
+    omarchy-notification-send -g "$GLYPH" -u "${3:-low}" -t 3000 "$1" "$2"
+  else
+    notify-send -u "${3:-low}" "$1" "$2"
+  fi
+}
+
+is_up() { nmcli -g NAME connection show --active 2>/dev/null | grep -qxF "$CONN"; }
+
+# The tunnel's own address is the useful confirmation that routing came up,
+# rather than just that NetworkManager reported success.
+tunnel_ip() {
+  nmcli -g IP4.ADDRESS connection show "$CONN" 2>/dev/null | head -1 | cut -d/ -f1
+}
+
+if ((STATUS_ONLY)); then
+  if is_up; then
+    ip=$(tunnel_ip)
+    echo "up${ip:+  $ip}"
+  else
+    echo "down"
+  fi
+  exit 0
+fi
+
+if ! nmcli -g NAME connection show 2>/dev/null | grep -qxF "$CONN"; then
+  notify "VPN not found" "No connection named '$CONN'" critical
+  exit 1
+fi
+
+if is_up; then
+  if nmcli connection down "$CONN" >/dev/null 2>&1; then
+    notify "VPN disconnected" "$CONN"
+  else
+    notify "VPN disconnect failed" "$CONN" critical
+    exit 1
+  fi
+else
+  notify "VPN connecting…" "$CONN"
+  if err=$(nmcli connection up "$CONN" 2>&1 >/dev/null); then
+    ip=$(tunnel_ip)
+    notify "VPN connected" "$CONN${ip:+  ·  $ip}" normal
+  else
+    # nmcli's own message is more useful than a generic failure string.
+    notify "VPN failed" "${err#Error: }" critical
+    exit 1
+  fi
+fi

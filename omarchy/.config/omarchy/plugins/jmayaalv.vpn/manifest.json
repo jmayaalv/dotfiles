@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "jmayaalv.vpn",
+  "name": "VPN",
+  "version": "1.0.0",
+  "author": "jmayaalv",
+  "description": "NetworkManager VPN state, click to connect or disconnect",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "Vpn.qml"
+  },
+  "barWidget": {
+    "displayName": "VPN",
+    "description": "Shows whether the VPN is up; click toggles it",
+    "category": "Network",
+    "allowMultiple": false
+  }
+}

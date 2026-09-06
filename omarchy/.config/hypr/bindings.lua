@@ -31,3 +31,7 @@
 -- Fuzzy-search open windows and focus one.
 o.bind("SUPER + Z", "Switch window (this workspace)", "window-switcher")
 o.bind("SUPER + ALT + Z", "Switch window (all workspaces)", "window-switcher --all")
+
+-- Connect/disconnect the VPN. Runs the same script as the bar widget, so the
+-- two can never disagree about what a toggle does.
+o.bind("SUPER + SHIFT + V", "Toggle VPN", "vpn-toggle")

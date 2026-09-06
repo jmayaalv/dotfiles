@@ -229,6 +229,38 @@ config layer: `hl.dsp` is a fixed table of built-ins, `hyprctl keyword` is
 rejected with *"keyword can't work with non-legacy parsers"*, and `hl.plugin`
 exposes only `load`.
 
+### VPN
+
+`SUPER+SHIFT+V` toggles the NetworkManager VPN, and a bar widget shows its
+state — full brightness when connected, dimmed when not. Both run the same
+`vpn-toggle` script, so they cannot disagree.
+
+```
+vpn-toggle              # toggle the default connection (kane-fra)
+vpn-toggle other-vpn    # toggle a different one
+vpn-toggle --status     # prints "up  10.0.110.2" or "down"
+```
+
+The widget is a user plugin at `.config/omarchy/plugins/jmayaalv.vpn/`. Its
+connection name comes from `shell.json`, so pointing it elsewhere needs no code
+change:
+
+```json
+{ "id": "jmayaalv.vpn", "connection": "kane-fra" }
+```
+
+Left or right click toggles; middle click opens `nm-connection-editor`.
+
+Two things learned building it, worth keeping:
+
+- **Omarchy has no secret agent.** The bar is Quickshell, not GNOME Shell or
+  `nm-applet`, so a VPN profile with `password-flags=1` (agent-owned) can never
+  be given its password — activation fails with *"No agents were available"*.
+  Set `password-flags=0` so NetworkManager stores the secret itself.
+- **`omarchy-shell shell rescanPlugins` does not reload edited QML** when the
+  plugin directory is a symlink into this repo. Use `omarchy restart shell`
+  after changing widget code.
+
 ### Wallpapers
 
 ```bash
