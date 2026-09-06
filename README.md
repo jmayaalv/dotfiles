@@ -291,6 +291,32 @@ Two things learned building it, worth keeping:
   plugin directory is a symlink into this repo. Use `omarchy restart shell`
   after changing widget code.
 
+### Emacs
+
+The Prelude config in `.emacs.d/personal/` is shared with macOS. Two files are
+Linux-only and live in the `omarchy` package instead:
+
+- `omarchy.el` — shim that loads `/usr/share/omarchy-emacs/config/omarchy.el`,
+  giving live theme and font sync with the desktop. Kept as a shim so package
+  upgrades propagate without edits here.
+- `omarchy-keys.el` — re-homes the seven Prelude `s-` bindings Hyprland
+  swallows into free `C-c` slots.
+
+Two traps worth remembering:
+
+- **`prelude-modules.el` must be the version in this repo.** Prelude's stock
+  default omits `prelude-clojure`, so cider never installs, and
+  `personal/clojure.el` then throws on `(require 'cider)`. Prelude loads the
+  personal files with `mapc`, so that error aborts the loop and *every file
+  after `clojure.el` alphabetically silently fails to load* — `macos.el`,
+  `omarchy*.el`, `ui.el` and the rest. Symptom: most of your config quietly
+  missing, with no visible error outside `--debug-init`.
+- **`macos.el` is guarded by `(eq system-type 'darwin)`.** It sets
+  `trash-directory` to `~/.Trash`, which on Linux would send Emacs deletions
+  somewhere Files and `gio trash` never look. `delete-by-moving-to-trash` stays
+  on for both platforms; leaving `trash-directory` nil on Linux gets the
+  freedesktop trash.
+
 ### Wallpapers
 
 ```bash

@@ -100,8 +100,12 @@ if [ "$OS" = linux ]; then
     --ignore='^\.config/tmux/tmux\.conf$'
     # Machine-local: hooks reference macOS-only tooling.
     --ignore='^\.claude/settings\.json$'
-    # Prelude writes these directly into ~/.emacs.d/personal.
-    --ignore='^\.emacs\.d/personal/prelude-modules\.el$'
+    # Prelude writes this one directly into ~/.emacs.d/personal.
+    # prelude-modules.el is deliberately NOT ignored: it is the real module
+    # list (clojure, key-chord), and Prelude's stock default omits
+    # prelude-clojure, so cider never installs and personal/clojure.el then
+    # fails on (require 'cider) — aborting the load of every personal file
+    # after it.
     --ignore='^\.emacs\.d/personal/preload/\.gitkeep$'
   )
 fi
