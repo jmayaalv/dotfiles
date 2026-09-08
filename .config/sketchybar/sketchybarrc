@@ -65,6 +65,7 @@ source "$ITEM_DIR/front_app.sh"
 # Right. Items added to "right" stack right-to-left, so the first one sourced
 # is the rightmost: reading order on screen is cpu, volume, battery, calendar.
 source "$ITEM_DIR/calendar.sh"
+source "$ITEM_DIR/vpn.sh"
 source "$ITEM_DIR/battery.sh"
 source "$ITEM_DIR/volume.sh"
 source "$ITEM_DIR/cpu.sh"
