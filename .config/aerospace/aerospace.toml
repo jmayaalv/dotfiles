@@ -173,19 +173,18 @@ cmd-ctrl-alt-shift-s = 'move-node-to-workspace S'
 
 # --- App launchers (Omarchy's SUPER+SHIFT+<letter> set) ----------------------
 cmd-ctrl-alt-enter = 'exec-and-forget open -a /Applications/Alacritty.app'  # terminal
-cmd-ctrl-alt-shift-enter = 'exec-and-forget open -a /Applications/Firefox.app'  # browser
-cmd-ctrl-alt-shift-b = 'exec-and-forget open -a /Applications/Firefox.app'  # browser
+cmd-ctrl-alt-shift-enter = 'exec-and-forget open -a "Google Chrome"'  # browser
+cmd-ctrl-alt-shift-b = 'exec-and-forget open -a "Google Chrome"'  # browser (Chrome)
 cmd-ctrl-alt-shift-n = 'exec-and-forget open -a /Applications/Emacs.app'  # editor
 cmd-ctrl-alt-shift-o = 'exec-and-forget open -a /Applications/Obsidian.app'  # Obsidian
-cmd-ctrl-alt-shift-m = 'exec-and-forget open -a /Applications/Spotify.app'  # Spotify
+cmd-ctrl-alt-shift-m = 'exec-and-forget open -a /Applications/Emacs.app'  # editor
 cmd-ctrl-alt-shift-f = 'exec-and-forget open -a /System/Library/CoreServices/Finder.app'  # file manager
 cmd-ctrl-alt-shift-a = 'exec-and-forget open -a /Applications/Claude.app'  # AI
-cmd-ctrl-alt-shift-s = 'exec-and-forget open -a /Applications/Slack.app'  # Slack
 cmd-ctrl-alt-shift-g = 'exec-and-forget open -a /Applications/WhatsApp.app'  # WhatsApp
-cmd-ctrl-alt-shift-t = 'exec-and-forget open -a /Applications/Telegram.app'  # Telegram
-cmd-ctrl-alt-shift-e = 'exec-and-forget open -a /System/Applications/Mail.app'  # email
 cmd-ctrl-alt-shift-c = 'exec-and-forget open -a /System/Applications/Calendar.app'  # calendar
-cmd-ctrl-alt-shift-slash = 'exec-and-forget open -a /Applications/Bitwarden.app'  # passwords
+cmd-ctrl-alt-shift-slash = 'exec-and-forget open -a /Applications/Slack.app'  # Slack
+cmd-ctrl-alt-shift-p = 'exec-and-forget open -a /Applications/Bitwarden.app'  # passwords (moved off
+                                                                             # SHIFT+/ when Slack took it)
 
 # --- Modes ------------------------------------------------------------------
 cmd-ctrl-alt-shift-semicolon = 'mode service'
