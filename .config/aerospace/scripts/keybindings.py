@@ -82,6 +82,7 @@ def pretty_action(cmd: str) -> str:
         "resize height -100": "shorter",
         "resize height +100": "taller",
         "workspace next": "next workspace",
+        "move-node-to-workspace S": "stash window in scratchpad",
         "workspace prev": "previous workspace",
     }.get(cmd, cmd)
 

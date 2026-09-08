@@ -182,7 +182,7 @@ cmd-ctrl-alt-backtick = 'workspace-back-and-forth'      # Omarchy's SUPER+CTRL+T
 # workspaces appear in `list-workspaces --all`, which is where the bar gets the
 # list it draws.
 cmd-ctrl-alt-space = 'exec-and-forget /bin/bash -c "$HOME/.config/aerospace/scripts/scratchpad.sh"'
-cmd-ctrl-alt-shift-space = 'move-node-to-workspace S'  # stash window in scratchpad
+cmd-ctrl-alt-shift-space = 'move-node-to-workspace S'
 
 # --- App launchers (Omarchy's SUPER+SHIFT+<letter> set) ----------------------
 cmd-ctrl-alt-enter = 'exec-and-forget open -na /Applications/Alacritty.app'  # terminal
