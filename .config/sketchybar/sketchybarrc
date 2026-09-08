@@ -27,11 +27,17 @@ POPUP_CORNER_RADIUS=11
 
 SHADOW=on
 
-# Setting up the general bar appearance and default values
+# Setting up the general bar appearance and default values.
+# topmost=on lifts the bar to window layer 25, one above the macOS menu bar
+# at 24, so the auto-hidden menu bar reveals *behind* the bar instead of over
+# it. That also puts the bar's own drop shadow above the tiled windows, where
+# it reads as a blurred smear along their top edge - hence shadow=off here.
+# Popups keep their shadow via $SHADOW.
 sketchybar --bar     height=35                                         \
                      color=$BAR_COLOR                                  \
-                     shadow=$SHADOW                                    \
+                     shadow=off                                       \
                      position=top                                      \
+                     topmost=on                                        \
                      sticky=on                                         \
                      padding_right=10                                  \
                      padding_left=10                                   \
