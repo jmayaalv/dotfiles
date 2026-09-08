@@ -43,6 +43,13 @@
 ;; Start emacs maximized
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
+;; Let the tiling WM size the frame to the exact pixel. Emacs otherwise only
+;; accepts whole character rows/columns, so an AeroSpace-tiled frame snaps down
+;; to the nearest row and leaves a ragged strip at the bottom next to windows
+;; that do resize pixelwise (Alacritty, browsers).
+(setq frame-resize-pixelwise t
+      window-resize-pixelwise t)
+
 ;; No need for ~ files when editign
 (setq create-lockfiles nil)
 
