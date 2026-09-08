@@ -278,24 +278,23 @@ limits from an OAuth token in a credentials file; on macOS the token is in the
 Keychain and the limits endpoint is undocumented, so this takes a different
 route with no credentials and no network.
 
-The bar shows whichever rate-limit window is closest to exhaustion — percent
-left and a countdown to its reset — with the icon graded green/yellow/orange/red
-by how much is used. Left click opens a popup:
+The bar shows whichever rate-limit window is closest to exhaustion, with a
+gauge, the percentage left and a countdown to its reset. The Claude icon is
+graded green → yellow → orange → red by usage.
 
 ```
-5h    ▰▰▱▱▱▱▱▱▱▱   83% left  ·  14:40      (2h26m)
-7d    ▰▱▱▱▱▱▱▱▱▱   88% left  ·  Thu 22:00  (2d9h)
-
-opus-5     100M   $88.08
-today      100M   $88.08
-session           $36.79
+ 5h ████▉░ 82%  2h20m
 ```
 
-`today` is every session since midnight, estimated from the logs. `session` is
-Claude Code's own `total_cost_usd` for the current conversation only — one of
-those sessions, and an exact figure rather than an estimate. The context-window
-gauge was dropped: it describes a single conversation, which does not belong in
-a bar shared by all of them.
+Left click opens the breakdown, each row coloured by its own severity:
+
+```
+   LIMITS ──────────────────────────────────────────
+  5h  █████████████░░░   82% left   14:40      2h20m
+  7d  █████████████▉░░   87% left   Thu 22:00   2d9h
+   TODAY ───────────────────────────────────────────
+  opus-5                        106M         $91.99
+```
 
 Right click opens the same figures as a table in a window, and the script runs
 standalone:
@@ -304,12 +303,20 @@ standalone:
 ~/.config/sketchybar/plugins/claude_usage.py --detail
 ```
 
+#### Everything shown is global
+
+Per-session figures are deliberately absent. Claude Code's payload also carries
+the context window, this conversation's `cost.total_cost_usd` and the model
+display name, but all three describe whichever conversation rendered its
+statusline last — meaningless in a bar shared by every session. Only the two
+account-wide rate-limit windows and today's cross-session token totals are used.
+
 #### Where the numbers come from
 
 **Quota and reset times** come from `~/.claude/statusline-cache.json`. Claude Code
 passes a payload to the statusline command on stdin containing
-`rate_limits.five_hour`, `rate_limits.seven_day` (each with `used_percentage` and
-a `resets_at` unix timestamp), `cost.total_cost_usd` and `context_window`, and it writes that nowhere
+`rate_limits.five_hour` and `rate_limits.seven_day`, each with a
+`used_percentage` and a `resets_at` unix timestamp, and it writes that nowhere
 else on disk — so `.claude/statusline-command.sh` tees stdin to that file
 atomically. **The widget therefore depends on the statusline being configured**
 (`statusLine` in `~/.claude/settings.json`) and on Claude Code having run
@@ -319,8 +326,21 @@ recently; the popup marks the figures stale after 15 minutes.
 files not modified today and deduping on `(message.id, requestId)` because
 resumed sessions re-log entries.
 
-Note that `~/.claude` is not stowed — Claude Code writes into it — so `setup.sh`
-copies the statusline script there rather than symlinking it.
+`~/.claude` is not stowed — Claude Code writes into it — so `setup.sh` copies the
+statusline script there rather than symlinking it.
+
+#### Rendering notes
+
+Gauges fill to show what is **left**, so a full bar reads as plenty remaining.
+They use full blocks plus a fractional eighth-block (`▏▎▍▌▋▊▉`) padded with light
+shade, giving 128 steps across 16 cells.
+
+Popup rows use **FiraCode Nerd Font Mono**: the Mono variant forces Nerd Font
+icons to a single cell, and a fixed `icon.width` keeps every label starting at
+the same x whatever its glyph — otherwise the columns ragged as the icon changes.
+Rows are emitted as `icon`/`label`/`colour` triples separated by `\x1f` rather
+than a tab, because a tab is IFS whitespace and an empty icon field would be
+swallowed by the reader, shifting every column.
 
 #### Limitations
 
@@ -334,8 +354,7 @@ rates. Rates live in `PRICING` in `claude_usage.py` and will drift; a model with
 no entry contributes tokens but no cost. Cache tokens use the documented
 multipliers: reads at 0.1x the model's input rate, writes at 1.25x for the
 5-minute TTL and 2x for the 1-hour TTL, which the logs distinguish via
-`ephemeral_5m_input_tokens` and `ephemeral_1h_input_tokens`. The `session` row is
-Claude Code's own `total_cost_usd`, not an estimate.
+`ephemeral_5m_input_tokens` and `ephemeral_1h_input_tokens`.
 
 ### macOS animations
 

@@ -3,7 +3,7 @@
 # Left click fills the popup and toggles it; right click opens the full table.
 CONFIG_DIR="${CONFIG_DIR:-$HOME/.config/sketchybar}"
 source "$CONFIG_DIR/colors.sh"
-CLAUDE_POPUP_ROWS=10
+CLAUDE_POPUP_ROWS=12
 USAGE="$CONFIG_DIR/plugins/claude_usage.py"
 
 if [ "$BUTTON" = "right" ]; then
@@ -13,25 +13,38 @@ if [ "$BUTTON" = "right" ]; then
     --option 'window.dynamic_title=false' \
     --option 'window.startup_mode="Windowed"' \
     --option 'window.decorations="none"' \
-    --option 'window.dimensions.columns=58' \
-    --option 'window.dimensions.lines=22' \
-    --option 'window.padding.x=12' \
+    --option 'window.dimensions.columns=62' \
+    --option 'window.dimensions.lines=18' \
+    --option 'window.padding.x=14' \
+    --option 'window.padding.y=10' \
     --option 'font.size=12' \
     --command /bin/sh -c "'$USAGE' --detail; printf '  [q or Enter] close  '; read -r _" &
   exit 0
 fi
 
+colour_for() {
+  case "$1" in
+    ok)     printf '%s' "$GREEN"    ;;
+    warn)   printf '%s' "$YELLOW"   ;;
+    hot)    printf '%s' "$PEACH"    ;;
+    crit)   printf '%s' "$RED"      ;;
+    accent) printf '%s' "$LAVENDER" ;;
+    dim)    printf '%s' "$OVERLAY0" ;;
+    *)      printf '%s' "$TEXT"     ;;
+  esac
+}
+
 i=0
-while IFS=$'\t' read -r left right; do
+# \x1f rather than tab: a tab is IFS whitespace, so an empty icon field would be
+# swallowed and every column would shift one to the left.
+while IFS=$'\x1f' read -r icon label key; do
   [ "$i" -ge "$CLAUDE_POPUP_ROWS" ] && break
-  # A row with no left label is a spacer or a footnote: dim it and drop the gap.
-  if [ -z "$left" ]; then
-    sketchybar --set "claude.row.$i" drawing=on icon="" label="$right" \
-                                     label.color="$OVERLAY1"
-  else
-    sketchybar --set "claude.row.$i" drawing=on icon="$left" label="$right" \
-                                     label.color="$TEXT"
-  fi
+  col="$(colour_for "$key")"
+  sketchybar --set "claude.row.$i" drawing=on          \
+                                   icon="$icon"        \
+                                   icon.color="$col"   \
+                                   label="$label"      \
+                                   label.color="$col"
   i=$((i + 1))
 done < <("$USAGE" --rows)
 

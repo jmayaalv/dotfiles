@@ -9,7 +9,7 @@ Two sources, both local and credential-free:
   ~/.claude/projects/**/*.jsonl    per-model token counts for today.
 
   --bar      compact label for the bar
-  --rows     tab-separated pairs for the popup
+  --rows     icon/label/colour triples for the popup, \x1f separated
   --detail   full table for a terminal
   --json     raw figures
 """
@@ -44,32 +44,69 @@ CACHE_READ_MULT = 0.10   # cache reads cost ~0.1x base input
 CACHE_5M_MULT = 1.25     # 5-minute TTL write premium
 CACHE_1H_MULT = 2.00     # 1-hour TTL write premium
 
-FILLED, EMPTY = "▰", "▱"
-BAR_SEGMENTS = 10
+# Smooth gauge: full blocks plus a fractional eighth-block, padded with light
+# shade. Verified present in FiraCode Nerd Font's cmap.
+EIGHTHS = "▏▎▍▌▋▊▉"
+FULL, SHADE = "█", "░"
+GAUGE_CELLS = 16
+BAR_GAUGE_CELLS = 6
+ROW_W = 49              # label width; section rules span exactly this
+
+ICON_5H = "\uf017"      # fa-clock
+ICON_7D = "\uf073"      # fa-calendar
+ICON_MODEL = "\uf2db"   # fa-microchip
+ICON_TOTAL = "\u03a3"   # sigma
 STALE_AFTER = 900        # seconds before the quota figures are called stale
 
 
 # ---------------------------------------------------------------- presentation
 
-def gauge(pct, segments=BAR_SEGMENTS):
-    pct = max(0.0, min(100.0, float(pct)))
-    on = int(round(pct / 100.0 * segments))
-    return FILLED * on + EMPTY * (segments - on)
+def gauge(pct, cells=GAUGE_CELLS):
+    """Fill represents what is LEFT, so a full bar reads as plenty remaining."""
+    f = max(0.0, min(100.0, float(pct))) / 100.0 * cells
+    full = int(f)
+    out = FULL * full
+    idx = int((f - full) * 8)
+    if full < cells and idx > 0:
+        out += EIGHTHS[idx - 1]
+    return out + SHADE * (cells - len(out))
+
+
+def severity(used):
+    """Colour key from how much of a window is consumed."""
+    if used >= 90:
+        return "crit"
+    if used >= 70:
+        return "hot"
+    if used >= 50:
+        return "warn"
+    return "ok"
+
+
+def rule(title=None):
+    """A dim divider, optionally opening with a section title."""
+    if not title:
+        return SHADE and "─" * ROW_W
+    return f"{title} " + "─" * max(0, ROW_W - len(title) - 1)
 
 
 def human_tokens(n):
+    # The 0.9995 factor promotes to the next unit before rounding can produce a
+    # nonsense figure like "1000k" for 999,999.
     for div, suf in ((1_000_000_000, "B"), (1_000_000, "M"), (1_000, "k")):
-        if n >= div:
+        if n >= div * 0.9995:
             v = n / div
-            return f"{v:.1f}{suf}" if v < 10 else f"{v:.0f}{suf}"
+            return f"{v:.1f}{suf}" if v < 9.9995 else f"{v:.0f}{suf}"
     return str(n)
 
 
 def human_delta(seconds):
-    """Compact countdown: 3d4h, 4h12m, 38m, now."""
+    """Compact countdown: 3d4h, 4h12m, 38m, 45s, now."""
     s = int(seconds)
     if s <= 0:
         return "now"
+    if s < 60:
+        return f"{s}s"
     d, rem = divmod(s, 86400)
     h, rem = divmod(rem, 3600)
     m = rem // 60
@@ -101,16 +138,13 @@ def load_quota():
     except (OSError, ValueError):
         return None
 
+    # Only the rate-limit windows are read. Everything else in the payload -
+    # context window, cost.total_cost_usd, model display name - describes the
+    # single conversation that happened to render last, which has no meaning in
+    # a bar shared by every session.
     rl = d.get("rate_limits") or {}
-    cw = d.get("context_window") or {}
     out = {
         "age": time.time() - os.path.getmtime(STATUS_CACHE),
-        "model": (d.get("model") or {}).get("display_name"),
-        "session_cost": (d.get("cost") or {}).get("total_cost_usd"),
-        # Context use is per-conversation, so it is not shown in a global bar
-        # widget; kept here for --json only.
-        "ctx_used": cw.get("used_percentage"),
-        "ctx_size": cw.get("context_window_size"),
         "windows": [],
     }
     for key, label in (("five_hour", "5h"), ("seven_day", "7d")):
@@ -216,7 +250,7 @@ def load_today():
 # ---------------------------------------------------------------------- output
 
 def binding_window(q):
-    """The window closest to exhaustion - the one worth showing on the bar."""
+    """The window closest to exhaustion - the one the bar reflects."""
     if not q or not q["windows"]:
         return None
     return max(q["windows"], key=lambda w: w["used"])
@@ -232,14 +266,12 @@ def main():
             print("--")
             return
         left = 100 - w["used"]
-        bits = [f"{left:.0f}%"]
-        if w["resets_at"]:
-            bits.append(human_delta(w["resets_at"] - time.time()))
-        print(f"{w['label']} {'  '.join(bits)}")
+        cd = human_delta(w["resets_at"] - time.time()) if w["resets_at"] else ""
+        print(f"{w['label']} {gauge(left, BAR_GAUGE_CELLS)} {left:>2.0f}%"
+              + (f"  {cd}" if cd else ""))
         return
 
     if mode == "--severity":
-        # Highest used_percentage across windows, for the icon colour.
         w = binding_window(q)
         print(f"{w['used']:.0f}" if w else "0")
         return
@@ -248,11 +280,9 @@ def main():
         per_model, sessions, messages = load_today()
         print(json.dumps({
             "quota": q,
-            "today": {
-                "sessions": len(sessions), "messages": messages,
-                "models": {m: {**a, "cost": cost_of(m, a)}
-                           for m, a in per_model.items()},
-            },
+            "today": {"sessions": len(sessions), "messages": messages,
+                      "models": {m: {**a, "cost": cost_of(m, a)}
+                                 for m, a in per_model.items()}},
         }, indent=2, default=str))
         return
 
@@ -260,63 +290,82 @@ def main():
     tokens = sum(total_tokens(a) for a in per_model.values())
     costs = [cost_of(m, a) for m, a in per_model.items()]
     cost = sum(c for c in costs if c is not None)
+    ranked = sorted(per_model.items(), key=lambda kv: -total_tokens(kv[1]))
 
     if mode == "--rows":
+        # icon <TAB> label <TAB> colour-key
         rows = []
-        if q:
+        if q and q["windows"]:
+            rows.append(("", rule("LIMITS"), "dim"))
             for w in q["windows"]:
                 left = 100 - w["used"]
-                right = f"{gauge(w['used'])}  {left:>3.0f}% left"
-                if w["resets_at"]:
-                    right += (f"  ·  {reset_clock(w['resets_at'])}"
-                              f"  ({human_delta(w['resets_at'] - time.time())})")
-                rows.append((w["label"], right))
+                clock = reset_clock(w["resets_at"]) if w["resets_at"] else ""
+                cd = human_delta(w["resets_at"] - time.time()) if w["resets_at"] else ""
+                rows.append((
+                    ICON_5H if w["label"] == "5h" else ICON_7D,
+                    f"{w['label']:<4}{gauge(left)}  {left:>3.0f}% left"
+                    f"   {clock:<10}{cd:>6}",
+                    severity(w["used"]),
+                ))
             if q["age"] > STALE_AFTER:
-                rows.append(("", f"quota {human_delta(q['age'])} old"))
-        if per_model:
-            rows.append(("", ""))          # spacer
-            for m, a in sorted(per_model.items(), key=lambda kv: -total_tokens(kv[1])):
+                rows.append(("", f"{'':<4}figures {human_delta(q['age'])} old", "dim"))
+        if ranked:
+            rows.append(("", rule("TODAY"), "dim"))
+            for m, a in ranked:
                 c = cost_of(m, a)
-                rows.append((m.replace("claude-", ""),
-                             f"{human_tokens(total_tokens(a)):>5}"
-                             f"  {('$%.2f' % c) if c is not None else 'n/a':>7}"))
-            rows.append(("today", f"{human_tokens(tokens):>5}  {'$%.2f' % cost:>7}"))
-        if q and q.get("session_cost") is not None:
-            rows.append(("session", f"{'$%.2f' % q['session_cost']:>14}"))
-        for left, right in rows:
-            print(f"{left}\t{right}")
+                rows.append((
+                    ICON_MODEL,
+                    f"{m.replace('claude-', ''):<20}"
+                    f"{human_tokens(total_tokens(a)):>14}"
+                    f"{('$%.2f' % c) if c is not None else 'n/a':>15}",
+                    "text",
+                ))
+            if len(ranked) > 1:
+                rows.append((ICON_TOTAL,
+                             f"{'total':<20}{human_tokens(tokens):>14}"
+                             f"{'$%.2f' % cost:>15}", "accent"))
+        # \x1f (unit separator) rather than tab: a tab is IFS whitespace, so an
+        # empty icon field would be swallowed by the reader and shift the columns.
+        for icon, label, key in rows:
+            print(f"{icon}\x1f{label}\x1f{key}")
         return
 
-    # --detail
+    # --detail, for the terminal
+    C = {"ok": "\033[32m", "warn": "\033[33m", "hot": "\033[38;5;209m",
+         "crit": "\033[31m", "dim": "\033[2m", "accent": "\033[38;5;183m",
+         "off": "\033[0m", "bold": "\033[1m"}
     print()
-    if q:
-        print("  \033[1mQUOTA\033[0m")
+    if q and q["windows"]:
+        print(f"  {C['dim']}{rule('LIMITS')}{C['off']}")
         for w in q["windows"]:
             left = 100 - w["used"]
-            line = f"    {w['label']:<4} {gauge(w['used'])} {left:>3.0f}% left"
-            if w["resets_at"]:
-                line += (f"   resets {reset_clock(w['resets_at'])}"
-                         f" ({human_delta(w['resets_at'] - time.time())})")
-            print(line)
+            col = C[severity(w["used"])]
+            clock = reset_clock(w["resets_at"]) if w["resets_at"] else ""
+            cd = human_delta(w["resets_at"] - time.time()) if w["resets_at"] else ""
+            print(f"  {col}{w['label']:<4}{gauge(left)}{C['off']}"
+                  f"  {col}{left:>3.0f}% left{C['off']}"
+                  f"   {C['dim']}{clock:<10}{cd:>6}{C['off']}")
         if q["age"] > STALE_AFTER:
-            print(f"    (figures {human_delta(q['age'])} old - "
-                  f"Claude Code may not be running)")
+            print(f"  {C['dim']}    figures {human_delta(q['age'])} old"
+                  f" - Claude Code may not be running{C['off']}")
     else:
-        print("  QUOTA unavailable - no statusline cache yet")
+        print(f"  {C['dim']}no quota data - is the statusline configured?{C['off']}")
     print()
-    if per_model:
-        print("  \033[1mTODAY\033[0m")
-        print(f"    {'model':<14}{'tokens':>8}{'cost':>9}")
-        for m, a in sorted(per_model.items(), key=lambda kv: -total_tokens(kv[1])):
+    if ranked:
+        print(f"  {C['dim']}{rule('TODAY')}{C['off']}")
+        for m, a in ranked:
             c = cost_of(m, a)
-            print(f"    {m.replace('claude-',''):<14}"
-                  f"{human_tokens(total_tokens(a)):>8}"
-                  f"{('$%.2f' % c) if c is not None else 'n/a':>9}")
-        print(f"    {'-' * 31}")
-        print(f"    {'total':<14}{human_tokens(tokens):>8}{'$%.2f' % cost:>9}")
-        print(f"\n    sessions {len(sessions)}   messages {messages}")
+            print(f"  {m.replace('claude-', ''):<20}"
+                  f"{human_tokens(total_tokens(a)):>14}"
+                  f"{('$%.2f' % c) if c is not None else 'n/a':>15}")
+        if len(ranked) > 1:
+            print(f"  {C['accent']}{'total':<20}{human_tokens(tokens):>14}"
+                  f"{'$%.2f' % cost:>15}{C['off']}")
+        print(f"\n  {C['dim']}{len(sessions)} sessions"
+              f"   {messages} messages{C['off']}")
     print()
-    print("  Cost is an estimate at published API rates, not a bill.")
+    print(f"  {C['dim']}Cost is an estimate at published API rates,"
+          f" not a bill.{C['off']}")
     print()
 
 
