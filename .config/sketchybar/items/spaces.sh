@@ -8,7 +8,7 @@ sketchybar --add event aerospace_workspace_change
 # aerospace.toml; aerospacer.sh fills in the live state once AeroSpace answers.
 WORKSPACES="$(aerospace list-workspaces --all 2>/dev/null)"
 if [ -z "$WORKSPACES" ]; then
-  WORKSPACES="$(grep -oE "^alt-[0-9]+ = 'workspace [0-9]+'" "$HOME/.config/aerospace/aerospace.toml" 2>/dev/null \
+  WORKSPACES="$(grep -oE "^[a-z0-9-]+ = 'workspace [0-9]+'" "$HOME/.config/aerospace/aerospace.toml" 2>/dev/null \
                  | grep -oE 'workspace [0-9]+' | awk '{print $2}' | sort -un)"
 fi
 [ -z "$WORKSPACES" ] && WORKSPACES="1 2 3 4"

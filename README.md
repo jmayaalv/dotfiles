@@ -20,6 +20,7 @@ cd dotfiles
 │   ├── aerospace/          # AeroSpace tiling window manager
 │   ├── alacritty/          # Terminal emulator configuration
 │   ├── claude/             # Claude Code configuration and data
+│   ├── karabiner/          # Karabiner-Elements: right Command -> SUPER
 │   ├── ohmyposh/           # Oh My Posh prompt theme configuration
 │   ├── sketchybar/         # SketchyBar status bar (items, plugins, C helper)
 │   ├── tmux/               # Tmux configuration files
@@ -109,6 +110,9 @@ a vertical right-hand bar to a conventional top bar and from yabai to AeroSpace.
 
 ### Layout
 
+- `.config/aerospace/scripts/keybindings.py` — renders the cheatsheet by parsing
+  `aerospace.toml` at runtime, so it cannot drift from the real bindings.
+  `show-keybindings.sh` opens it in a floating Alacritty window on `SUPER+K`.
 - `.config/aerospace/aerospace.toml` — window manager: gaps, bindings, per-app float rules,
   workspace-to-monitor assignment. Starts SketchyBar and `borders` on launch and pushes a
   `aerospace_workspace_change` event to SketchyBar on every workspace switch.
@@ -133,36 +137,98 @@ a vertical right-hand bar to a conventional top bar and from yabai to AeroSpace.
 
 ### Keybindings
 
-`alt` is the modifier throughout.
+Bindings follow [Omarchy](https://omarchy.org)'s Hyprland layout. Omarchy's
+`SUPER` is the right Command key, which Karabiner rewrites to `cmd+ctrl+alt`
+(`.config/karabiner/karabiner.json`); holding shift as well gives the
+`SUPER+SHIFT` second level.
+
+**Why right Command.** `macos.el` hands Emacs every other modifier —
+Option is `super`, Command is `meta`, fn is `hyper` — and macOS maps Caps Lock
+to Right Control, so Caps is Emacs's `C-`. Of those, only fn has no bindings at
+all, and taking it would cost Home/End/PageUp/PageDown and forward-delete.
+Right Command is a duplicate of left Command and is otherwise unused, so
+sacrificing it costs nothing. Karabiner intercepts the key before Emacs sees
+it, so no Emacs configuration changes were needed.
+
+#### Windows
 
 | Binding | Action |
 |---|---|
-| `alt-h/j/k/l` | Focus left/down/up/right |
-| `alt-shift-h/j/k/l` | Move window left/down/up/right |
-| `alt-shift-<arrow>` | Join with window in that direction |
-| `alt-1..4` | Switch to workspace |
-| `alt-shift-1..4` | Move window to workspace and follow it |
-| `alt-tab` | Back and forth between last two workspaces |
-| `alt-shift-tab` | Move current workspace to the next monitor |
-| `alt-slash` | Toggle tiles horizontal/vertical |
-| `alt-comma` | Toggle accordion horizontal/vertical |
-| `alt-shift-minus` / `alt-shift-equal` | Resize -50 / +50 |
-| `alt-ctrl-f` | Toggle floating/tiling |
-| `alt-ctrl-shift-f` | Fullscreen |
-| `alt-shift-semicolon` | Enter *service* mode |
-| `alt-shift-enter` | Enter *apps* mode |
+| `SUPER+W` | Close window |
+| `SUPER+T` | Toggle floating/tiling |
+| `SUPER+F` | Fullscreen |
+| `SUPER+J` | Toggle split (tiles horizontal/vertical) |
+| `SUPER+,` | Toggle accordion (not an Omarchy binding) |
+| `SUPER+K` | Show this keybinding cheatsheet |
+| `SUPER+<arrow>` | Focus in that direction |
+| `SUPER+SHIFT+<arrow>` | Move/swap window in that direction |
+| `SUPER+-` / `SUPER+=` | Narrower / wider |
+| `SUPER+SHIFT+-` / `SUPER+SHIFT+=` | Shorter / taller |
 
-**Service mode** (`alt-shift-semicolon`): `esc` reload config · `r` reset layout ·
-`f` toggle float · `backspace` close all windows but current.
+#### Workspaces
 
-**Apps mode** (`alt-shift-enter`, then one key): `a` Alacritty · `e` Emacs · `o` Obsidian ·
-`f` Firefox · `s` Slack · `t` Telegram · `c` Chrome · `m` Mail · `esc` cancel.
+Five workspaces, not Omarchy's ten — ten indicators is too wide for a single
+laptop display. SketchyBar enumerates them dynamically, so changing the count
+in `aerospace.toml` is enough.
+
+| Binding | Action |
+|---|---|
+| `SUPER+1..5` | Switch to workspace |
+| `SUPER+SHIFT+1..5` | Move window to workspace and follow it |
+| `SUPER+TAB` / `SUPER+SHIFT+TAB` | Next / previous workspace (wraps) |
+| `SUPER+\`` | Back and forth between last two |
+
+#### Applications
+
+| Binding | App |
+|---|---|
+| `SUPER+RETURN` | Alacritty |
+| `SUPER+SHIFT+RETURN` / `SUPER+SHIFT+B` | Firefox |
+| `SUPER+SHIFT+N` | Emacs |
+| `SUPER+SHIFT+O` | Obsidian |
+| `SUPER+SHIFT+M` | Spotify |
+| `SUPER+SHIFT+F` | Finder |
+| `SUPER+SHIFT+A` | Claude |
+| `SUPER+SHIFT+S` | Slack |
+| `SUPER+SHIFT+G` | WhatsApp |
+| `SUPER+SHIFT+T` | Telegram |
+| `SUPER+SHIFT+E` | Mail |
+| `SUPER+SHIFT+C` | Calendar |
+| `SUPER+SHIFT+/` | Bitwarden |
+
+#### Service mode
+
+`SUPER+SHIFT+;` enters it: `esc` reload config, `r` reset layout, `f` toggle
+float, `backspace` close all windows but the current one.
+
+#### Cheatsheet
+
+`SUPER+K` opens a floating window listing every binding, the equivalent of
+Omarchy's `SUPER+K` keybindings menu. It parses `aerospace.toml` on each run and
+rewrites the `cmd-ctrl-alt` prefix back to `SUPER`, so editing a binding updates
+the cheatsheet with no extra step. Dismiss with `q` or Enter. It also renders
+standalone in a terminal:
+
+```bash
+python3 ~/.config/aerospace/scripts/keybindings.py
+```
+
+#### Omarchy bindings with no AeroSpace equivalent
+
+Window groups (`togglegroup`, `moveintogroup`, `changegroupactive`), `pseudo`,
+the scratchpad special workspace, mouse drag-to-move/resize, monitor scaling,
+and pop-window-out-and-pin. `SUPER+CTRL+TAB` (former workspace) is also
+unreachable because `ctrl` is already inside SUPER, so back-and-forth lives on
+`SUPER+\`` instead.
 
 ### Manual steps
 
 1. **Accessibility permission** — AeroSpace cannot move windows without it:
    System Settings → Privacy & Security → Accessibility → enable AeroSpace.
-2. **SF Pro font** — installs via a `.pkg` and needs a sudo password, so it can't run
+2. **Karabiner-Elements** must be running for SUPER to exist, and needs Input
+   Monitoring permission plus its driver extension approved. Launch
+   Karabiner-Elements once and grant what it asks for.
+3. **SF Pro font** — installs via a `.pkg` and needs a sudo password, so it can't run
    unattended: `brew install --cask font-sf-pro`. Until it's installed the bar falls back
    to Hack Nerd Font for text and the SF Symbols glyphs in `icons.sh` (Apple logo, popup
    menu icons) render as empty boxes.
