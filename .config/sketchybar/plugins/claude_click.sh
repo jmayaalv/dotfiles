@@ -3,7 +3,7 @@
 # Left click fills the popup and toggles it; right click opens the full table.
 CONFIG_DIR="${CONFIG_DIR:-$HOME/.config/sketchybar}"
 source "$CONFIG_DIR/colors.sh"
-CLAUDE_POPUP_ROWS=12
+CLAUDE_POPUP_ROWS=20
 USAGE="$CONFIG_DIR/plugins/claude_usage.py"
 
 if [ "$BUTTON" = "right" ]; then
@@ -14,7 +14,7 @@ if [ "$BUTTON" = "right" ]; then
     --option 'window.startup_mode="Windowed"' \
     --option 'window.decorations="none"' \
     --option 'window.dimensions.columns=62' \
-    --option 'window.dimensions.lines=18' \
+    --option 'window.dimensions.lines=22' \
     --option 'window.padding.x=14' \
     --option 'window.padding.y=10' \
     --option 'font.size=12' \

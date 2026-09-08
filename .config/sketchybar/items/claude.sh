@@ -9,7 +9,7 @@
 # Popup rows use FiraCode Nerd Font Mono so the gauges and figures line up: the
 # Mono variant forces Nerd Font icons to a single cell, and a fixed icon.width
 # keeps every label starting at the same x regardless of its glyph.
-CLAUDE_POPUP_ROWS=12
+CLAUDE_POPUP_ROWS=20
 CLAUDE_MONO="FiraCode Nerd Font Mono"
 
 sketchybar --add       item   claude right                                  \
