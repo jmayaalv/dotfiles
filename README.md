@@ -21,6 +21,7 @@ cd dotfiles
 │   ├── alacritty/          # Terminal emulator configuration
 │   ├── claude/             # Claude Code configuration and data
 │   ├── karabiner/          # Karabiner-Elements: right Command -> SUPER
+│   ├── macos/              # macOS system tweaks (animations on/off)
 │   ├── ohmyposh/           # Oh My Posh prompt theme configuration
 │   ├── sketchybar/         # SketchyBar status bar (items, plugins, C helper)
 │   ├── tmux/               # Tmux configuration files
@@ -266,6 +267,31 @@ if that is edited, check the fallback's grep still matches the binding names.
 
 **SUPER does nothing.** Karabiner-Elements is not running, or lost Input
 Monitoring permission.
+
+### macOS animations
+
+A tiling window manager animates a window resize on every retile, so the UI
+animations mostly add latency. `.config/macos/animations.sh` turns them off and
+back on:
+
+```bash
+~/.config/macos/animations.sh status    # what is currently set
+~/.config/macos/animations.sh disable
+~/.config/macos/animations.sh enable    # back to macOS defaults
+~/.config/macos/animations.sh toggle
+```
+
+`enable` deletes the keys rather than writing "on" values, so macOS falls back to
+its own defaults instead of values the script guessed. It covers window
+open/close (`NSAutomaticWindowAnimationsEnabled`), window resize timing
+(`NSWindowResizeTime`), Dock launch/autohide, Mission Control, and Finder, then
+restarts Dock and Finder. Apps read the global keys at launch, so restart them or
+log out for the change to apply everywhere.
+
+**Reduce Motion is not scriptable.** It is the most effective single setting but
+lives in the TCC-protected `com.apple.universalaccess` domain, so it stays manual:
+System Settings → Accessibility → Display → Reduce motion. `status` reports it
+read-only.
 
 ### Manual steps
 
