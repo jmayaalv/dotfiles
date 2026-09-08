@@ -120,10 +120,18 @@ a vertical right-hand bar to a conventional top bar and from yabai to AeroSpace.
 - `.config/sketchybar/colors.sh` — Catppuccin Macchiato palette.
 - `.config/sketchybar/icons.sh` — SF Symbols glyphs (needs SF Pro installed).
 - `.config/sketchybar/items/` — one file per bar item. Clickable items:
-  the clock opens Calendar on left click and Date & Time settings on right
-  click; the VPN indicator toggles the Tunnelblick connection on left click and
-  opens Tunnelblick on right click. A sketchybar item is a single click target,
-  so the clock's date and time cannot be clicked separately.
+
+  | Item | Left click | Right click |
+  |---|---|---|
+  | Clock | Calendar | Date & Time settings |
+  | VPN | Toggle Tunnelblick connection | Open Tunnelblick |
+  | CPU | Activity Monitor | — |
+  | Apple logo | Popup: Settings, Activity, Lock | — |
+
+  A sketchybar item is a single click target, so the clock's date and time
+  cannot be clicked separately. The CPU handler is applied to all four cpu.*
+  items at once via sketchybar's `/cpu\..*/ ` regex form, so any part of the
+  cluster responds.
 - `.config/sketchybar/plugins/` — the scripts those items call.
   `icon_map.sh` maps app names to `sketchybar-app-font` ligatures. Upstream
   generates this file from its `mappings/` dir, so the vendored copy drifts behind

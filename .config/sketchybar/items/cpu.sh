@@ -37,3 +37,7 @@ sketchybar --add item        cpu.top right                  \
                              background.height=30           \
                              background.drawing=on          \
                              background.color=$TRANSPARENT
+
+# Clicking any part of the CPU cluster opens Activity Monitor. The regex form
+# covers cpu.top, cpu.percent and both graphs in one go.
+sketchybar --set '/cpu\..*/' click_script="open -a 'Activity Monitor'"
