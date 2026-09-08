@@ -118,7 +118,7 @@ outer.top        = 8    # macOS already reserves 32px of menu-bar area at the to
 # alt, so none of it collides with Emacs Meta.
 
 # --- Windows ----------------------------------------------------------------
-cmd-ctrl-alt-w = 'close'                                # SUPER+W  close window
+cmd-ctrl-alt-q = 'close'                                # SUPER+Q  close window
 cmd-ctrl-alt-t = 'layout floating tiling'               # SUPER+T  toggle float/tile
 cmd-ctrl-alt-f = 'fullscreen'                           # SUPER+F  fullscreen
 cmd-ctrl-alt-j = 'layout tiles horizontal vertical'     # SUPER+J  toggle split
@@ -126,12 +126,25 @@ cmd-ctrl-alt-comma = 'layout accordion horizontal vertical'  # accordion (not Om
 cmd-ctrl-alt-k = 'exec-and-forget /bin/bash -c "$HOME/.config/aerospace/scripts/show-keybindings.sh"'  # SUPER+K  cheatsheet
 
 # --- Focus ------------------------------------------------------------------
+# WASD and the arrows both work. SUPER is cmd+ctrl+alt already, so shift is the
+# only modifier left to layer on - hence move being SUPER+SHIFT rather than
+# SUPER+cmd, which would collide with SUPER itself.
+cmd-ctrl-alt-a     = 'focus left'
+cmd-ctrl-alt-s     = 'focus down'
+cmd-ctrl-alt-w     = 'focus up'
+cmd-ctrl-alt-d     = 'focus right'
+
 cmd-ctrl-alt-left  = 'focus left'
 cmd-ctrl-alt-down  = 'focus down'
 cmd-ctrl-alt-up    = 'focus up'
 cmd-ctrl-alt-right = 'focus right'
 
 # --- Move / swap windows ----------------------------------------------------
+cmd-ctrl-alt-shift-a     = 'move left'
+cmd-ctrl-alt-shift-s     = 'move down'
+cmd-ctrl-alt-shift-w     = 'move up'
+cmd-ctrl-alt-shift-d     = 'move right'
+
 cmd-ctrl-alt-shift-left  = 'move left'
 cmd-ctrl-alt-shift-down  = 'move down'
 cmd-ctrl-alt-shift-up    = 'move up'
@@ -168,8 +181,8 @@ cmd-ctrl-alt-backtick = 'workspace-back-and-forth'      # Omarchy's SUPER+CTRL+T
 # in a binding is what registers it with AeroSpace, and only registered
 # workspaces appear in `list-workspaces --all`, which is where the bar gets the
 # list it draws.
-cmd-ctrl-alt-s = 'exec-and-forget /bin/bash -c "$HOME/.config/aerospace/scripts/scratchpad.sh"'
-cmd-ctrl-alt-shift-s = 'move-node-to-workspace S'
+cmd-ctrl-alt-space = 'exec-and-forget /bin/bash -c "$HOME/.config/aerospace/scripts/scratchpad.sh"'
+cmd-ctrl-alt-shift-space = 'move-node-to-workspace S'  # stash window in scratchpad
 
 # --- App launchers (Omarchy's SUPER+SHIFT+<letter> set) ----------------------
 cmd-ctrl-alt-enter = 'exec-and-forget open -na /Applications/Alacritty.app'  # terminal
@@ -182,7 +195,7 @@ cmd-ctrl-alt-shift-n = 'exec-and-forget open -a /Applications/Emacs.app'  # edit
 cmd-ctrl-alt-shift-o = 'exec-and-forget open -a /Applications/Obsidian.app'  # Obsidian
 cmd-ctrl-alt-shift-m = 'exec-and-forget open -a /Applications/Emacs.app'  # editor
 cmd-ctrl-alt-shift-f = 'exec-and-forget open -a /System/Library/CoreServices/Finder.app'  # file manager
-cmd-ctrl-alt-shift-a = 'exec-and-forget open -a /Applications/Claude.app'  # AI
+cmd-ctrl-alt-shift-i = 'exec-and-forget open -a /Applications/Claude.app'  # AI
 cmd-ctrl-alt-shift-g = 'exec-and-forget open -a /Applications/WhatsApp.app'  # WhatsApp
 cmd-ctrl-alt-shift-c = 'exec-and-forget open -a /System/Applications/Calendar.app'  # calendar
 cmd-ctrl-alt-shift-slash = 'exec-and-forget open -a /Applications/Slack.app'  # Slack
