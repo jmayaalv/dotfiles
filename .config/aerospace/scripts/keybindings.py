@@ -29,8 +29,8 @@ GROUPS = [
     ("MOVE",       lambda c: c.startswith("move ")),
     ("RESIZE",     lambda c: c.startswith("resize")),
     ("WORKSPACES", lambda c: "workspace" in c),
-    ("APPS",       lambda c: c.startswith("exec-and-forget")),
-    ("MODES",      lambda c: c.startswith("mode")),
+    ("APPS",       lambda c: c.startswith("exec-and-forget open -a")),
+    ("MODES",      lambda c: c.startswith("mode") or c.startswith("exec-and-forget")),
 ]
 
 ANSI = {"bold": "\033[1m", "dim": "\033[2m", "accent": "\033[38;5;183m",
@@ -61,6 +61,12 @@ def pretty_action(cmd: str) -> str:
     if cmd.startswith("exec-and-forget open -a"):
         path = cmd.split("open -a", 1)[1].strip().strip("'\"")
         return os.path.basename(path).replace(".app", "")
+    if "show-keybindings" in cmd:
+        return "this cheatsheet"
+    if cmd.startswith("exec-and-forget"):
+        # any other script: show its basename rather than the whole command line
+        m = re.search(r"([\w.-]+)\.(sh|py|bash)", cmd)
+        return m.group(1).replace("-", " ") if m else "run script"
     cmd = re.sub(r"\s*--focus-follows-window", "", cmd)
     cmd = re.sub(r"\s*--wrap-around", "", cmd)
     return {
@@ -133,29 +139,63 @@ def main():
     c = ANSI if use_color else {k: "" for k in ANSI}
     width = shutil.get_terminal_size((84, 40)).columns
 
-    print()
-    print(f"  {c['bold']}{c['accent']}AeroSpace{c['off']}"
-          f"  {c['dim']}SUPER = right Command{c['off']}")
-    print(f"  {c['dim']}{'─' * min(width - 4, 76)}{c['off']}")
-
+    # Build one block per group, plus service mode
+    blocks = []
     for name, _ in GROUPS:
         rows = collapse(sorted(set(grouped[name]), key=lambda r: (len(r[0]), r[0])))
-        if not rows:
-            continue
-        print(f"\n  {c['head']}{name}{c['off']}")
-        pad = max(len(k) for k, _ in rows)
-        for key, act in rows:
-            print(f"    {c['accent']}{key:<{pad}}{c['off']}  {c['dim']}│{c['off']}  {act}")
+        if rows:
+            blocks.append((name, "", rows))
 
     svc = cfg.get("mode", {}).get("service", {}).get("binding", {})
     if svc:
-        print(f"\n  {c['head']}SERVICE MODE{c['off']}  "
-              f"{c['dim']}(enter with SUPER+SHIFT+;){c['off']}")
-        pad = max(len(k) for k in svc)
-        for key, cmd in svc.items():
-            act = cmd[0] if isinstance(cmd, list) else cmd
-            print(f"    {c['accent']}{KEYSYM.get(key, key):<{pad}}{c['off']}"
-                  f"  {c['dim']}│{c['off']}  {act}")
+        rows = [(KEYSYM.get(k, k), (v[0] if isinstance(v, list) else v))
+                for k, v in svc.items()]
+        blocks.append(("SERVICE MODE", "SUPER+SHIFT+;", rows))
+
+    def render(block):
+        """-> list of (plain, colored) lines for one block."""
+        name, hint, rows = block
+        head = f"{name}  {hint}" if hint else name
+        out = [(head, f"{c['head']}{name}{c['off']}"
+                      + (f"  {c['dim']}{hint}{c['off']}" if hint else ""))]
+        pad = max(len(k) for k, _ in rows)
+        for key, act in rows:
+            plain = f"  {key:<{pad}}  |  {act}"   # must match the visible width of the colored line
+            out.append((plain,
+                        f"  {c['accent']}{key:<{pad}}{c['off']}"
+                        f"  {c['dim']}|{c['off']}  {act}"))
+        out.append(("", ""))
+        return out
+
+    rendered = [render(b) for b in blocks]
+    colw = max(len(pl) for blk in rendered for pl, _ in blk) + 3
+
+    print()
+    print(f"  {c['bold']}{c['accent']}AeroSpace{c['off']}"
+          f"  {c['dim']}SUPER = right Command{c['off']}")
+
+    # Two columns when the terminal is wide enough, otherwise stack
+    if width >= colw * 2 + 4:
+        print(f"  {c['dim']}{'-' * min(width - 4, colw * 2)}{c['off']}")
+        total = sum(len(b) for b in rendered)
+        left, acc = [], 0
+        for blk in rendered:            # greedy split at the halfway point
+            if acc < total / 2:
+                left.append(blk); acc += len(blk)
+            else:
+                break
+        right = rendered[len(left):]
+        lcol = [ln for blk in left for ln in blk]
+        rcol = [ln for blk in right for ln in blk]
+        for i in range(max(len(lcol), len(rcol))):
+            lp, lc = lcol[i] if i < len(lcol) else ("", "")
+            _, rc = rcol[i] if i < len(rcol) else ("", "")
+            print(f"  {lc}{' ' * (colw - len(lp))}{rc}".rstrip())
+    else:
+        print(f"  {c['dim']}{'-' * min(width - 4, colw)}{c['off']}")
+        for blk in rendered:
+            for _, cl in blk:
+                print(f"  {cl}".rstrip())
     print()
 
 

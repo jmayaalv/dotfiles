@@ -213,6 +213,13 @@ standalone in a terminal:
 python3 ~/.config/aerospace/scripts/keybindings.py
 ```
 
+It lays out in two columns at 108 columns or wider and falls back to a single
+tall column below that. Window size is set by `COLS`, `LINES` and `FONT_SIZE` at
+the top of `show-keybindings.sh`. Note that `alacritty.toml` sets
+`startup_mode = "Maximized"`, which overrides `window.dimensions` entirely, so
+the launcher passes an explicit `window.startup_mode="Windowed"` override — drop
+that and the window opens full screen.
+
 #### Omarchy bindings with no AeroSpace equivalent
 
 Window groups (`togglegroup`, `moveintogroup`, `changegroupactive`), `pseudo`,
