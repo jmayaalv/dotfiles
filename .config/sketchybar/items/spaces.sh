@@ -8,8 +8,10 @@ sketchybar --add event aerospace_workspace_change
 # aerospace.toml; aerospacer.sh fills in the live state once AeroSpace answers.
 WORKSPACES="$(aerospace list-workspaces --all 2>/dev/null)"
 if [ -z "$WORKSPACES" ]; then
-  WORKSPACES="$(grep -oE "^[a-z0-9-]+ = 'workspace [0-9]+'" "$HOME/.config/aerospace/aerospace.toml" 2>/dev/null \
-                 | grep -oE 'workspace [0-9]+' | awk '{print $2}' | sort -un)"
+  # Matches both `workspace 1` and `move-node-to-workspace S` bindings, so named
+# workspaces like the scratchpad survive the fallback too.
+WORKSPACES="$(grep -oE "(move-node-to-)?workspace [A-Za-z0-9]+'" "$HOME/.config/aerospace/aerospace.toml" 2>/dev/null \
+                 | sed "s/.*workspace //; s/'//" | sort -u)"
 fi
 [ -z "$WORKSPACES" ] && WORKSPACES="1 2 3 4"
 

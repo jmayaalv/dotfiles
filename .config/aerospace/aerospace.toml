@@ -161,6 +161,16 @@ cmd-ctrl-alt-shift-tab = 'workspace prev --wrap-around' # SUPER+SHIFT+TAB  prev
 cmd-ctrl-alt-backtick = 'workspace-back-and-forth'      # Omarchy's SUPER+CTRL+TAB is
                                                         # unreachable: ctrl is inside SUPER
 
+# --- Scratchpad -------------------------------------------------------------
+# Workspace S is deliberately outside the 1-5 rotation: it is summoned, not
+# navigated to. Toggling into an empty scratchpad spawns Alacritty in it.
+# The stash is a native command rather than a script call on purpose: naming S
+# in a binding is what registers it with AeroSpace, and only registered
+# workspaces appear in `list-workspaces --all`, which is where the bar gets the
+# list it draws.
+cmd-ctrl-alt-s = 'exec-and-forget /bin/bash -c "$HOME/.config/aerospace/scripts/scratchpad.sh"'
+cmd-ctrl-alt-shift-s = 'move-node-to-workspace S'
+
 # --- App launchers (Omarchy's SUPER+SHIFT+<letter> set) ----------------------
 cmd-ctrl-alt-enter = 'exec-and-forget open -a /Applications/Alacritty.app'  # terminal
 cmd-ctrl-alt-shift-enter = 'exec-and-forget open -a /Applications/Firefox.app'  # browser
