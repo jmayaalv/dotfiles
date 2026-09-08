@@ -15,4 +15,5 @@ elif [ "$USED" -ge 50 ]; then COLOR=$YELLOW
 else                          COLOR=$GREEN
 fi
 
-sketchybar --set "$NAME" label="$LABEL" icon.color="$COLOR"
+# Ease between severity colours so the widget never snaps from green to red.
+sketchybar --animate sin 20 --set "$NAME" label="$LABEL" icon.color="$COLOR"

@@ -8,6 +8,12 @@ SID="$1"
 [ -z "$SID" ] && exit 0
 
 CONFIG_DIR="${CONFIG_DIR:-$HOME/.config/sketchybar}"
+source "$CONFIG_DIR/colors.sh"
+
+# The highlight eases in and out rather than snapping. background.drawing stays
+# on either way - it is a boolean and cannot animate, so the fade has to come
+# from the colour going transparent instead.
+ANIM="--animate sin 15"
 
 # aerospace_workspace_change supplies FOCUSED_WORKSPACE; the initial forced
 # update does not, so ask aerospace directly in that case.
@@ -15,9 +21,13 @@ FOCUSED="$FOCUSED_WORKSPACE"
 [ -z "$FOCUSED" ] && FOCUSED="$(aerospace list-workspaces --focused)"
 
 if [ "$SID" = "$FOCUSED" ]; then
-  sketchybar --set "$NAME" background.drawing=on icon.highlight=on
+  sketchybar $ANIM --set "$NAME" background.drawing=on \
+                                 background.color="$BACKGROUND_1" \
+                                 icon.highlight=on
 else
-  sketchybar --set "$NAME" background.drawing=off icon.highlight=off
+  sketchybar $ANIM --set "$NAME" background.drawing=on \
+                                 background.color="$TRANSPARENT" \
+                                 icon.highlight=off
 fi
 
 # Build the app-glyph label for this workspace
