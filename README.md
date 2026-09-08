@@ -119,7 +119,11 @@ a vertical right-hand bar to a conventional top bar and from yabai to AeroSpace.
 - `.config/sketchybar/sketchybarrc` — bar appearance and item load order.
 - `.config/sketchybar/colors.sh` — Catppuccin Macchiato palette.
 - `.config/sketchybar/icons.sh` — SF Symbols glyphs (needs SF Pro installed).
-- `.config/sketchybar/items/` — one file per bar item.
+- `.config/sketchybar/items/` — one file per bar item. Clickable items:
+  the clock opens Calendar on left click and Date & Time settings on right
+  click; the VPN indicator toggles the Tunnelblick connection on left click and
+  opens Tunnelblick on right click. A sketchybar item is a single click target,
+  so the clock's date and time cannot be clicked separately.
 - `.config/sketchybar/plugins/` — the scripts those items call.
   `icon_map.sh` maps app names to `sketchybar-app-font` ligatures. Upstream
   generates this file from its `mappings/` dir, so the vendored copy drifts behind
@@ -227,6 +231,24 @@ the scratchpad special workspace, mouse drag-to-move/resize, monitor scaling,
 and pop-window-out-and-pin. `SUPER+CTRL+TAB` (former workspace) is also
 unreachable because `ctrl` is already inside SUPER, so back-and-forth lives on
 `SUPER+\`` instead.
+
+### Troubleshooting
+
+**Two windows overlap at near-full width instead of splitting.** The workspace
+is in accordion layout, not tiles. Layout is per-workspace runtime state, so
+`default-root-container-layout = 'tiles'` does not prevent it — `SUPER+,`
+toggles accordion and it stays until toggled back. Press `SUPER+SHIFT+;` then
+`r` to force the root back to tiles and flatten the tree. `accordion-padding` is
+set to 30 rather than omerxx's 300 so the mode is visually obvious rather than
+looking like broken tiling.
+
+**The bar has no workspace indicators.** SketchyBar builds them from
+`aerospace list-workspaces`, so AeroSpace must be running when the bar starts.
+`items/spaces.sh` falls back to the workspaces declared in `aerospace.toml`, but
+if that is edited, check the fallback's grep still matches the binding names.
+
+**SUPER does nothing.** Karabiner-Elements is not running, or lost Input
+Monitoring permission.
 
 ### Manual steps
 

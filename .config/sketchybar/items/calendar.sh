@@ -5,6 +5,7 @@
 #
 # Transparent background, so the colours have to work against the bar itself:
 # the date is dimmed and the time is full-brightness to keep the two apart.
+# Left click opens Calendar, right click opens Date & Time settings.
 sketchybar --add item     calendar right                    \
            --set calendar update_freq=15                    \
                           mach_helper="$HELPER"             \
@@ -16,4 +17,5 @@ sketchybar --add item     calendar right                    \
                           label.font="$FONT:Heavy:12.0"     \
                           label.padding_left=4              \
                           label.padding_right=8             \
-                          background.drawing=off
+                          background.drawing=off             \
+                          click_script="$PLUGIN_DIR/calendar_click.sh"

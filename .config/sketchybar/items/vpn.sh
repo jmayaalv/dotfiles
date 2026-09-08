@@ -3,6 +3,7 @@
 # Tunnelblick VPN status. Sits immediately left of the clock.
 # Label is off by default (icon colour carries the state); set label.drawing=on
 # to show the connected configuration's name.
+# Left click toggles the connection, right click opens Tunnelblick.
 sketchybar --add       item vpn right                               \
            --set       vpn update_freq=10                           \
                            icon.font="Hack Nerd Font:Regular:15.0"  \
@@ -10,5 +11,5 @@ sketchybar --add       item vpn right                               \
                            label.color=$SUBTEXT0                    \
                            label.drawing=off                        \
                            script="$PLUGIN_DIR/vpn.sh"              \
-                           click_script="open -a Tunnelblick"       \
+                           click_script="$PLUGIN_DIR/vpn_click.sh"  \
            --subscribe vpn system_woke
