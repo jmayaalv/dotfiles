@@ -107,6 +107,8 @@ def load_quota():
         "age": time.time() - os.path.getmtime(STATUS_CACHE),
         "model": (d.get("model") or {}).get("display_name"),
         "session_cost": (d.get("cost") or {}).get("total_cost_usd"),
+        # Context use is per-conversation, so it is not shown in a global bar
+        # widget; kept here for --json only.
         "ctx_used": cw.get("used_percentage"),
         "ctx_size": cw.get("context_window_size"),
         "windows": [],
@@ -269,12 +271,6 @@ def main():
                     right += (f"  ·  {reset_clock(w['resets_at'])}"
                               f"  ({human_delta(w['resets_at'] - time.time())})")
                 rows.append((w["label"], right))
-            if q["ctx_used"] is not None:
-                size = q["ctx_size"] or 0
-                left_tok = int(size * (100 - q["ctx_used"]) / 100) if size else 0
-                rows.append(("ctx", f"{gauge(q['ctx_used'])}  "
-                                    f"{100 - q['ctx_used']:>3.0f}% left"
-                                    f"  ·  {human_tokens(left_tok)} free"))
             if q["age"] > STALE_AFTER:
                 rows.append(("", f"quota {human_delta(q['age'])} old"))
         if per_model:
@@ -302,10 +298,6 @@ def main():
                 line += (f"   resets {reset_clock(w['resets_at'])}"
                          f" ({human_delta(w['resets_at'] - time.time())})")
             print(line)
-        if q["ctx_used"] is not None:
-            print(f"    {'ctx':<4} {gauge(q['ctx_used'])} "
-                  f"{100 - q['ctx_used']:>3.0f}% left"
-                  f"   {q['model'] or ''}")
         if q["age"] > STALE_AFTER:
             print(f"    (figures {human_delta(q['age'])} old - "
                   f"Claude Code may not be running)")

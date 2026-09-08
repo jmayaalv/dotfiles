@@ -283,14 +283,19 @@ left and a countdown to its reset — with the icon graded green/yellow/orange/r
 by how much is used. Left click opens a popup:
 
 ```
-5h    ▰▰▱▱▱▱▱▱▱▱   84% left  ·  14:40  (2h31m)
+5h    ▰▰▱▱▱▱▱▱▱▱   83% left  ·  14:40      (2h26m)
 7d    ▰▱▱▱▱▱▱▱▱▱   88% left  ·  Thu 22:00  (2d9h)
-ctx   ▰▰▰▰▱▱▱▱▱▱   57% left  ·  570k free
 
-opus-5      97M   $86.19
-today       97M   $86.19
-session           $35.19
+opus-5     100M   $88.08
+today      100M   $88.08
+session           $36.79
 ```
+
+`today` is every session since midnight, estimated from the logs. `session` is
+Claude Code's own `total_cost_usd` for the current conversation only — one of
+those sessions, and an exact figure rather than an estimate. The context-window
+gauge was dropped: it describes a single conversation, which does not belong in
+a bar shared by all of them.
 
 Right click opens the same figures as a table in a window, and the script runs
 standalone:
@@ -304,7 +309,7 @@ standalone:
 **Quota and reset times** come from `~/.claude/statusline-cache.json`. Claude Code
 passes a payload to the statusline command on stdin containing
 `rate_limits.five_hour`, `rate_limits.seven_day` (each with `used_percentage` and
-a `resets_at` unix timestamp) and `context_window`, and it writes that nowhere
+a `resets_at` unix timestamp), `cost.total_cost_usd` and `context_window`, and it writes that nowhere
 else on disk — so `.claude/statusline-command.sh` tees stdin to that file
 atomically. **The widget therefore depends on the statusline being configured**
 (`statusLine` in `~/.claude/settings.json`) and on Claude Code having run
