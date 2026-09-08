@@ -68,15 +68,31 @@ source "$ITEM_DIR/apple.sh"
 source "$ITEM_DIR/spaces.sh"
 source "$ITEM_DIR/front_app.sh"
 
-# Right. Items added to "right" stack right-to-left, so the first one sourced
-# is the rightmost: reading order on screen is cpu, volume, battery, calendar.
+# Right. Items added to "right" stack right-to-left, so the first one sourced is
+# the rightmost. Grouped by what each one answers, reading left to right:
+#
+#   cpu  claude  |  volume  caffeine  battery  |  vpn  clock
+#   what am I       what I control, and         where am I,
+#   burning         what it costs in power      and when
+#
+# The middle three are bracketed into one pill at the bottom of this file; the
+# meters and the clock stay free-standing so the row has three beats, not seven.
 source "$ITEM_DIR/calendar.sh"
 source "$ITEM_DIR/vpn.sh"
-source "$ITEM_DIR/claude.sh"
 source "$ITEM_DIR/battery.sh"
 source "$ITEM_DIR/caffeine.sh"
 source "$ITEM_DIR/volume.sh"
+source "$ITEM_DIR/claude.sh"
 source "$ITEM_DIR/cpu.sh"
+
+############## GROUPING ##############
+# One raised pill behind the three small status glyphs. Brackets have to come
+# after the items they group, so this lives here rather than beside them.
+sketchybar --add bracket status volume caffeine battery       \
+           --set status background.color=$BACKGROUND_1        \
+                        background.corner_radius=9            \
+                        background.height=24                  \
+                        background.drawing=on
 
 ############## FINALIZING THE SETUP ##############
 sketchybar --update
