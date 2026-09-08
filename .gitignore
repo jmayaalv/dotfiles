@@ -18,3 +18,4 @@
 !.claude/statusline-command.sh
 .secrets/
 /.agent-shell/
+.config/sketchybar/helper/helper

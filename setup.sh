@@ -77,6 +77,54 @@ else
   brew install clojure-lsp/brew/clojure-lsp-native
 fi
 
+# --- Window management: AeroSpace + SketchyBar ---------------------------------
+
+# Install AeroSpace (tiling window manager)
+if [ -d "/Applications/AeroSpace.app" ]; then
+  echo "AeroSpace already installed, skipping."
+else
+  echo "Installing AeroSpace..."
+  brew install --cask nikitabobko/tap/aerospace
+fi
+
+# Install SketchyBar (status bar)
+if command -v sketchybar &>/dev/null; then
+  echo "SketchyBar already installed, skipping."
+else
+  echo "Installing SketchyBar..."
+  brew tap FelixKratz/formulae
+  brew install sketchybar
+fi
+
+# Install JankyBorders (focused-window border, started by aerospace.toml)
+if command -v borders &>/dev/null; then
+  echo "borders already installed, skipping."
+else
+  echo "Installing borders..."
+  brew install FelixKratz/formulae/borders
+fi
+
+# Install sketchybar-app-font (per-app glyphs in the workspace indicators)
+if [ -f "$HOME/Library/Fonts/sketchybar-app-font.ttf" ]; then
+  echo "sketchybar-app-font already installed, skipping."
+else
+  echo "Installing sketchybar-app-font..."
+  brew install --cask font-sketchybar-app-font
+fi
+
+# Install SF Pro (the bar's text font, and the SF Symbols glyphs in icons.sh).
+# This cask runs a .pkg installer and will prompt for your sudo password.
+if [ -f "/Library/Fonts/SF-Pro.ttf" ] || [ -f "$HOME/Library/Fonts/SF-Pro.ttf" ]; then
+  echo "SF Pro already installed, skipping."
+else
+  echo "Installing SF Pro (will prompt for your password)..."
+  brew install --cask font-sf-pro
+fi
+
+# Build the SketchyBar mach helper (drives the CPU graphs and the clock)
+echo "Building the SketchyBar helper..."
+make -C "$DOTFILES_DIR/.config/sketchybar/helper"
+
 # Install Prelude (Emacs distribution) if not already present
 if [ ! -d "$HOME/.emacs.d/.git" ]; then
   echo "Installing Emacs Prelude..."
@@ -105,4 +153,12 @@ stow --target="$HOME" .
 echo "Adopting any unmanaged files into stow..."
 stow --adopt --target="$HOME" .
 
+# Start the window-management services now that the configs are linked
+echo "Starting SketchyBar and AeroSpace..."
+brew services restart sketchybar
+open -a AeroSpace || true
+
 echo "Done. Restart your shell or run: source ~/.zshrc"
+echo
+echo "NOTE: AeroSpace needs Accessibility permission on first launch:"
+echo "  System Settings -> Privacy & Security -> Accessibility -> enable AeroSpace"
