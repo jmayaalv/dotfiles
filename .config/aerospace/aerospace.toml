@@ -172,7 +172,10 @@ cmd-ctrl-alt-s = 'exec-and-forget /bin/bash -c "$HOME/.config/aerospace/scripts/
 cmd-ctrl-alt-shift-s = 'move-node-to-workspace S'
 
 # --- App launchers (Omarchy's SUPER+SHIFT+<letter> set) ----------------------
-cmd-ctrl-alt-enter = 'exec-and-forget open -a /Applications/Alacritty.app'  # terminal
+cmd-ctrl-alt-enter = 'exec-and-forget open -na /Applications/Alacritty.app'  # terminal
+                                              # -n: without it the running
+                                              # instance is activated instead,
+                                              # yanking focus to its workspace
 cmd-ctrl-alt-shift-enter = 'exec-and-forget open -a "Google Chrome"'  # browser
 cmd-ctrl-alt-shift-b = 'exec-and-forget open -a "Google Chrome"'  # browser (Chrome)
 cmd-ctrl-alt-shift-n = 'exec-and-forget open -a /Applications/Emacs.app'  # editor
