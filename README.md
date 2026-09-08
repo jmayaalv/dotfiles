@@ -269,33 +269,68 @@ if that is edited, check the fallback's grep still matches the binding names.
 **SUPER does nothing.** Karabiner-Elements is not running, or lost Input
 Monitoring permission.
 
-### Claude Code usage widget
+### Claude Code quota widget
 
-Shows today's Claude Code token usage and estimated cost, the macOS counterpart
-to Omarchy's Waybar Claude widget ([claudebar](https://github.com/mryll/claudebar),
+The macOS counterpart to Omarchy's Waybar Claude widget
+([claudebar](https://github.com/mryll/claudebar),
 [ai-usagebar](https://github.com/akitaonrails/ai-usagebar)). Those read plan
-limits from an OAuth token in a credentials file; on macOS the token lives in the
-Keychain and the limits endpoint is undocumented, so this reads the local session
-logs instead — no network, no credentials, no dependencies.
+limits from an OAuth token in a credentials file; on macOS the token is in the
+Keychain and the limits endpoint is undocumented, so this takes a different
+route with no credentials and no network.
 
-```bash
-~/.config/sketchybar/plugins/claude_usage.py --bar      # one line, for the bar
-~/.config/sketchybar/plugins/claude_usage.py --detail   # per-model table
-~/.config/sketchybar/plugins/claude_usage.py --json     # raw figures
+The bar shows whichever rate-limit window is closest to exhaustion — percent
+left and a countdown to its reset — with the icon graded green/yellow/orange/red
+by how much is used. Left click opens a popup:
+
+```
+5h    ▰▰▱▱▱▱▱▱▱▱   84% left  ·  14:40  (2h31m)
+7d    ▰▱▱▱▱▱▱▱▱▱   88% left  ·  Thu 22:00  (2d9h)
+ctx   ▰▰▰▰▱▱▱▱▱▱   57% left  ·  570k free
+
+opus-5      97M   $86.19
+today       97M   $86.19
+session           $35.19
 ```
 
-It parses `~/.claude/projects/**/*.jsonl`, skipping files not modified today,
-and dedupes on `(message.id, requestId)` because resumed sessions re-log
-entries. Runs in well under a tenth of a second.
+Right click opens the same figures as a table in a window, and the script runs
+standalone:
 
-**The cost is an estimate, not a bill.** On a Claude subscription you are not
-billed per token at all — the figure is what the same usage would cost at
-published API rates. Rates live in `PRICING` in `claude_usage.py` and will drift
-as pricing changes; a model with no entry contributes tokens but no cost and is
-flagged with `*`. Cache tokens are priced at the documented multipliers: reads at
-0.1x the model's input rate, writes at 1.25x for the 5-minute TTL and 2x for the
-1-hour TTL, which the logs distinguish via `ephemeral_5m_input_tokens` and
-`ephemeral_1h_input_tokens`.
+```bash
+~/.config/sketchybar/plugins/claude_usage.py --detail
+```
+
+#### Where the numbers come from
+
+**Quota and reset times** come from `~/.claude/statusline-cache.json`. Claude Code
+passes a payload to the statusline command on stdin containing
+`rate_limits.five_hour`, `rate_limits.seven_day` (each with `used_percentage` and
+a `resets_at` unix timestamp) and `context_window`, and it writes that nowhere
+else on disk — so `.claude/statusline-command.sh` tees stdin to that file
+atomically. **The widget therefore depends on the statusline being configured**
+(`statusLine` in `~/.claude/settings.json`) and on Claude Code having run
+recently; the popup marks the figures stale after 15 minutes.
+
+**Per-model token counts** come from `~/.claude/projects/**/*.jsonl`, skipping
+files not modified today and deduping on `(message.id, requestId)` because
+resumed sessions re-log entries.
+
+Note that `~/.claude` is not stowed — Claude Code writes into it — so `setup.sh`
+copies the statusline script there rather than symlinking it.
+
+#### Limitations
+
+**There is no per-model quota.** Claude Code exposes only the two global windows,
+5-hour and 7-day; it does not report a separate allowance per model. What the
+popup breaks out per model is token consumption, not remaining quota.
+
+**Cost is an estimate, not a bill.** On a Claude subscription there is no
+per-token charge — the figure is what the same usage would cost at published API
+rates. Rates live in `PRICING` in `claude_usage.py` and will drift; a model with
+no entry contributes tokens but no cost. Cache tokens use the documented
+multipliers: reads at 0.1x the model's input rate, writes at 1.25x for the
+5-minute TTL and 2x for the 1-hour TTL, which the logs distinguish via
+`ephemeral_5m_input_tokens` and `ephemeral_1h_input_tokens`. The `session` row is
+Claude Code's own `total_cost_usd`, not an estimate.
 
 ### macOS animations
 

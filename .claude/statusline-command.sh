@@ -4,6 +4,13 @@
 
 input=$(cat)
 
+# Cache the raw payload for the sketchybar Claude widget. Rate limits, reset
+# windows and context usage are exposed to the statusline and nowhere else on
+# disk, so this is the only credential-free source for them. Written atomically
+# so a reader never sees a half-written file.
+printf '%s' "$input" > "$HOME/.claude/statusline-cache.json.tmp" 2>/dev/null \
+  && mv -f "$HOME/.claude/statusline-cache.json.tmp" "$HOME/.claude/statusline-cache.json" 2>/dev/null
+
 model=$(echo "$input" | jq -r '.model.display_name // "Claude"')
 cwd=$(echo "$input" | jq -r '.workspace.current_dir // .cwd // ""')
 cwd_short=$(echo "$cwd" | sed "s|$HOME|~|")

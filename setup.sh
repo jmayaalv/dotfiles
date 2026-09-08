@@ -121,6 +121,16 @@ else
   brew install --cask font-sf-pro
 fi
 
+# Install the Claude Code statusline script. ~/.claude is not stowed (Claude Code
+# writes into it), so this is copied rather than symlinked. It also tees Claude
+# Code's statusline payload to ~/.claude/statusline-cache.json, which is the only
+# credential-free source of rate-limit windows and reset times for the SketchyBar
+# Claude widget.
+if [ -d "$HOME/.claude" ]; then
+  echo "Installing Claude Code statusline script..."
+  cp "$DOTFILES_DIR/.claude/statusline-command.sh" "$HOME/.claude/statusline-command.sh"
+fi
+
 # Build the SketchyBar mach helper (drives the CPU graphs and the clock)
 echo "Building the SketchyBar helper..."
 make -C "$DOTFILES_DIR/.config/sketchybar/helper"

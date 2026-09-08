@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 
-# Left click fills the popup rows and toggles it; right click prints the full
-# figures into a floating terminal.
+# Left click fills the popup and toggles it; right click opens the full table.
 CONFIG_DIR="${CONFIG_DIR:-$HOME/.config/sketchybar}"
-POPUP_ROWS=6
+source "$CONFIG_DIR/colors.sh"
+CLAUDE_POPUP_ROWS=10
+USAGE="$CONFIG_DIR/plugins/claude_usage.py"
 
 if [ "$BUTTON" = "right" ]; then
   sketchybar --set claude popup.drawing=off
@@ -11,23 +12,30 @@ if [ "$BUTTON" = "right" ]; then
     --title "Claude usage" \
     --option 'window.dynamic_title=false' \
     --option 'window.startup_mode="Windowed"' \
-    --option 'window.dimensions.columns=46' \
-    --option 'window.dimensions.lines=16' \
-    --command /bin/sh -c \
-      "'$CONFIG_DIR/plugins/claude_usage.py' --detail; \
-       printf '\n  [q or Enter] close  '; read -r _" &
+    --option 'window.decorations="none"' \
+    --option 'window.dimensions.columns=58' \
+    --option 'window.dimensions.lines=22' \
+    --option 'window.padding.x=12' \
+    --option 'font.size=12' \
+    --command /bin/sh -c "'$USAGE' --detail; printf '  [q or Enter] close  '; read -r _" &
   exit 0
 fi
 
 i=0
 while IFS=$'\t' read -r left right; do
-  [ "$i" -ge "$POPUP_ROWS" ] && break
-  sketchybar --set "claude.row.$i" drawing=on icon="$left" label="$right"
+  [ "$i" -ge "$CLAUDE_POPUP_ROWS" ] && break
+  # A row with no left label is a spacer or a footnote: dim it and drop the gap.
+  if [ -z "$left" ]; then
+    sketchybar --set "claude.row.$i" drawing=on icon="" label="$right" \
+                                     label.color="$OVERLAY1"
+  else
+    sketchybar --set "claude.row.$i" drawing=on icon="$left" label="$right" \
+                                     label.color="$TEXT"
+  fi
   i=$((i + 1))
-done < <("$CONFIG_DIR/plugins/claude_usage.py" --rows)
+done < <("$USAGE" --rows)
 
-# Hide any slots left over from a previous, longer breakdown.
-while [ "$i" -lt "$POPUP_ROWS" ]; do
+while [ "$i" -lt "$CLAUDE_POPUP_ROWS" ]; do
   sketchybar --set "claude.row.$i" drawing=off
   i=$((i + 1))
 done
