@@ -12,10 +12,14 @@
 # 'enable' deletes the keys rather than writing "on" values, so macOS falls back
 # to its own defaults instead of whatever this script guessed they were.
 #
-# Not handled here: Reduce Motion. It lives in a TCC-protected domain
-# (com.apple.universalaccess) that cannot be written from a script, so it stays
-# a manual toggle in System Settings > Accessibility > Display > Reduce motion.
-# It is the single most effective setting; 'status' reports it read-only.
+# Reduce Motion is included, but with a caveat: the plist write is accepted,
+# yet the accessibility daemon caches the value, so it may not take effect until
+# you log out and back in. The GUI toggle (System Settings > Accessibility >
+# Display > Reduce motion) applies immediately and is the reliable route. It is
+# the single most effective setting of the lot.
+#
+# Note that 'enable' therefore also turns Reduce Motion off, since restoring
+# animations means clearing it.
 
 set -uo pipefail
 
@@ -27,21 +31,22 @@ com.apple.dock	launchanim	bool	false
 com.apple.dock	expose-animation-duration	float	0.1
 com.apple.dock	autohide-time-modifier	float	0
 com.apple.finder	DisableAllAnimations	bool	true
+com.apple.universalaccess	reduceMotion	bool	true
 TSV
 )
 
 read_val() { defaults read "$1" "$2" 2>/dev/null; }
 
 cmd_status() {
-  printf '%-18s %-36s %-10s %s\n' DOMAIN KEY CURRENT DEFAULT-WHEN-OFF
+  printf '%-26s %-36s %-10s %s\n' DOMAIN KEY CURRENT DEFAULT-WHEN-OFF
   while IFS=$'\t' read -r domain key type off; do
     [ -z "${domain:-}" ] && continue
     cur="$(read_val "$domain" "$key")"
-    printf '%-18s %-36s %-10s %s\n' "$domain" "$key" "${cur:-<unset>}" "$off"
+    printf '%-26s %-36s %-10s %s\n' "$domain" "$key" "${cur:-<unset>}" "$off"
   done <<< "$SETTINGS"
   echo
-  rm_state="$(read_val com.apple.universalaccess reduceMotion)"
-  echo "Reduce Motion (manual, System Settings): ${rm_state:-<unset or unreadable>}"
+  echo "Reduce Motion may need a logout to take effect; the System Settings"
+  echo "toggle (Accessibility > Display > Reduce motion) applies immediately."
 }
 
 cmd_disable() {

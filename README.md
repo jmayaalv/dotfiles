@@ -288,10 +288,12 @@ open/close (`NSAutomaticWindowAnimationsEnabled`), window resize timing
 restarts Dock and Finder. Apps read the global keys at launch, so restart them or
 log out for the change to apply everywhere.
 
-**Reduce Motion is not scriptable.** It is the most effective single setting but
-lives in the TCC-protected `com.apple.universalaccess` domain, so it stays manual:
-System Settings → Accessibility → Display → Reduce motion. `status` reports it
-read-only.
+**Reduce Motion** is included, with a caveat: the plist write is accepted, but
+the accessibility daemon caches the value, so it may not apply until you log out
+and back in. The GUI toggle (System Settings → Accessibility → Display → Reduce
+motion) takes effect immediately and is the reliable route. It is the single most
+effective setting of the lot, and `enable` clears it, since restoring animations
+means turning it off.
 
 ### Manual steps
 
