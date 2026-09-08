@@ -101,7 +101,9 @@ inner.vertical   = 10
 outer.left       = 8
 outer.right      = 8
 outer.bottom     = 8
-outer.top        = 40   # clears the 35px sketchybar plus a little breathing room
+outer.top        = 8    # macOS already reserves 32px of menu-bar area at the top of
+                        # the usable rect, and the 35px sketchybar sits inside it, so
+                        # this gap starts at y=32 - 8 puts windows 5px below the bar.
 
 
 # 'main' binding mode declaration
