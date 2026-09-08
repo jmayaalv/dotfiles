@@ -226,7 +226,16 @@ python3 ~/.config/aerospace/scripts/keybindings.py
 ```
 
 It lays out in two columns at 108 columns or wider and falls back to a single
-tall column below that. Window size is set by `COLS`, `LINES` and `FONT_SIZE` at
+tall column below that, so keep `COLS` at 108 or more.
+
+The window is **not centred**, and currently cannot be: Alacritty's
+`window.position` is ignored on macOS (verified with both `--option` and a
+generated `--config-file`), AeroSpace has no command to place a floating window,
+and System Events cannot write the position because Alacritty reports its
+accessibility window title as `Alacritty` rather than the `--title` value, so the
+window cannot be addressed. macOS does place it consistently, so it is at least
+repeatable. Centring it would mean rendering the sheet in Terminal.app instead,
+which can be floated by `app-id` and positioned with AppleScript `set bounds`. Window size is set by `COLS`, `LINES` and `FONT_SIZE` at
 the top of `show-keybindings.sh`. Note that `alacritty.toml` sets
 `startup_mode = "Maximized"`, which overrides `window.dimensions` entirely, so
 the launcher passes an explicit `window.startup_mode="Windowed"` override — drop
