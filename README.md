@@ -127,6 +127,7 @@ a vertical right-hand bar to a conventional top bar and from yabai to AeroSpace.
   | Clock | Calendar | Date & Time settings |
   | VPN | Toggle Tunnelblick connection | Open Tunnelblick |
   | CPU | Activity Monitor | — |
+  | Claude | Popup usage breakdown | Full figures in a window |
   | Apple logo | Popup: Settings, Activity, Lock | — |
 
   A sketchybar item is a single click target, so the clock's date and time
@@ -267,6 +268,34 @@ if that is edited, check the fallback's grep still matches the binding names.
 
 **SUPER does nothing.** Karabiner-Elements is not running, or lost Input
 Monitoring permission.
+
+### Claude Code usage widget
+
+Shows today's Claude Code token usage and estimated cost, the macOS counterpart
+to Omarchy's Waybar Claude widget ([claudebar](https://github.com/mryll/claudebar),
+[ai-usagebar](https://github.com/akitaonrails/ai-usagebar)). Those read plan
+limits from an OAuth token in a credentials file; on macOS the token lives in the
+Keychain and the limits endpoint is undocumented, so this reads the local session
+logs instead — no network, no credentials, no dependencies.
+
+```bash
+~/.config/sketchybar/plugins/claude_usage.py --bar      # one line, for the bar
+~/.config/sketchybar/plugins/claude_usage.py --detail   # per-model table
+~/.config/sketchybar/plugins/claude_usage.py --json     # raw figures
+```
+
+It parses `~/.claude/projects/**/*.jsonl`, skipping files not modified today,
+and dedupes on `(message.id, requestId)` because resumed sessions re-log
+entries. Runs in well under a tenth of a second.
+
+**The cost is an estimate, not a bill.** On a Claude subscription you are not
+billed per token at all — the figure is what the same usage would cost at
+published API rates. Rates live in `PRICING` in `claude_usage.py` and will drift
+as pricing changes; a model with no entry contributes tokens but no cost and is
+flagged with `*`. Cache tokens are priced at the documented multipliers: reads at
+0.1x the model's input rate, writes at 1.25x for the 5-minute TTL and 2x for the
+1-hour TTL, which the logs distinguish via `ephemeral_5m_input_tokens` and
+`ephemeral_1h_input_tokens`.
 
 ### macOS animations
 
