@@ -13,12 +13,22 @@ set -uo pipefail
 SCRATCH="${SCRATCH_WORKSPACE:-S}"
 TERMINAL="/Applications/Alacritty.app"
 TITLE="scratchpad"
+# Where to return to. Remembered explicitly rather than leaning on AeroSpace's
+# back-and-forth history: that history no-ops when the previous workspace is
+# the scratchpad itself, which happens the moment you summon it twice - and
+# leaves you trapped in it with no way back.
+ORIGIN="${TMPDIR:-/tmp}/aerospace-scratchpad-origin"
 
-if [ "$(aerospace list-workspaces --focused 2>/dev/null)" = "$SCRATCH" ]; then
-  # Leaving. back-and-forth returns to the previous workspace; on a fresh login
-  # there is no history to return to, so fall back to the first one.
-  aerospace workspace-back-and-forth 2>/dev/null || aerospace workspace 1
+current="$(aerospace list-workspaces --focused 2>/dev/null)"
+
+if [ "$current" = "$SCRATCH" ]; then
+  back="$(cat "$ORIGIN" 2>/dev/null || true)"
+  case "$back" in
+    "" | "$SCRATCH") back=1 ;;
+  esac
+  aerospace workspace "$back"
 else
+  printf '%s\n' "$current" > "$ORIGIN"
   aerospace workspace "$SCRATCH"
   # -n forces a new instance. Plain `open -a` would just activate the Alacritty
   # already running on another workspace and drag focus back out of the
