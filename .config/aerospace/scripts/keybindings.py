@@ -63,6 +63,8 @@ def pretty_action(cmd: str) -> str:
         return os.path.basename(path).replace(".app", "")
     if "show-keybindings" in cmd:
         return "this cheatsheet"
+    if "claude_click" in cmd:
+        return "claude usage popup"
     if cmd.startswith("exec-and-forget"):
         # any other script: show its basename rather than the whole command line
         m = re.search(r"([\w.-]+)\.(sh|py|bash)", cmd)
