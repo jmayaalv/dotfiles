@@ -209,8 +209,11 @@ cmd-ctrl-alt-enter = 'exec-and-forget open -na /Applications/Alacritty.app'  # t
                                               # -n: without it the running
                                               # instance is activated instead,
                                               # yanking focus to its workspace
-cmd-ctrl-alt-shift-enter = 'exec-and-forget open -a "Google Chrome"'  # browser
-cmd-ctrl-alt-shift-b = 'exec-and-forget open -a "Google Chrome"'  # browser (Chrome)
+# A script rather than an inline `open`, because getting a Chrome window to be
+# born in the focused workspace needs three flags that each fix a different way
+# of being yanked elsewhere - see the header of browser.sh.
+cmd-ctrl-alt-shift-enter = 'exec-and-forget /bin/bash -c "$HOME/.config/aerospace/scripts/browser.sh"'  # browser
+cmd-ctrl-alt-shift-b = 'exec-and-forget /bin/bash -c "$HOME/.config/aerospace/scripts/browser.sh"'  # browser (Chrome)
 cmd-ctrl-alt-shift-n = 'exec-and-forget open -a /Applications/Emacs.app'  # editor
 cmd-ctrl-alt-shift-o = 'exec-and-forget open -a /Applications/Obsidian.app'  # Obsidian
 cmd-ctrl-alt-shift-m = 'exec-and-forget open -a /Applications/Emacs.app'  # editor
