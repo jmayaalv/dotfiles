@@ -135,6 +135,10 @@ cmd-ctrl-alt-j = ['layout tiles horizontal vertical',    # SUPER+J  toggle split
 cmd-ctrl-alt-comma = ['layout accordion horizontal vertical',  # accordion (not Omarchy)
                       'exec-and-forget sketchybar --trigger aerospace_layout_change']
 cmd-ctrl-alt-k = 'exec-and-forget /bin/bash -c "$HOME/.config/aerospace/scripts/show-keybindings.sh"'  # SUPER+K  cheatsheet
+# The bar sits above the macOS menu bar (topmost=on) so it stops revealing on
+# hover. This drops it back down when you want a menu; press again to hide it
+# again, or leave it and the bar restores itself after ten seconds.
+cmd-ctrl-alt-m = 'exec-and-forget /bin/bash -c "$HOME/.config/aerospace/scripts/reveal-menubar.sh"'  # SUPER+M  reach the menu bar
 
 # --- Focus ------------------------------------------------------------------
 # WASD and the arrows both work. SUPER is cmd+ctrl+alt already, so shift is the

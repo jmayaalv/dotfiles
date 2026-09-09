@@ -28,11 +28,17 @@ POPUP_CORNER_RADIUS=11
 SHADOW=on
 
 # Setting up the general bar appearance and default values.
-# topmost=on lifts the bar to window layer 25, one above the macOS menu bar
-# at 24, so the auto-hidden menu bar reveals *behind* the bar instead of over
-# it. That also puts the bar's own drop shadow above the tiled windows, where
-# it reads as a blurred smear along their top edge - hence shadow=off here.
-# Popups keep their shadow via $SHADOW.
+# topmost=on lifts the bar to window layer 25, one above the macOS menu bar at
+# 24, so the auto-hidden menu bar (_HIHideMenuBar) reveals *behind* the bar
+# instead of over it when the pointer nudges the top edge.
+# The cost of that is App/File/Window menus becoming unreachable by pointer,
+# since the bar is what the click lands on. SUPER+M covers it: it drops the bar
+# below the menu bar; a second press raises it again, and it restores itself
+# after ten seconds if you forget (aerospace/scripts/reveal-menubar.sh).
+# Drop-down menus are in a far higher window layer, so once a menu is open it
+# draws over the bar regardless.
+# The bar's own drop shadow reads as a blurred smear along the top edge of the
+# windows beneath it - hence shadow=off. Popups keep their shadow via $SHADOW.
 sketchybar --bar     height=35                                         \
                      color=$BAR_COLOR                                  \
                      shadow=off                                       \
