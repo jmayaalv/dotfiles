@@ -11,15 +11,22 @@
 #   - front_app_switched, which covers focus moving between apps
 #   - update_freq, the backstop for the one case none of those catch: focus
 #     moving between sibling windows (SUPER+A/S/W/D) fires no event at all
+#
+# It also subscribes to mouse.entered/exited, which is what reveals the layout's
+# NAME while the pointer rests on it - the glyph alone is not memorable.
 sketchybar --add event aerospace_layout_change
 
 sketchybar --add       item   layout left                                    \
            --set       layout update_freq=2                                  \
                               icon.font="$FONT:Regular:15.0"                 \
                               icon.color=$ICON_COLOR                         \
+                              label.font="$FONT:Semibold:12.0"               \
+                              label.color=$SUBTEXT0                          \
                               label.drawing=off                              \
                               script="$PLUGIN_DIR/layout.sh"                 \
                               click_script="aerospace layout tiles horizontal vertical; sketchybar --trigger aerospace_layout_change" \
            --subscribe layout aerospace_layout_change                        \
                               aerospace_workspace_change                     \
-                              front_app_switched
+                              front_app_switched                             \
+                              mouse.entered                                  \
+                              mouse.exited
