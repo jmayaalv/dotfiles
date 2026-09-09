@@ -25,9 +25,14 @@ SPOTIFY_NEXT=􀊐
 SPOTIFY_SHUFFLE=􀊝
 SPOTIFY_REPEAT=􀊞
 
-# Yabai Icons
-YABAI_STACK=􀏭
-YABAI_FULLSCREEN_ZOOM=􀏜
-YABAI_PARENT_ZOOM=􀥃
-YABAI_FLOAT=􀢌
-YABAI_GRID=􀧍
+# AeroSpace Layout Icons (used by plugins/layout.sh)
+# Outlined = tiles, filled = accordion; the divider inside the rectangle shows
+# the split direction, so shape carries orientation and fill carries mode.
+# Floating and fullscreen step outside that family on purpose - they are not
+# orientations, so they should not look like one.
+LAYOUT_TILES_H=􀧈
+LAYOUT_TILES_V=􀧊
+LAYOUT_ACCORDION_H=􀧉
+LAYOUT_ACCORDION_V=􀧋
+LAYOUT_FLOATING=􀏧
+LAYOUT_FULLSCREEN=􀧛

@@ -119,10 +119,21 @@ outer.top        = 8    # macOS already reserves 32px of menu-bar area at the to
 
 # --- Windows ----------------------------------------------------------------
 cmd-ctrl-alt-q = 'close'                                # SUPER+Q  close window
-cmd-ctrl-alt-t = 'layout floating tiling'               # SUPER+T  toggle float/tile
-cmd-ctrl-alt-f = 'fullscreen'                           # SUPER+F  fullscreen
-cmd-ctrl-alt-j = 'layout tiles horizontal vertical'     # SUPER+J  toggle split
-cmd-ctrl-alt-comma = 'layout accordion horizontal vertical'  # accordion (not Omarchy)
+
+# The layout bindings each notify sketchybar's layout item afterwards, because
+# AeroSpace has no on-layout-change callback to subscribe to. The item also
+# polls as a backstop, so a missed trigger costs a second of staleness rather
+# than a wrong glyph - but the trigger is what makes these feel instant.
+# Keep the layout command first in each list: scripts/keybindings.py labels the
+# binding from element [0] when it builds the cheatsheet.
+cmd-ctrl-alt-t = ['layout floating tiling',              # SUPER+T  toggle float/tile
+                  'exec-and-forget sketchybar --trigger aerospace_layout_change']
+cmd-ctrl-alt-f = ['fullscreen',                          # SUPER+F  fullscreen
+                  'exec-and-forget sketchybar --trigger aerospace_layout_change']
+cmd-ctrl-alt-j = ['layout tiles horizontal vertical',    # SUPER+J  toggle split
+                  'exec-and-forget sketchybar --trigger aerospace_layout_change']
+cmd-ctrl-alt-comma = ['layout accordion horizontal vertical',  # accordion (not Omarchy)
+                      'exec-and-forget sketchybar --trigger aerospace_layout_change']
 cmd-ctrl-alt-k = 'exec-and-forget /bin/bash -c "$HOME/.config/aerospace/scripts/show-keybindings.sh"'  # SUPER+K  cheatsheet
 
 # --- Focus ------------------------------------------------------------------
@@ -209,6 +220,6 @@ cmd-ctrl-alt-shift-semicolon = 'mode service'
 # See: https://nikitabobko.github.io/AeroSpace/guide#binding-modes
 [mode.service.binding]
 esc = ['reload-config', 'mode main']
-r = ['layout tiles', 'flatten-workspace-tree', 'mode main'] # reset layout to tiles
-f = ['layout floating tiling', 'mode main'] # Toggle between floating and tiling layout
+r = ['layout tiles', 'flatten-workspace-tree', 'exec-and-forget sketchybar --trigger aerospace_layout_change', 'mode main'] # reset layout to tiles
+f = ['layout floating tiling', 'exec-and-forget sketchybar --trigger aerospace_layout_change', 'mode main'] # Toggle between floating and tiling layout
 backspace = ['close-all-windows-but-current', 'mode main']

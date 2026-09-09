@@ -66,6 +66,7 @@ sketchybar --bar     height=35                                         \
 # Left
 source "$ITEM_DIR/apple.sh"
 source "$ITEM_DIR/spaces.sh"
+source "$ITEM_DIR/layout.sh"
 source "$ITEM_DIR/front_app.sh"
 
 # Right. Items added to "right" stack right-to-left, so the first one sourced is
