@@ -1,0 +1,196 @@
+#!/bin/sh
+# Fast-forward a Beluca release branch to its source branch.
+#
+#   release-ims qa       develop -> release/qa
+#   release-ims master   master  -> release/master
+#
+# Pushing to release/* is what actually deploys: a Bitbucket branch pipeline
+# fires on the push and triggers the GitLab pipeline that does the deploy. The
+# custom: release/qa and release/master pipelines in bitbucket-pipelines.yml
+# are dormant and are not part of this route.
+#
+# The push is deliberately not forced, so the server is the final authority on
+# whether the promotion is a fast-forward. The pre-flight below exists to turn
+# a rejection into a readable explanation, not to replace that guarantee.
+#
+# By default this works in its own bare repository under ~/.cache rather than a
+# checkout, so it cannot be affected by, or affect, whatever state a working
+# clone happens to be in. Set IMS_REPO to point it at a real clone instead.
+
+set -eu
+
+REMOTE_URL="git@bitbucket.org:belucasys/beluca.git"
+CACHE_REPO="${XDG_CACHE_HOME:-$HOME/.cache}/release-ims/beluca.git"
+PIPELINES_URL="https://bitbucket.org/belucasys/beluca/pipelines"
+
+PROG=$(basename "$0")
+
+usage() {
+    cat <<USAGE
+usage: $PROG <target> [-n|--dry-run] [-y|--yes]
+
+targets:
+  qa       develop -> release/qa
+  master   master  -> release/master
+
+options:
+  -n, --dry-run  do everything except the push
+  -y, --yes      skip the confirmation prompt (not accepted for master)
+  -h, --help     show this message
+
+environment:
+  IMS_REPO  use this git repository instead of the private one under
+            \$XDG_CACHE_HOME/release-ims
+USAGE
+}
+
+die() {
+    echo "$PROG: $*" >&2
+    exit 1
+}
+
+TARGET=""
+DRY_RUN=no
+ASSUME_YES=no
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -n|--dry-run) DRY_RUN=yes ;;
+        -y|--yes)     ASSUME_YES=yes ;;
+        -h|--help)    usage; exit 0 ;;
+        -*)           usage >&2; die "unknown option: $1" ;;
+        *)
+            [ -z "$TARGET" ] || { usage >&2; die "unexpected argument: $1"; }
+            TARGET="$1"
+            ;;
+    esac
+    shift
+done
+
+[ -n "$TARGET" ] || { usage >&2; exit 1; }
+
+# DEST_LABEL is the branch, not an environment name. Only the QA route is known
+# from the pipeline config; what release/master ultimately deploys to is not,
+# so this does not claim to know.
+case "$TARGET" in
+    qa)
+        SRC=develop
+        DST=release/qa
+        DEST_LABEL="QA"
+        ;;
+    master)
+        SRC=master
+        DST=release/master
+        DEST_LABEL="RELEASE/MASTER"
+        ;;
+    *)
+        usage >&2
+        die "unknown target: $TARGET"
+        ;;
+esac
+
+# A confirmation that is one keystroke away from a QA promotion is not enough
+# friction for the master line, so that target requires typing its name and
+# refuses --yes outright.
+if [ "$TARGET" = master ] && [ "$ASSUME_YES" = yes ]; then
+    die "--yes is not accepted for the master target; confirm it interactively"
+fi
+
+if [ -n "${IMS_REPO:-}" ]; then
+    REPO="$IMS_REPO"
+    git -C "$REPO" rev-parse --git-dir >/dev/null 2>&1 ||
+        die "IMS_REPO is not a git repository: $REPO"
+else
+    REPO="$CACHE_REPO"
+    if [ ! -d "$REPO" ]; then
+        echo "Creating $REPO ..."
+        mkdir -p "$REPO"
+        git init --quiet --bare "$REPO"
+        git -C "$REPO" remote add origin "$REMOTE_URL"
+    fi
+fi
+
+# Only commits are ever read, so trees and blobs are filtered out of the fetch.
+# Not every server honours every filter, hence the fallbacks; an unfiltered
+# fetch of this monorepo is slow but still correct.
+fetch_refs() {
+    spec_src="+refs/heads/$SRC:refs/remotes/origin/$SRC"
+    spec_dst="+refs/heads/$DST:refs/remotes/origin/$DST"
+    for filter in "--filter=tree:0" "--filter=blob:none" ""; do
+        # shellcheck disable=SC2086
+        if git -C "$REPO" fetch --quiet $filter origin "$spec_src" "$spec_dst" 2>/dev/null; then
+            return 0
+        fi
+    done
+    # Run once more unfiltered without swallowing stderr, so the real reason
+    # for the failure reaches the user.
+    git -C "$REPO" fetch origin "$spec_src" "$spec_dst"
+}
+
+echo "Fetching $SRC and $DST ..."
+fetch_refs || die "fetch failed; refusing to act on stale refs"
+
+git -C "$REPO" rev-parse --verify --quiet "refs/remotes/origin/$SRC" >/dev/null ||
+    die "no such branch on origin: $SRC"
+git -C "$REPO" rev-parse --verify --quiet "refs/remotes/origin/$DST" >/dev/null ||
+    die "no such branch on origin: $DST"
+
+SRC_REF="origin/$SRC"
+DST_REF="origin/$DST"
+SRC_SHA=$(git -C "$REPO" rev-parse --short "$SRC_REF")
+
+AHEAD=$(git -C "$REPO" rev-list --count "$SRC_REF..$DST_REF")
+BEHIND=$(git -C "$REPO" rev-list --count --first-parent "$DST_REF..$SRC_REF")
+
+if [ "$AHEAD" -gt 0 ]; then
+    echo "$DST has $AHEAD commit(s) that are not in $SRC:" >&2
+    git -C "$REPO" log --oneline "$SRC_REF..$DST_REF" >&2
+    echo >&2
+    die "not a fast-forward; $DST has to be reconciled with $SRC first"
+fi
+
+if [ "$BEHIND" -eq 0 ]; then
+    echo "$DST is already at $SRC ($SRC_SHA). Nothing to release."
+    exit 0
+fi
+
+# --first-parent collapses each squashed pull request and each back-merge to a
+# single line, and the count uses the same filter so the two cannot disagree.
+echo
+echo "$BEHIND commit(s) to promote from $SRC to $DST:"
+echo
+git -C "$REPO" log --oneline --first-parent --max-count=30 "$DST_REF..$SRC_REF"
+if [ "$BEHIND" -gt 30 ]; then
+    echo "... and $((BEHIND - 30)) more"
+fi
+echo
+
+if [ "$DRY_RUN" = yes ]; then
+    echo "Dry run: would push $SRC_REF ($SRC_SHA) to $DST."
+    exit 0
+fi
+
+if [ "$ASSUME_YES" != yes ]; then
+    if [ "$TARGET" = master ]; then
+        printf 'Promote to %s? Type "master" to confirm: ' "$DEST_LABEL"
+        # An EOF leaves REPLY empty, which is not a confirmation.
+        read -r REPLY || REPLY=""
+        [ "$REPLY" = master ] || die "aborted"
+    else
+        printf 'Promote to %s? [y/N] ' "$DEST_LABEL"
+        read -r REPLY || REPLY=""
+        case "$REPLY" in
+            y|Y|yes|YES) ;;
+            *) die "aborted" ;;
+        esac
+    fi
+fi
+
+git -C "$REPO" push origin "$SRC_REF:refs/heads/$DST"
+
+echo
+echo "Pushed $SRC_SHA to $DST."
+# The pipeline step that triggers the deploy curls GitLab without --fail, so a
+# green Bitbucket step does not by itself prove the deploy was triggered. Check
+# the run rather than assuming it.
+echo "Check the pipeline: $PIPELINES_URL"

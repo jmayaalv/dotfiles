@@ -131,6 +131,24 @@ if [ -d "$HOME/.claude" ]; then
   cp "$DOTFILES_DIR/.claude/statusline-command.sh" "$HOME/.claude/statusline-command.sh"
 fi
 
+# Put personal scripts on PATH. ~/.local/bin already holds real, untracked files
+# (clj-nrepl-eval and friends), so it is not a stow package; each script is
+# symlinked into it individually instead.
+echo "Linking personal scripts into ~/.local/bin..."
+mkdir -p "$HOME/.local/bin"
+for script in "$DOTFILES_DIR"/.config/scripts/*; do
+  [ -f "$script" ] || continue
+  target="$HOME/.local/bin/$(basename "$script")"
+  if [ -L "$target" ] && [ "$(readlink "$target")" = "$script" ]; then
+    echo "  $(basename "$script") already linked, skipping."
+  elif [ -e "$target" ] && [ ! -L "$target" ]; then
+    echo "  $(basename "$script") exists in ~/.local/bin as a real file, leaving it alone."
+  else
+    ln -sfn "$script" "$target"
+    echo "  linked $(basename "$script")"
+  fi
+done
+
 # Build the SketchyBar mach helper (drives the CPU graphs and the clock)
 echo "Building the SketchyBar helper..."
 make -C "$DOTFILES_DIR/.config/sketchybar/helper"
