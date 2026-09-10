@@ -53,14 +53,6 @@ else
   brew install bat
 fi
 
-# Install jq (release-ims parses the Bitbucket API with it)
-if command -v jq &>/dev/null; then
-  echo "jq already installed, skipping."
-else
-  echo "Installing jq..."
-  brew install jq
-fi
-
 # Install libvterm (needed by Emacs vterm)
 if brew list libvterm &>/dev/null; then
   echo "libvterm already installed, skipping."

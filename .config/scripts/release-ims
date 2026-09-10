@@ -1,5 +1,5 @@
 #!/bin/sh
-# Fast-forward a Beluca release branch to its source branch.
+# Check and open a Beluca release promotion.
 #
 #   release-ims qa       develop -> release/qa
 #   release-ims master   master  -> release/master
@@ -9,12 +9,14 @@
 # custom: release/qa and release/master pipelines in bitbucket-pipelines.yml
 # look like the release path but are dormant.
 #
-# The promotion goes through a pull request rather than a direct push, because
-# release/qa and release/master are restricted branches and a plain push is
-# refused with "Permission denied to update branch release/qa". The PR is merged
-# with Bitbucket's fast_forward strategy, so the result is identical to the push
-# that is not permitted: no merge commit, and the release branch lands exactly on
-# the source commit.
+# release/qa and release/master are restricted branches, so a direct push is
+# refused with "Permission denied to update branch release/qa" and the promotion
+# has to go through a pull request merged with the fast_forward strategy, which
+# leaves no merge commit. Creating that pull request over the API would need a
+# Bitbucket token, and Bitbucket offers no pull request operations over SSH, so
+# this stops at the browser instead: it answers the questions worth answering -
+# is the promotion still a fast-forward, and what exactly is about to ship - and
+# then opens the pull request page. Creating and merging stay manual.
 #
 # By default this works in its own bare repository under ~/.cache rather than a
 # checkout, so it cannot be affected by, or affect, whatever state a working
@@ -25,10 +27,8 @@ set -eu
 WORKSPACE="belucasys"
 REPO_SLUG="beluca"
 REMOTE_URL="git@bitbucket.org:$WORKSPACE/$REPO_SLUG.git"
-API="https://api.bitbucket.org/2.0/repositories/$WORKSPACE/$REPO_SLUG"
 CACHE_REPO="${XDG_CACHE_HOME:-$HOME/.cache}/release-ims/$REPO_SLUG.git"
 PIPELINES_URL="https://bitbucket.org/$WORKSPACE/$REPO_SLUG/pipelines"
-KEYCHAIN_SERVICE="release-ims"
 
 PROG=$(basename "$0")
 
@@ -41,21 +41,17 @@ targets:
   master   master  -> release/master
 
 options:
-  -n, --dry-run  do everything except opening and merging the pull request
+  -n, --dry-run  check and preview only, without opening the browser
   -y, --yes      skip the confirmation prompt (not accepted for master)
   -h, --help     show this message
 
 environment:
-  IMS_REPO        use this git repository instead of the private one under
-                  \$XDG_CACHE_HOME/release-ims
-  BITBUCKET_USER  Bitbucket account for the API call; defaults to the account
-                  stored on the keychain item
+  IMS_REPO  use this git repository instead of the private one under
+            \$XDG_CACHE_HOME/release-ims
 
-credentials:
-  A Bitbucket API token is read from the login keychain, service
-  "$KEYCHAIN_SERVICE". Store one with:
-
-    security add-generic-password -s $KEYCHAIN_SERVICE -a <your-atlassian-email> -w
+The pull request still has to be created and merged by hand. Merge it with the
+fast-forward strategy, so the release branch lands exactly on the source commit
+and no merge commit is created.
 USAGE
 }
 
@@ -104,69 +100,12 @@ case "$TARGET" in
         ;;
 esac
 
-# A confirmation that is one keystroke away from a QA promotion is not enough
-# friction for the master line, so that target requires typing its name and
-# refuses --yes outright.
+# The merge button in Bitbucket is the real gate now, so this is only about not
+# landing on the wrong promotion page: one word separates the two targets, and
+# the master line is the one where that matters.
 if [ "$TARGET" = master ] && [ "$ASSUME_YES" = yes ]; then
     die "--yes is not accepted for the master target; confirm it interactively"
 fi
-
-command -v jq >/dev/null 2>&1 || die "jq is required but not installed (brew install jq)"
-
-read_credentials() {
-    BB_TOKEN=$(security find-generic-password -s "$KEYCHAIN_SERVICE" -w 2>/dev/null) || return 1
-    if [ -n "${BITBUCKET_USER:-}" ]; then
-        BB_USER="$BITBUCKET_USER"
-    else
-        BB_USER=$(security find-generic-password -s "$KEYCHAIN_SERVICE" 2>/dev/null |
-            awk -F'"' '/"acct"<blob>=/{print $4}')
-    fi
-    [ -n "$BB_TOKEN" ] && [ -n "$BB_USER" ]
-}
-
-no_credentials() {
-    cat >&2 <<MSG
-$PROG: no Bitbucket API token on the keychain (service "$KEYCHAIN_SERVICE").
-
-Create an API token at https://id.atlassian.com/manage-profile/security/api-tokens
-and store it with:
-
-  security add-generic-password -s $KEYCHAIN_SERVICE -a <your-atlassian-email> -w
-
-The token needs write access to pull requests on $WORKSPACE/$REPO_SLUG.
-MSG
-    exit 1
-}
-
-# Prints the response body on success. On any non-2xx the body is printed to
-# stderr with Bitbucket's own error message pulled out, because the interesting
-# failures here - a merge check, a revoked token - are only explained there.
-bb_api() {
-    method=$1
-    url=$2
-    body=${3:-}
-    tmp=$(mktemp)
-    if [ -n "$body" ]; then
-        code=$(curl -sS -o "$tmp" -w '%{http_code}' -X "$method" \
-            -u "$BB_USER:$BB_TOKEN" -H 'Content-Type: application/json' \
-            -d "$body" "$url")
-    else
-        code=$(curl -sS -o "$tmp" -w '%{http_code}' -X "$method" \
-            -u "$BB_USER:$BB_TOKEN" "$url")
-    fi
-    case "$code" in
-        2*)
-            cat "$tmp"
-            rm -f "$tmp"
-            ;;
-        *)
-            echo "$PROG: Bitbucket returned HTTP $code for $method $url" >&2
-            jq -r '.error.message // .error // .' "$tmp" >&2 2>/dev/null || cat "$tmp" >&2
-            rm -f "$tmp"
-            return 1
-            ;;
-    esac
-}
 
 if [ -n "${IMS_REPO:-}" ]; then
     REPO="$IMS_REPO"
@@ -237,26 +176,27 @@ if [ "$BEHIND" -gt 30 ]; then
 fi
 echo
 
+# Only the slash in release/qa needs escaping; both branch names are fixed by
+# the target and contain nothing else that is unsafe in a query string.
+escape_branch() {
+    printf '%s' "$1" | sed 's|/|%2F|g'
+}
+
+PR_URL="https://bitbucket.org/$WORKSPACE/$REPO_SLUG/pull-requests/new?source=$(escape_branch "$SRC")&dest=$(escape_branch "$DST")"
+
 if [ "$DRY_RUN" = yes ]; then
-    if read_credentials; then
-        echo "Dry run: would fast-forward $DST to $SRC ($SRC_SHA) via a pull request as $BB_USER."
-    else
-        echo "Dry run: would fast-forward $DST to $SRC ($SRC_SHA) via a pull request."
-        echo "Note: no API token on the keychain yet, so a real run would stop and explain how to add one."
-    fi
+    echo "Dry run: would open $PR_URL"
     exit 0
 fi
 
-read_credentials || no_credentials
-
 if [ "$ASSUME_YES" != yes ]; then
     if [ "$TARGET" = master ]; then
-        printf 'Promote to %s? Type "master" to confirm: ' "$DEST_LABEL"
+        printf 'Open the pull request for %s? Type "master" to confirm: ' "$DEST_LABEL"
         # An EOF leaves REPLY empty, which is not a confirmation.
         read -r REPLY || REPLY=""
         [ "$REPLY" = master ] || die "aborted"
     else
-        printf 'Promote to %s? [y/N] ' "$DEST_LABEL"
+        printf 'Open the pull request for %s? [y/N] ' "$DEST_LABEL"
         read -r REPLY || REPLY=""
         case "$REPLY" in
             y|Y|yes|YES) ;;
@@ -265,38 +205,13 @@ if [ "$ASSUME_YES" != yes ]; then
     fi
 fi
 
-# An open pull request for this pair may already exist, from an earlier run that
-# opened one but could not merge it. Bitbucket refuses a second one, so reuse it.
-#
-# The state has to be part of q rather than a separate state parameter: supplying
-# both makes Bitbucket ignore the parameter and return merged pull requests too,
-# and reusing a merged one would fail at the merge step with a confusing error.
-PR_QUERY="state=\"OPEN\" AND source.branch.name=\"$SRC\" AND destination.branch.name=\"$DST\""
-PR_QUERY_ENC=$(jq -rn --arg q "$PR_QUERY" '$q|@uri')
-PR_ID=$(bb_api GET "$API/pullrequests?pagelen=5&fields=values.id&q=$PR_QUERY_ENC" |
-    jq -r 'first(.values[].id) // empty')
-
-if [ -n "$PR_ID" ]; then
-    echo "Reusing open pull request #$PR_ID."
-else
-    PR_BODY=$(jq -n --arg t "Promote $SRC to $DST ($SRC_SHA)" --arg s "$SRC" --arg d "$DST" \
-        '{title: $t, source: {branch: {name: $s}}, destination: {branch: {name: $d}}, close_source_branch: false}')
-    PR_ID=$(bb_api POST "$API/pullrequests" "$PR_BODY" | jq -r '.id')
-    [ -n "$PR_ID" ] && [ "$PR_ID" != null ] || die "could not create the pull request"
-    echo "Opened pull request #$PR_ID."
-fi
-
-MERGE_BODY='{"merge_strategy":"fast_forward","close_source_branch":false}'
-MERGED_SHA=$(bb_api POST "$API/pullrequests/$PR_ID/merge" "$MERGE_BODY" |
-    jq -r '.merge_commit.hash // empty') || {
-    echo "$PROG: pull request #$PR_ID is open but was not merged." >&2
-    echo "Review it at https://bitbucket.org/$WORKSPACE/$REPO_SLUG/pull-requests/$PR_ID" >&2
-    exit 1
-}
+open "$PR_URL"
 
 echo
-echo "Merged pull request #$PR_ID: $DST is now at $(echo "$MERGED_SHA" | cut -c1-10)."
+echo "Opened $PR_URL"
+echo "Create it, then merge with the fast-forward strategy so $DST lands on $SRC_SHA"
+echo "with no merge commit."
 # The pipeline step that triggers the deploy curls GitLab without --fail, so a
 # green Bitbucket step does not by itself prove the deploy was triggered. Check
 # the run rather than assuming it.
-echo "Check the pipeline: $PIPELINES_URL"
+echo "Then check the pipeline: $PIPELINES_URL"
