@@ -77,6 +77,24 @@ else
   brew install clojure-lsp/brew/clojure-lsp-native
 fi
 
+# Claude usage monitoring. Claude Usage is a menu bar app reading the real
+# 5-hour, weekly and per-model limits; ccusage is the CLI behind the Raycast
+# "Claude Usage (ccusage)" extension, which parses the local Claude Code logs.
+# The Raycast extension itself installs from the Raycast store, not from here.
+if [ -d "/Applications/Claude Usage.app" ]; then
+  echo "Claude Usage already installed, skipping."
+else
+  echo "Installing Claude Usage..."
+  brew install --cask hamed-elfayome/claude-usage/claude-usage-tracker
+fi
+
+if command -v ccusage &>/dev/null; then
+  echo "ccusage already installed, skipping."
+else
+  echo "Installing ccusage..."
+  brew install ccusage
+fi
+
 # Install the Claude Code statusline script. ~/.claude is not stowed (Claude Code
 # writes into it), so this is copied rather than symlinked.
 if [ -d "$HOME/.claude" ]; then
