@@ -18,6 +18,5 @@
 !.claude/statusline-command.sh
 .secrets/
 /.agent-shell/
-.config/sketchybar/helper/helper
 .config/karabiner/automatic_backups/
 __pycache__/
