@@ -8,7 +8,7 @@ I need to add kane-build configuration to this single Clojure project. Please:
 2. **Create bb.edn file**: Set up standard kane-build configuration with:
    - Kane-build dependency with proper git URL and SHA
    - Standard build tasks (clean, test, ci, install, deploy, repl)
-   - Git hooks management tasks
+   - Git hooks management tasks (shell-based - see below)
    - Proper requires and override-builtin configuration
 3. **Use standard task structure**:
    ```clojure
@@ -23,11 +23,9 @@ I need to add kane-build configuration to this single Clojure project. Please:
        :task (shell "clojure -T:build ci") 
        :depends [test]}
    ```
-4. **CRITICAL - Avoid common issues**:
-   - **DO NOT** import `[kane.build.hooks :as hooks]` (causes classpath errors)
-   - **DO NOT** add hooks tasks like `setup:hooks {:task (hooks/install-hooks!)}`
-   - **DO** comment out hooks tasks or use shell-based approach
-   - **DO** use `-X:test` not `-M:test` for Hawk test runner
+4. **Known constraints**:
+   - Don't require `[kane.build.hooks :as hooks]` or call `(hooks/install-hooks!)` - it causes classpath errors. Define hooks tasks by shelling out: `(shell "bb" "--config" "../kane-build/bb.edn" "setup:hooks")`.
+   - Use `-X:test`, not `-M:test` - the Hawk test runner is an exec function.
 
 Arguments:
 - $1: Git SHA for kane-build (optional - will use latest if not provided)

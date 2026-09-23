@@ -22,7 +22,7 @@ To create a commit, just type:
 
 - **Atomic commits**: Each commit should contain related changes that serve a single purpose
 - **Split large changes**: If changes touch multiple concerns, split them into separate commits
-- **Conventional commit format**: Use the format `<type>: <description>` where type is one of:
+- **Conventional commit format**: Use the format `<type>: <description>`. The core types are:
   - `feat`: A new feature
   - `fix`: A bug fix
   - `docs`: Documentation changes
@@ -33,7 +33,7 @@ To create a commit, just type:
   - `chore`: Changes to the build process, tools, etc.
 - **Present tense, imperative mood**: Write commit messages as commands (e.g., "add feature" not "added feature")
 - **Concise first line**: Keep the first line under 72 characters
-- **Emoji**: Each commit type is paired with an appropriate emoji:
+- **Emoji**: Prefix the message with the emoji that fits the change. The types in this table (including `ci`, `revert`, `wip`, `db`, `ui`, `assets`, `experiment`) are all valid:
   - ✨ `feat`: New feature
   - 🐛 `fix`: Bug fix
   - 📝 `docs`: Documentation
@@ -128,22 +128,8 @@ Good commit messages:
 - 🔒️ fix: strengthen authentication password requirements
 - ♿️ feat: improve form accessibility for screen readers
 
-Example of splitting commits:
-- First commit: ✨ feat: add new solc version type definitions
-- Second commit: 📝 docs: update documentation for new solc versions
-- Third commit: 🔧 chore: update package.json dependencies
-- Fourth commit: 🏷️ feat: add type definitions for new API endpoints
-- Fifth commit: 🧵 feat: improve concurrency handling in worker threads
-- Sixth commit: 🚨 fix: resolve linting issues in new code
-- Seventh commit: ✅ test: add unit tests for new solc version features
-- Eighth commit: 🔒️ fix: update dependencies with security vulnerabilities
+Illustrative split (split only as far as the changes are genuinely independent - often one commit is right):
+- ✨ feat: add new solc version type definitions
+- 📝 docs: update documentation for new solc versions
 
-
-## Important Notes
-
-- If specific files are already staged, the command will only commit those files
-- If no files are staged, it will automatically stage all modified and new files
-- The commit message will be constructed based on the changes detected
-- Before committing, the command will review the diff to identify if multiple commits would be more appropriate
-- If suggesting multiple commits, it will help you stage and commit the changes separately
-- Always reviews the commit diff to ensure the message matches the changes
+If specific files are already staged, commit only those files.

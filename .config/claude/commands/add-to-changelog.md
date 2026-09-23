@@ -23,27 +23,8 @@ Where:
 /add-to-changelog 1.0.2 fixed "Bug in HTML renderer causing incorrect output"
 ```
 
-## Description
+## Behavior
 
-This command will:
+Arguments: $ARGUMENTS
 
-1. Check if a CHANGELOG.md file exists and create one if needed
-2. Look for an existing section for the specified version
-   - If found, add the new entry under the appropriate change type section
-   - If not found, create a new version section with today's date
-3. Format the entry according to Keep a Changelog conventions
-4. Commit the changes if requested
-
-The CHANGELOG follows the [Keep a Changelog](https://keepachangelog.com/) format
-
-## Implementation
-
-The command should:
-
-1. Parse the arguments to extract version, change type, and message
-2. Read the existing CHANGELOG.md file if it exists
-3. If the file doesn't exist, create a new one with standard header
-4. Check if the version section already exists
-5. Add the new entry in the appropriate section
-6. Write the updated content back to the file
-7. Suggest committing the changes
+Add the entry to CHANGELOG.md in [Keep a Changelog](https://keepachangelog.com/) format. If the file doesn't exist, create it with the standard header. If the version already has a section, add the entry under its change-type heading; otherwise create the version section dated today. Don't commit - suggest it.

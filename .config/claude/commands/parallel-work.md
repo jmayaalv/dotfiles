@@ -1,4 +1,4 @@
-I want to develop features in parallel for my expense tracker app using Git worktrees: $ARGUMENTS
+I want to develop features in parallel using Git worktrees: $ARGUMENTS
 
 Think about how to divide the work up into separate features unless this has been 
 clearly explained already. 
