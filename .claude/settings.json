@@ -12,6 +12,15 @@
             "command": "clj-paren-repair-claude-hook --cljfmt"
           }
         ]
+      },
+      {
+        "matcher": "AskUserQuestion",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.config/tmux/claude-waiting.sh on"
+          }
+        ]
       }
     ],
     "PostToolUse": [
@@ -23,6 +32,14 @@
             "command": "clj-paren-repair-claude-hook --cljfmt"
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.config/tmux/claude-waiting.sh off"
+          }
+        ]
       }
     ],
     "SessionEnd": [
@@ -31,6 +48,55 @@
           {
             "type": "command",
             "command": "clj-paren-repair-claude-hook --cljfmt"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.config/tmux/claude-waiting.sh off"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "permission_prompt|idle_prompt|elicitation_dialog|elicitation_url_dialog|agent_needs_input",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.config/tmux/claude-waiting.sh on"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.config/tmux/claude-waiting.sh on"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.config/tmux/claude-waiting.sh off"
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.config/tmux/claude-waiting.sh off"
           }
         ]
       }
