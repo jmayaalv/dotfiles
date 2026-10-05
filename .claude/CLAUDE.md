@@ -1,13 +1,12 @@
 ### 1. Superpower
-- call using-superpwors for ANY non-trivial task (3+ steps or architectural decisions)
+- call superpowers:using-superpowers for any non-trivial task (3+ steps or architectural decisions)
 - If something goes sideways, STOP and re-plan immediately - don't keep pushing
 
 ---
 
 ### 2. Subagent Strategy
-- Use subagents liberally to keep main context window clean
-- Offload research, exploration, and parallel analysis to subagents
-- For complex problems, throw more compute at it via subagents
+- Use a subagent when a task would otherwise pull large amounts of file content
+  into the main context, or when independent work can run in parallel
 - One task per subagent for focused execution
 
 ---

@@ -7,3 +7,11 @@
 ## Test tmux changes on a private server, never the user's (2026-09-25)
 - **Mistake:** a test client attached with `script ... tmux attach` was left behind. `detach-client` takes `-t`, not `-c`. Because of `detach-on-destroy off`, killing the test session moved that client into the user's `main` session, where it could shrink their windows through `aggressive-resize`.
 - **Rule:** run throwaway sessions and clients on `tmux -L <test-socket>`, and point scripts at it with `TMUX=<socket>,0,0`. Before finishing, check with `list-clients` that only the user's client is left.
+
+## "Can we somehow…?" is a question, not a go-ahead (2026-10-05)
+- **Mistake:** asked whether a tmux session on the Mac mini could be "brought here" into herdr, I picked one reading (nest `tmux attach` in a new herdr workspace) and built it. That wasn't what the user wanted, so it had to be removed.
+- **Rule:** when the request is open-ended and the options differ in kind (nest it, migrate it, mirror it), lay out the options with a recommendation and wait for a choice before creating anything. Reading and inspecting first is fine; making changes is not.
+
+## Check the colors on screen before changing a theme (2026-10-05)
+- **Mistake:** I read Alacritty's `general.import = [catppuccin-latte]` and decided the terminal was light, so I switched herdr to Latte. But `alacritty.toml`'s own `[colors]` block (background `#1E1D2F`) overrides the import, so the terminal was dark. The result was a white tab bar and a blue tab, and the user had to send a screenshot to show it.
+- **Rule:** before changing UI colors, confirm the colors that are actually in effect. In Alacritty, the main file's settings win over imported files, so a commented or uncommented import line proves nothing. When the result is visual and I can't render it, ask for a screenshot first rather than iterating blind.
