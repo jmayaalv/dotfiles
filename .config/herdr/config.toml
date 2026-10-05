@@ -1,0 +1,44 @@
+onboarding = false
+
+[theme]
+name = "catppuccin"
+auto_switch = false
+
+[theme.custom]
+# Mocha's stock active row (#1e1e2e) matches Alacritty's background (#1e1d2f), so
+# the current space and agent were invisible. surface0 lifts them a little; the
+# navigate-mode cursor moves up to surface1 so the two stay distinct.
+active_row_bg = "#313244"
+selection_bg = "#45475a"
+
+[keys]
+prefix = "ctrl+space"
+
+# Arrows move between panes, alongside the default h/j/k/l
+focus_pane_left = ["prefix+h", "prefix+left"]
+focus_pane_down = ["prefix+j", "prefix+down"]
+focus_pane_up = ["prefix+k", "prefix+up"]
+focus_pane_right = ["prefix+l", "prefix+right"]
+
+# Jump straight to space 1-9 (prefix+1..9 still switches tabs)
+switch_workspace = "prefix+shift+1..9"
+
+# Jump straight to agent 1-9 in the agents list, across every connected machine
+focus_agent = "prefix+ctrl+1..9"
+
+# Previous/next space across every connected machine
+previous_workspace = "prefix+shift+up"
+next_workspace = "prefix+shift+down"
+
+# herdr-file-viewer: git-aware tree with rendered markdown, diffs and code
+[[keys.command]]
+key = "prefix+f"
+type = "plugin_action"
+command = "herdr-file-viewer.open-file-viewer"
+description = "open file viewer in split"
+
+[[keys.command]]
+key = "prefix+shift+f"
+type = "plugin_action"
+command = "herdr-file-viewer.open-file-viewer-tab"
+description = "open file viewer in tab"
