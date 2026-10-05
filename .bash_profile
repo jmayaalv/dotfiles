@@ -1,3 +1,7 @@
+# The following lines were added by Docker Desktop to add commands to your PATH.
+export PATH="$PATH:/Users/jmayaalv/.docker/bin"
+# End of Docker Desktop section.
+
 eval "$(zoxide init --cmd cd bash)"
 
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
