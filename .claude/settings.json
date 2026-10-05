@@ -1,6 +1,14 @@
 {
   "permissions": {
-    "defaultMode": "auto"
+    "defaultMode": "auto",
+    "deny": [
+      "Edit(~/.config/sqlit-agents/**)",
+      "Edit(~/.config/sqlit/**)",
+      "Edit(~/Developer/dotfiles/.config/sqlit-agents/**)",
+      "Edit(~/Developer/dotfiles/.config/sqlit/**)",
+      "Edit(~/dotfiles/.config/sqlit-agents/**)",
+      "Edit(~/dotfiles/.config/sqlit/**)"
+    ]
   },
   "hooks": {
     "PreToolUse": [
@@ -19,6 +27,16 @@
           {
             "type": "command",
             "command": "$HOME/.config/tmux/claude-waiting.sh input"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$HOME/.config/sqlit/bin/sqlit-guard\"",
+            "timeout": 10
           }
         ]
       }
@@ -125,5 +143,8 @@
   "theme": "dark",
   "remoteControlAtStartup": true,
   "agentPushNotifEnabled": true,
-  "skipAutoPermissionPrompt": true
+  "skipAutoPermissionPrompt": true,
+  "env": {
+    "SQLIT_CONFIG_DIR": "/Users/jmayaalv/.config/sqlit-agents"
+  }
 }

@@ -1,0 +1,5 @@
+# connections.json names internal database hosts, and this dotfiles repo is
+# public. Track only the IAM token helper.
+/*
+!/.gitignore
+!/bin/

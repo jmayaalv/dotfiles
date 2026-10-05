@@ -1,0 +1,19 @@
+#!/bin/sh
+# herdr custom command: jump to the "sqlit" space, creating it with sqlit
+# running on first use. sqlit then stays open between visits, so there is
+# nothing to close. The automatic-rename plugin prefixes labels with "[n] ".
+set -eu
+PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+herdr=${HERDR_BIN_PATH:-herdr}
+
+space=$("$herdr" workspace list |
+    jq -r '.result.workspaces[] | select(.label | test("^(\\[[0-9]+\\] )?sqlit$")) | .workspace_id' |
+    head -n 1)
+
+if [ -n "$space" ]; then
+    exec "$herdr" workspace focus "$space"
+fi
+
+pane=$("$herdr" workspace create --label sqlit --cwd "$HOME" --focus |
+    jq -r '.result.root_pane.pane_id')
+"$herdr" pane run "$pane" "$HOME/.local/bin/sqlit"

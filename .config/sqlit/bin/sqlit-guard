@@ -1,0 +1,178 @@
+#!/usr/bin/env python3
+"""Claude Code PreToolUse hook (Bash): keep agents' database access read-only.
+
+Agents query databases with `sqlit query`, which reads ~/.config/sqlit-agents
+(SQLIT_CONFIG_DIR in Claude's settings), where every session opens with
+default_transaction_read_only=on. This hook closes the ways around that:
+
+- `sqlit query` must carry one read-only statement in -q (SELECT, WITH, SHOW,
+  EXPLAIN, VALUES, TABLE): no SET/BEGIN to switch read-only off, no second
+  statement, no side-effect functions, no shell expansion inside the SQL;
+- no other sqlit subcommand than query, `connections list`, --help, --version;
+- no SQLIT_CONFIG_DIR override, and no sqlit reached indirectly (sh -c, eval,
+  xargs, scripts) where the SQL can't be checked;
+- no psql/pgcli, no hand-made IAM tokens (rds-token, generate-db-auth-token,
+  db-token, db-connect), no touching the sqlit config directories.
+
+Postgres still enforces read-only underneath, so a statement this misreads
+fails there. Python 3.9 compatible: the Mac mini runs it with stock python3.
+"""
+import json
+import os
+import re
+import shlex
+import sys
+
+READ_ONLY_START = {"select", "with", "show", "explain", "values", "table"}
+SIDE_EFFECT_FUNCTIONS = re.compile(
+    r"\b(set_config|pg_terminate_backend|pg_cancel_backend|pg_reload_conf|"
+    r"pg_advisory\w*|dblink\w*|pg_notify|lo_import|lo_export|pg_read_file|"
+    r"pg_read_binary_file|pg_ls_dir|pg_logical_emit_message)\s*\(",
+    re.IGNORECASE,
+)
+BLOCKED_COMMANDS = {"psql", "pgcli", "rds-token", "db-token", "db-connect"}
+SQLIT_COMMANDS = {"sqlit", "sqlit-tui"}
+OPERATORS = {"&&", "||", ";", "|", "&", "\n", "(", ")"}
+TRIGGERS = re.compile(
+    r"sqlit|psql|pgcli|rds-token|generate-db-auth-token|db-token|db-connect")
+
+
+def deny(reason):
+    json.dump({"hookSpecificOutput": {
+        "hookEventName": "PreToolUse",
+        "permissionDecision": "deny",
+        "permissionDecisionReason": "sqlit-guard: " + reason,
+    }}, sys.stdout)
+    sys.exit(0)
+
+
+def strip_sql(sql):
+    """Drop comments and quoted text so keywords and ; inside them don't count."""
+    out, i, n = [], 0, len(sql)
+    while i < n:
+        if sql.startswith("--", i):
+            end = sql.find("\n", i)
+            i = n if end < 0 else end
+        elif sql.startswith("/*", i):
+            end = sql.find("*/", i + 2)
+            i = n if end < 0 else end + 2
+            out.append(" ")
+        elif sql[i] in "'\"":
+            quote, j = sql[i], i + 1
+            while j < n:
+                if sql[j] == quote:
+                    if j + 1 < n and sql[j + 1] == quote:
+                        j += 2
+                        continue
+                    break
+                j += 1
+            out.append(" q ")
+            i = j + 1
+        else:
+            out.append(sql[i])
+            i += 1
+    return "".join(out)
+
+
+def check_sql(sql):
+    if "$" in sql or "`" in sql:
+        deny("no $ or backticks in the SQL (shell expansion, dollar quoting)")
+    body = strip_sql(sql).strip().rstrip(";").strip()
+    if not body:
+        deny("empty query")
+    if ";" in body:
+        deny("one statement per call")
+    first = body.split(None, 1)[0].lower()
+    if first not in READ_ONLY_START:
+        deny("only read-only statements (SELECT, WITH, SHOW, EXPLAIN, VALUES, "
+             "TABLE); got " + first.upper())
+    if SIDE_EFFECT_FUNCTIONS.search(body):
+        deny("that function has side effects even in a read-only transaction")
+
+
+def check_sqlit(args):
+    """args: the words after `sqlit`."""
+    if not args:
+        deny("the sqlit TUI is for humans; use `sqlit query -c NAME -q SQL`")
+    if args[0] in ("-h", "--help", "--version"):
+        return
+    if args[:2] == ["connections", "list"]:
+        return
+    if args[0] != "query":
+        deny("agents may only run `sqlit query` and `sqlit connections list`")
+    sql, i = None, 1
+    with_value = {"-c", "--connection", "-d", "--database", "-o", "--format",
+                  "-l", "--limit", "-q", "--query", "-f", "--file"}
+    while i < len(args):
+        arg = args[i]
+        name, _, inline = arg.partition("=")
+        if name in ("-f", "--file"):
+            deny("pass the SQL with -q so it can be checked, not --file")
+        if name in ("-q", "--query"):
+            sql = inline if inline else (args[i + 1] if i + 1 < len(args) else "")
+        if arg in with_value:
+            i += 2
+            continue
+        if name not in with_value and arg not in ("-h", "--help"):
+            deny("unexpected sqlit query argument: " + arg)
+        i += 1
+    if sql is None:
+        deny("give the SQL with -q")
+    check_sql(sql)
+
+
+def segments(command):
+    lexer = shlex.shlex(command, posix=True, punctuation_chars=";&|()\n")
+    lexer.whitespace_split = True
+    lexer.commenters = ""
+    current = []
+    for token in lexer:
+        if token in OPERATORS or set(token) <= set(";&|()\n"):
+            if current:
+                yield current
+            current = []
+        else:
+            current.append(token)
+    if current:
+        yield current
+
+
+def main():
+    payload = json.load(sys.stdin)
+    command = (payload.get("tool_input") or {}).get("command") or ""
+    if not TRIGGERS.search(command) and ".config/sqlit" not in command:
+        return
+    if ".config/sqlit" in command:
+        deny("agents don't read or change the sqlit config directories")
+    if "SQLIT_CONFIG_DIR" in command:
+        deny("agents can't point sqlit at another config")
+    if "generate-db-auth-token" in command:
+        deny("agents don't create IAM database tokens; use `sqlit query`")
+    if "$(" in command or "`" in command:
+        deny("no command substitution around database commands")
+    try:
+        parts = list(segments(command))
+    except ValueError as err:
+        deny("could not parse the command (%s)" % err)
+    checked_sqlit = 0
+    for words in parts:
+        while words and re.match(r"^[A-Za-z_][A-Za-z0-9_]*=", words[0]):
+            if words[0].startswith("SQLIT_CONFIG_DIR="):
+                deny("agents can't point sqlit at another config")
+            words = words[1:]
+        if not words:
+            continue
+        name = os.path.basename(words[0])
+        if name in BLOCKED_COMMANDS:
+            deny("%s is blocked for agents; use `sqlit query` (read-only)" % name)
+        if name in SQLIT_COMMANDS:
+            check_sqlit(words[1:])
+            checked_sqlit += 1
+    mentions = len(re.findall(r"sqlit", command))
+    if mentions > checked_sqlit:
+        deny("call sqlit directly (`sqlit query -c NAME -q SQL`), not through "
+             "another command")
+
+
+if __name__ == "__main__":
+    main()

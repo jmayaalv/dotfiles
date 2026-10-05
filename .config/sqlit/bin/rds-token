@@ -1,0 +1,20 @@
+#!/bin/sh
+# sqlit password command for Aurora IAM auth: prints a fresh 15-minute token.
+# When the AWS SSO session has expired it runs `aws sso login` (opens the
+# browser) and tries once more. Only the token goes to stdout; sqlit reads it
+# as the password and gives the command 30 seconds.
+#
+# Usage: rds-token <host> <db-user> <aws-profile>
+set -u
+PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+host=$1 user=$2 profile=$3
+
+token() {
+    aws rds generate-db-auth-token --hostname "$host" --port 5432 \
+        --region eu-central-1 --username "$user" --profile "$profile"
+}
+
+token 2>/dev/null && exit 0
+echo "rds-token: no valid SSO session for $profile, running aws sso login" >&2
+aws sso login --profile "$profile" </dev/null >&2 || exit 1
+token
