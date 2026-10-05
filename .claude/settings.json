@@ -18,7 +18,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.config/tmux/claude-waiting.sh on"
+            "command": "$HOME/.config/tmux/claude-waiting.sh input"
           }
         ]
       }
@@ -62,11 +62,11 @@
     ],
     "Notification": [
       {
-        "matcher": "permission_prompt|idle_prompt|elicitation_dialog|elicitation_url_dialog|agent_needs_input",
+        "matcher": "permission_prompt|elicitation_dialog|elicitation_url_dialog|agent_needs_input",
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.config/tmux/claude-waiting.sh on"
+            "command": "$HOME/.config/tmux/claude-waiting.sh input"
           }
         ]
       }
@@ -76,7 +76,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.config/tmux/claude-waiting.sh on"
+            "command": "$HOME/.config/tmux/claude-waiting.sh done"
           }
         ]
       }
