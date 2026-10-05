@@ -250,7 +250,10 @@
 
 
 ;;markdown
-(setq markdown-command "pandoc")
+;; --standalone ships the syntax-highlighting CSS; bare pandoc emits an unstyled fragment.
+;; markdown-mode splits this on whitespace, so keep args space-free.
+(setq markdown-command
+      "pandoc --from=gfm --to=html5 --standalone --syntax-highlighting=tango --metadata title=preview")
 
 
 (use-package expreg
