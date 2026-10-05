@@ -1,0 +1,7 @@
+# Keep Radar's hands off [theme]: the Mocha theme and active-row colors in
+# ~/.config/herdr/config.toml are tuned by hand.
+follow_appearance = false
+
+# Plain Unicode logos. The icon-font variant needs a per-font codepoint map,
+# which Alacritty can't do, so those glyphs render wrong in the sidebar.
+variant = "auto"
