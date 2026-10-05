@@ -195,6 +195,59 @@ db-dump() {
 
 
 
+# Check macOS Calendar sync health (Google/iCloud CalDAV accounts).
+# Calendar fails silently - it keeps showing stale events instead of warning you.
+# HTTP 401 = credentials, re-auth in Internet Accounts; 403 = missing scope or admin policy.
+# Pass -v to also summarise recent refresh attempts from the unified log.
+calcheck() {
+    local db="$HOME/Library/Group Containers/group.com.apple.calendar/Calendar.sqlitedb"
+
+    if [[ ! -f "$db" ]]; then
+        echo "Calendar database not found: $db"
+        return 1
+    fi
+
+    local stuck=$(sqlite3 "$db" \
+        "select s.ROWID || '|' || s.name || '|' || e.error_code
+         from Store s join Error e on s.error_id = e.ROWID;")
+
+    echo "Sync errors:"
+    if [[ -z "$stuck" ]]; then
+        echo "  none - all accounts healthy"
+    else
+        local blob=$(mktemp) rowid name code http
+        while IFS='|' read -r rowid name code; do
+            # The store only records the EventKit code; the HTTP status is
+            # archived inside user_info as the underlying error.
+            sqlite3 "$db" "select writefile('$blob', user_info) from Error
+                           where ROWID = (select error_id from Store where ROWID = $rowid);" >/dev/null
+            http=$(plutil -p "$blob" 2>/dev/null | grep -E '"NSCode"' | grep -oE '[0-9]+' | tail -1)
+            echo "  $name - EventKit $code${http:+ (HTTP $http)}"
+        done <<< "$stuck"
+        rm -f "$blob"
+    fi
+
+    echo
+    echo "Last sync:"
+    sqlite3 "$db" \
+        "select '  ' || s.name || ' - ' ||
+                case when s.last_sync_end > 0
+                     then datetime(s.last_sync_end + 978307200, 'unixepoch', 'localtime')
+                     else 'never' end
+         from Store s
+         where s.type = 2 and s.disabled = 0
+         order by s.name;"
+
+    if [[ "$1" == "-v" ]]; then
+        echo
+        echo "Refresh attempts (last 30m):"
+        # `log` is a zsh builtin, so the macOS tool needs its absolute path
+        /usr/bin/log show --last 30m --style compact \
+            --predicate 'process == "dataaccessd"' 2>/dev/null | \
+            grep -oE "CalDAV refresh (FAILED|completed)" | sort | uniq -c | sed 's/^/  /'
+    fi
+}
+
 # SDKMAN
 if [[ -z "$SDKMAN_DIR" ]] || [[ ! -d "$SDKMAN_DIR" ]]; then
   if command -v brew &>/dev/null && brew_sdk="$(brew --prefix sdkman-cli 2>/dev/null)/libexec" && [[ -d "$brew_sdk" ]]; then
