@@ -90,8 +90,10 @@
 (setq ring-bell-function 'my-bell-function)
 
 
-;; Emacs sessions
-(desktop-save-mode 1)
+;; Emacs sessions. The `ec' daemon (terminal frames inside herdr) leaves the
+;; desktop file to the GUI Emacs.
+(unless (daemonp)
+  (desktop-save-mode 1))
 
 ;; Auto-save in the visited file
 (setq auto-save-visited-file-name t)

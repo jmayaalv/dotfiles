@@ -102,6 +102,16 @@ alias claude-ch='claude --channels "plugin:telegram@claude-plugins-official"'
 alias bbc='/opt/homebrew/Cellar/bb/0.3.2/bin/bb'
 alias bitbucket='/opt/homebrew/Cellar/bb/0.3.2/bin/bb'
 alias emacs="/Applications/Emacs.app/Contents/MacOS/Emacs -nw"
+# emacsclient & co. Appended, so Emacs's own ctags/etags never shadow others.
+path+=(/Applications/Emacs.app/Contents/MacOS/bin)
+
+# Terminal Emacs frame on a shared daemon, started on first use, so every herdr
+# space edits the same buffers.
+ec() {
+  local app=/Applications/Emacs.app/Contents/MacOS
+  "$app/bin/emacsclient" -e t >/dev/null 2>&1 || "$app/Emacs" --daemon
+  "$app/bin/emacsclient" -t "$@"
+}
 alias cat='bat'
 
 # OS-specific configurations

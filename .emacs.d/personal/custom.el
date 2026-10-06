@@ -10,7 +10,27 @@
      "f9d423fcd4581f368b08c720f04d206ee80b37bfb314fa37e279f554b6f415e9"
      "ba98102679e7ed71a0b79c9a490328370b6b20537e04730bf0028bdd8a2418a9"
      default))
- '(package-selected-packages '(hurl-mode monet))
+ '(package-selected-packages
+   '(0blayout 0x0 ag agent-shell all-the-icons anzu apheleia beacon
+              browse-kill-ring cape cargo catppuccin-theme cdlatex
+              cider clipetty clojure-snippets cmake-mode
+              company-auctex consult-lsp corfu crux csv-mode diff-hl
+              diminish dimmer dirvish discover discover-my-major
+              dockerfile-mode doom-modeline easy-kill eat eglot-fsharp
+              elisp-slime-nav elixir-mode epl erlang
+              exec-path-from-shell expand-region expreg flycheck-rust
+              forge geiser gist git-modes git-timemachine
+              gnu-elpa-keyring-update go-mode gotest gptel guru-mode
+              haskell-mode helm-projectile hl-todo html-to-hiccup
+              hurl-mode imenu-anywhere inf-ruby jet js2-mode json-mode
+              key-chord kkp kubed linkin-org lsp-dart lua-mode
+              marginalia monet move-text neocaml nlinum ocaml-eglot
+              operate-on-number orderless racket-mode
+              rainbow-delimiters rainbow-mode restclient ron-mode
+              scala-mode scss-mode slime smartparens smartrep
+              super-save try undo-tree vertico volatile-highlights
+              vterm web-mode web-server yaml-mode yari zenburn-theme
+              zop-to-char))
  '(package-vc-selected-packages
    '((claude-code :vc-backend Git :url
                   "https://github.com/stevemolitor/claude-code.el")

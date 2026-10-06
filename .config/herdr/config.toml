@@ -12,7 +12,7 @@ active_row_bg = "#313244"
 selection_bg = "#45475a"
 
 [keys]
-prefix = "ctrl+space"
+prefix = "ctrl+s"
 
 # Arrows move between panes, alongside the default h/j/k/l
 focus_pane_left = ["prefix+h", "prefix+left"]
