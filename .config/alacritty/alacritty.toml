@@ -107,8 +107,9 @@ chars = "\n"
 
 # Super keys for terminal Emacs: in Alacritty, Karabiner turns the right Option
 # key into Command, which reaches Emacs (kkp) as Super, as in GUI Emacs. These
-# default Command shortcuts would swallow s-f, s-=, s-+, s-k, s-m, …, so they
-# go to the program instead (no Alacritty search, font zoom, clear or minimize).
+# default Command shortcuts would swallow s-f, s-b, s-k and s-m, so they go to
+# the program instead (no Alacritty search, clear or minimize). ⌘= ⌘- ⌘0 keep
+# changing the font size: terminal Emacs can't scale text itself.
 [[keyboard.bindings]]
 key = "f"
 mods = "Command"
@@ -126,31 +127,6 @@ action = "ReceiveChar"
 
 [[keyboard.bindings]]
 key = "m"
-mods = "Command"
-action = "ReceiveChar"
-
-[[keyboard.bindings]]
-key = "="
-mods = "Command"
-action = "ReceiveChar"
-
-[[keyboard.bindings]]
-key = "+"
-mods = "Command"
-action = "ReceiveChar"
-
-[[keyboard.bindings]]
-key = "+"
-mods = "Command|Shift"
-action = "ReceiveChar"
-
-[[keyboard.bindings]]
-key = "-"
-mods = "Command"
-action = "ReceiveChar"
-
-[[keyboard.bindings]]
-key = "0"
 mods = "Command"
 action = "ReceiveChar"
 
