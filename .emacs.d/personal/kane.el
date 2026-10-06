@@ -1,3 +1,5 @@
+;;; kane.el --- Kane database and tooling helpers  -*- lexical-binding: t; -*-
+
 ;; Atlas
 (defvar *atlas-home* "/Users/jmayaalv/Developer/db-support")
 
@@ -89,7 +91,7 @@ invokes it with no arguments."
                           (car kane-aws-profiles))))
   (let* ((buf (get-buffer-create "*aws-sso-login*"))
          (proc (start-process "aws-sso-login" buf
-                              "aws" "sso" "login" "--profile" profile)))
+                              (kane/aws-program) "sso" "login" "--profile" profile)))
     (with-current-buffer buf (erase-buffer))
     (display-buffer buf)
     (message "Running aws sso login --profile %s (browser will open)..." profile)
@@ -107,29 +109,69 @@ invokes it with no arguments."
                   profile)))))
     proc))
 
+(defun kane/aws-program ()
+  "Absolute path of the aws CLI.
+A GUI Emacs started from the Dock doesn't have /usr/local/bin on its PATH."
+  (or (executable-find "aws")
+      (seq-find #'file-executable-p '("/usr/local/bin/aws" "/opt/homebrew/bin/aws"))
+      (user-error "aws CLI not found")))
+
 (defun kane/aurora-get-auth-token (hostname username profile)
-  "Generate AWS IAM auth token for HOSTNAME with USERNAME using PROFILE.
-Checks cache first; generates new token if needed. Returns nil on error."
+  "Return an AWS IAM auth token for HOSTNAME and USERNAME using PROFILE, or nil.
+Checks the cache first. A token is only accepted, and cached, when aws exits
+0 and prints a signed URL, so an expired SSO session or a missing CLI is
+never mistaken for a password."
   (or (kane/get-cached-token hostname username)
-      (condition-case err
-          (let ((token (string-trim
-                        (shell-command-to-string
-                         (format "aws rds generate-db-auth-token --hostname %s --port %s --region %s --username %s --profile %s"
-                                 hostname
-                                 kane-aurora-port
-                                 kane-aurora-region
-                                 username
-                                 profile)))))
-            (if (string-prefix-p "An error occurred" token)
-                (progn
-                  (message "AWS IAM token generation failed. Check credentials: aws sso login --profile %s" profile)
-                  nil)
-              (progn
-                (kane/cache-token hostname username token)
-                token)))
-        (error
-         (message "Failed to generate IAM token: %s" (error-message-string err))
-         nil))))
+      (let ((err-file (make-temp-file "kane-aws-err")))
+        (unwind-protect
+            (with-temp-buffer
+              (let ((status (call-process (kane/aws-program) nil (list t err-file) nil
+                                          "rds" "generate-db-auth-token"
+                                          "--hostname" hostname
+                                          "--port" (format "%s" kane-aurora-port)
+                                          "--region" kane-aurora-region
+                                          "--username" username
+                                          "--profile" profile))
+                    (token (string-trim (buffer-string))))
+                (if (and (eq status 0) (string-match-p "X-Amz-Signature=" token))
+                    (progn (kane/cache-token hostname username token) token)
+                  (message "No IAM token for %s: %s" hostname
+                           (car (split-string (with-temp-buffer
+                                                (insert-file-contents err-file)
+                                                (buffer-string))
+                                              "\n" t)))
+                  nil)))
+          (delete-file err-file)))))
+
+(defun kane/prepare-login (connection-name retry)
+  "Set the sql login variables for CONNECTION-NAME; return non-nil when ready.
+Aurora connections get an IAM token from the current AWS SSO session. When
+there is none, offer `aws sso login' and call RETRY once it finishes, then
+return nil so the caller doesn't connect yet."
+  (let* ((conn-alist (cdr (assoc connection-name sql-connection-alist)))
+         (server (cadr (assoc 'sql-server conn-alist)))
+         (username (cadr (assoc 'sql-user conn-alist))))
+    (if (not (kane/connection-needs-iam-p connection-name))
+        (progn
+          (setq sql-password nil)
+          (setenv "PGPASSWORD" nil)
+          (setenv "PGSSLMODE" nil)
+          (setq sql-login-params '(server port database user password))
+          t)
+      (let* ((profile (kane/get-aws-profile connection-name))
+             (token (kane/aurora-get-auth-token server username profile)))
+        (cond
+         (token
+          (setq sql-password token)
+          (setenv "PGPASSWORD" token)
+          (setenv "PGSSLMODE" "require")
+          (setq sql-login-params '(server port database user))
+          t)
+         ((y-or-n-p (format "No AWS SSO session for %s. Log in now? " profile))
+          (kane/aws-sso-login profile retry)
+          nil)
+         (t (user-error "Not connected: no IAM token (aws sso login --profile %s)"
+                        profile)))))))
 
 (defun kane/connection-needs-iam-p (connection-symbol)
   "Return non-nil if CONNECTION-SYMBOL requires AWS IAM authentication.
@@ -664,7 +706,6 @@ Returns formatted string like 'agl          test1  [QA]'."
 Automatically handles AWS IAM authentication for Aurora QA clusters.
 Optional FILTER-FN filters connections; FILTER-DESC describes the filter."
   (interactive)
-  (catch 'kane-sql-deferred
   (let* ((all-connections (mapcar #'car sql-connection-alist))
          (connections (if filter-fn
                           (seq-filter filter-fn all-connections)
@@ -680,95 +721,20 @@ Optional FILTER-FN filters connections; FILTER-DESC describes the filter."
                                             (mapcar #'car display-alist)
                                             nil t nil
                                             'kane-sql-history))
-         (connection-name (cdr (assoc selected-display display-alist)))
-         (conn-alist (cdr (assoc connection-name sql-connection-alist)))
-         (server (cadr (assoc 'sql-server conn-alist)))
-         (username (cadr (assoc 'sql-user conn-alist))))
-
-    ;; Save for quick reconnect
+         (connection-name (cdr (assoc selected-display display-alist))))
+    ;; Save for quick reconnect; after an SSO login, reconnect picks it up.
     (setq kane-last-connection connection-name)
-
-    ;; Handle IAM authentication for QA Aurora clusters
-    (if (kane/connection-needs-iam-p connection-name)
-        (let ((profile (kane/get-aws-profile connection-name))
-              (cached (kane/get-cached-token server username)))
-          (if cached
-              (progn
-                (setq sql-password cached)
-                (setenv "PGPASSWORD" sql-password)
-                (setenv "PGSSLMODE" "require")
-                (setq sql-login-params '(server port database user))
-                (message "Using cached IAM token for %s" server))
-            (progn
-              (message "Generating AWS IAM token for %s using profile %s..." server profile)
-              (let ((token (kane/aurora-get-auth-token server username profile)))
-                (if token
-                    (progn
-                      (setq sql-password token)
-                      (setenv "PGPASSWORD" sql-password)
-                      (setenv "PGSSLMODE" "require")
-                      (setq sql-login-params '(server port database user))
-                      (message "IAM token generated successfully"))
-                  (if (y-or-n-p
-                       (format "IAM token generation failed. Run aws sso login --profile %s now? "
-                               profile))
-                      (progn
-                        (kane/aws-sso-login profile
-                                            (lambda () (kane-sql-reconnect)))
-                        (throw 'kane-sql-deferred nil))
-                    (error "Cannot connect: IAM token generation failed. Run: aws sso login --profile %s" profile)))))))
-      ;; For non-IAM connections, reset to default login params
-      (progn
-        (setq sql-password nil)
-        (setenv "PGPASSWORD" nil)
-        (setenv "PGSSLMODE" nil)
-        (setq sql-login-params '(server port database user password))))
-
-    ;; Connect using existing helper
-    (my-sql-connect 'postgres connection-name))))
+    (when (kane/prepare-login connection-name #'kane-sql-reconnect)
+      (my-sql-connect 'postgres connection-name))))
 
 (defun kane-sql-reconnect ()
   "Reconnect to the last database connection without prompting."
   (interactive)
-  (if kane-last-connection
-      (let* ((connection-name kane-last-connection)
-             (conn-alist (cdr (assoc connection-name sql-connection-alist)))
-             (server (cadr (assoc 'sql-server conn-alist)))
-             (username (cadr (assoc 'sql-user conn-alist))))
-
-        ;; Handle IAM authentication for QA Aurora clusters
-        (if (kane/connection-needs-iam-p connection-name)
-            (let ((profile (kane/get-aws-profile connection-name))
-                  (cached (kane/get-cached-token server username)))
-              (if cached
-                  (progn
-                    (setq sql-password cached)
-                    (setenv "PGPASSWORD" sql-password)
-                    (setenv "PGSSLMODE" "require")
-                    (setq sql-login-params '(server port database user))
-                    (message "Using cached IAM token for %s" server))
-                (progn
-                  (message "Generating AWS IAM token for %s using profile %s..." server profile)
-                  (let ((token (kane/aurora-get-auth-token server username profile)))
-                    (if token
-                        (progn
-                          (setq sql-password token)
-                          (setenv "PGPASSWORD" sql-password)
-                          (setenv "PGSSLMODE" "require")
-                          (setq sql-login-params '(server port database user))
-                          (message "IAM token generated successfully"))
-                      (error "Cannot connect: IAM token generation failed. Run: aws sso login --profile %s" profile))))))
-          ;; For non-IAM connections, reset to default login params
-          (progn
-            (setq sql-password nil)
-            (setenv "PGPASSWORD" nil)
-            (setenv "PGSSLMODE" nil)
-            (setq sql-login-params '(server port database user password))))
-
-        ;; Connect using existing helper
-        (message "Reconnecting to %s..." connection-name)
-        (my-sql-connect 'postgres connection-name))
-    (error "No previous connection to reconnect to. Use M-x kane-sql first")))
+  (unless kane-last-connection
+    (user-error "No previous connection to reconnect to. Use M-x kane-sql first"))
+  (when (kane/prepare-login kane-last-connection #'kane-sql-reconnect)
+    (message "Connecting to %s..." kane-last-connection)
+    (my-sql-connect 'postgres kane-last-connection)))
 
 (defun kane-sql-qa ()
   "Connect to a QA/test database."
