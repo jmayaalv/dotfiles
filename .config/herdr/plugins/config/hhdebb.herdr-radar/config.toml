@@ -2,6 +2,7 @@
 # ~/.config/herdr/config.toml are tuned by hand.
 follow_appearance = false
 
-# Plain Unicode logos. The icon-font variant needs a per-font codepoint map,
-# which Alacritty can't do, so those glyphs render wrong in the sidebar.
+# Set from radar's settings screen (prefix then ,). "auto" uses the icon font
+# when installed; if its logos render wrong in Alacritty, "text" is plain Unicode.
 variant = "auto"
+reorder_workspaces = false
