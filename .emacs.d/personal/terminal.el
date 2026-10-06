@@ -4,6 +4,14 @@
 ;; select. herdr forwards mouse reports to programs that ask for them.
 (xterm-mouse-mode 1)
 
+;; No menu bar in terminal frames, where it costs a line; GUI frames keep
+;; theirs, which lives in the macOS menu bar anyway.
+(defun kane/hide-terminal-menu-bar (&optional frame)
+  (unless (display-graphic-p frame)
+    (set-frame-parameter frame 'menu-bar-lines 0)))
+(add-hook 'after-make-frame-functions #'kane/hide-terminal-menu-bar)
+(kane/hide-terminal-menu-bar)
+
 ;; Kills reach the macOS clipboard through OSC 52, which herdr forwards to
 ;; Alacritty. clipetty only acts in terminal frames; GUI frames are untouched.
 (use-package clipetty
