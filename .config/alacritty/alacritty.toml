@@ -105,6 +105,61 @@ key = "Return"
 mods = "Shift"
 chars = "\n"
 
+# Super keys for terminal Emacs: in Alacritty, Karabiner turns the right Option
+# key into Command, which reaches Emacs (kkp) as Super, as in GUI Emacs. These
+# default Command shortcuts would swallow s-f, s-=, s-+, s-k, s-m, …, so they
+# go to the program instead (no Alacritty search, font zoom, clear or minimize).
+[[keyboard.bindings]]
+key = "f"
+mods = "Command"
+action = "ReceiveChar"
+
+[[keyboard.bindings]]
+key = "b"
+mods = "Command"
+action = "ReceiveChar"
+
+[[keyboard.bindings]]
+key = "k"
+mods = "Command"
+action = "ReceiveChar"
+
+[[keyboard.bindings]]
+key = "m"
+mods = "Command"
+action = "ReceiveChar"
+
+[[keyboard.bindings]]
+key = "="
+mods = "Command"
+action = "ReceiveChar"
+
+[[keyboard.bindings]]
+key = "+"
+mods = "Command"
+action = "ReceiveChar"
+
+[[keyboard.bindings]]
+key = "+"
+mods = "Command|Shift"
+action = "ReceiveChar"
+
+[[keyboard.bindings]]
+key = "-"
+mods = "Command"
+action = "ReceiveChar"
+
+[[keyboard.bindings]]
+key = "0"
+mods = "Command"
+action = "ReceiveChar"
+
+# Ctrl+Command+F is C-M-f (forward-sexp) in Emacs, not full screen.
+[[keyboard.bindings]]
+key = "f"
+mods = "Command|Control"
+action = "ReceiveChar"
+
 [terminal.shell]
 program = "/bin/zsh"
 
@@ -113,6 +168,12 @@ program = "/bin/zsh"
 decorations = "full"
 dynamic_title = true
 startup_mode = "Maximized"
+# Option is Alt/Meta. While Alacritty is in front, Karabiner sends left Command
+# chords (except ⌘Tab, ⌘Space, ⌘` and screenshots) as left Option, so left
+# Command is Meta as in GUI Emacs, and turns the right Option into Command,
+# which programs see as Super. The right Command keeps the Alacritty/macOS
+# shortcuts (copy, paste, quit, new window). The broken left Option is disabled.
+option_as_alt = "Both"
 
 
 [window.dimensions]
