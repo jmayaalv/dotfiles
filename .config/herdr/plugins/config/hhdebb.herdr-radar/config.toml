@@ -4,5 +4,6 @@ follow_appearance = false
 
 # Set from radar's settings screen (prefix then ,). "auto" uses the icon font
 # when installed; if its logos render wrong in Alacritty, "text" is plain Unicode.
-variant = "auto"
+variant = "text"
 reorder_workspaces = false
+done_hold = "until_seen"
