@@ -11,7 +11,9 @@ default_transaction_read_only=on. This hook closes the ways around that:
 - no other sqlit subcommand than query, `connections list`, --help, --version;
 - no SQLIT_CONFIG_DIR override, and no sqlit or psql reached indirectly
   (sh -c, eval, xargs, env, sudo, command substitution, sqlit's own Python)
-  where the SQL can't be checked;
+  where the SQL can't be checked, nor on another machine or in another pane
+  (ssh, herdr pane run/send-text, tmux send-keys), where it would use that
+  machine's read-write connections;
 - no psql/pgcli, no hand-made IAM tokens (rds-token, generate-db-auth-token,
   db-token, db-connect), no touching the sqlit config directories.
 
@@ -39,7 +41,9 @@ SQLIT_COMMANDS = {"sqlit", "sqlit-tui"}
 # can't be checked.
 WRAPPERS = {"sh", "bash", "zsh", "dash", "eval", "exec", "xargs", "env",
             "nohup", "time", "command", "builtin", "sudo", "doas", "timeout",
-            "nice", "watch", "script", "parallel", "find"}
+            "nice", "watch", "script", "parallel", "find",
+            # ...or on another machine / in another pane, outside this guard
+            "ssh", "mosh", "herdr", "tmux"}
 INTERPRETERS = re.compile(r"^(python[0-9.]*|node|ruby|perl|osascript)$")
 OPERATORS = {"&&", "||", ";", "|", "&", "\n", "(", ")"}
 # Whole words only: sqlite3, db-connection or a .config/sqlite path are not ours.
