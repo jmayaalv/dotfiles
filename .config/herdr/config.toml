@@ -135,6 +135,10 @@ pane_outer_borders = false
 pane_scrollbars = false
 # Mocha's mauve for the active tab and highlights.
 accent = "#cba6f7"
+# No tab row in a space with one tab; radar's status on its right goes with it.
+hide_tab_bar_when_single_tab = true
+# The agent's name on the dividers of split panes.
+show_agent_labels_on_pane_borders = true
 
 # >>> herdr-radar tab-bar block
 tab_bar_right_separator = " · "
