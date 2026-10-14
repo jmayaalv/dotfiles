@@ -1,0 +1,59 @@
+#!/bin/sh
+# Try Omarchy's terminal look, and go back.
+#
+#   omarchy-look on    Tokyo Night in Alacritty, Omarchy's herdr look, starship
+#                      prompt
+#   omarchy-look off   the everyday look again
+#   omarchy-look       say which one is on
+#
+# Alacritty and herdr each keep both looks under looks/ next to their config.
+# Alacritty imports one of them and repaints open windows by itself; herdr has
+# no imports, so the chosen file is copied into the look block of config.toml
+# and herdr reloads it. zsh reads the state file at startup, so shells already
+# open keep their prompt until `exec zsh`.
+set -eu
+
+config=${XDG_CONFIG_HOME:-$HOME/.config}
+state=${XDG_STATE_HOME:-$HOME/.local/state}/omarchy-look
+
+case ${1-} in
+  on) look=omarchy ;;
+  off) look=default ;;
+  '') if [ -e "$state" ]; then echo on; else echo off; fi; exit 0 ;;
+  *) echo 'usage: omarchy-look [on|off]' >&2; exit 2 ;;
+esac
+
+alacritty_look=$config/alacritty/looks/$look.toml
+herdr_look=$config/herdr/looks/$look.toml
+herdr_config=$config/herdr/config.toml
+for f in "$alacritty_look" "$herdr_look"; do
+  [ -r "$f" ] || { echo "omarchy-look: missing $f" >&2; exit 1; }
+done
+grep -q '^# >>> look' "$herdr_config" ||
+  { echo "omarchy-look: no look block in $herdr_config" >&2; exit 1; }
+
+sed -i '' "s|alacritty/looks/[a-z]*\.toml|alacritty/looks/$look.toml|" \
+  "$config/alacritty/alacritty.toml"
+
+tmp=$(mktemp)
+awk -v look="$herdr_look" '
+  /^# <<< look/ { skip = 0 }
+  !skip { print }
+  /^# >>> look/ { while ((getline line < look) > 0) print line; skip = 1 }
+' "$herdr_config" >"$tmp"
+cat "$tmp" >"$herdr_config"
+rm -f "$tmp"
+herdr config check >/dev/null || { herdr config check >&2; exit 1; }
+# No running server is fine: the next one starts with this config.
+herdr server reload-config >/dev/null 2>&1 || true
+
+if [ "$look" = omarchy ]; then
+  command -v starship >/dev/null || echo 'omarchy-look: brew install starship for the prompt' >&2
+  mkdir -p "${state%/*}"
+  : >"$state"
+else
+  rm -f "$state"
+fi
+
+echo "omarchy-look $1. New shells get the prompt; run exec zsh in open ones."
+echo 'The window frame changes in new Alacritty windows (⌘N).'

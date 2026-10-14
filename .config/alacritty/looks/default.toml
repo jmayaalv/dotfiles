@@ -1,0 +1,66 @@
+# The everyday look: Catppuccin colors, FiraCode, slim padding, macOS title bar.
+# alacritty.toml imports one file from looks/; `omarchy-look on|off` picks it.
+
+# Mocha fills in what the colors below leave out: selection, search, hints, the
+# vi cursor, dim colors and bright_foreground, which bold default text uses.
+# It must be a dark flavour: Latte here drew bold text dark gray (#4c4f69) on
+# the dark background, and selections and searches in light-theme colors.
+[general]
+import = ["~/.config/alacritty/catppuccin-mocha.toml"]
+
+[colors]
+draw_bold_text_with_bright_colors = true
+
+[[colors.indexed_colors]]
+color = "0xF8BD96"
+index = 16
+
+[[colors.indexed_colors]]
+color = "0xF5E0DC"
+index = 17
+
+[colors.bright]
+black = "0x988BA2"
+blue = "0x96CDFB"
+cyan = "0x89DCEB"
+green = "0xABE9B3"
+magenta = "0xF5C2E7"
+red = "0xF28FAD"
+white = "0xD9E0EE"
+yellow = "0xFAE3B0"
+
+[colors.cursor]
+cursor = "0xF5E0DC"
+text = "0x1E1D2F"
+
+[colors.normal]
+black = "0x6E6C7E"
+blue = "0x96CDFB"
+cyan = "0x89DCEB"
+green = "0xABE9B3"
+magenta = "0xF5C2E7"
+red = "0xF28FAD"
+white = "0xD9E0EE"
+yellow = "0xFAE3B0"
+
+[colors.primary]
+background = "0x1E1D2F"
+foreground = "0xD9E0EE"
+
+[font.bold]
+family = "FiraCode Nerd Font"
+style = "Bold"
+
+[font.italic]
+family = "FiraCode Nerd Font"
+
+[font.normal]
+family = "FiraCode Nerd Font"
+style = "Regular"
+
+[window]
+decorations = "full"
+
+[window.padding]
+x = 4
+y = 4

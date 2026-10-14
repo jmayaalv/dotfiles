@@ -58,7 +58,13 @@ source ~/.config/zsh/catppuccin_macchiato-zsh-syntax-highlighting.zsh
 autoload -Uz compinit && compinit
 
 zinit cdreplay -q
-eval "$(oh-my-posh init zsh --config ~/.config/ohmyposh/zen.json)"
+# `omarchy-look on` leaves this state file behind: Omarchy's starship prompt then
+# replaces oh-my-posh, along with its Alacritty and herdr looks.
+if [[ -e ${XDG_STATE_HOME:-$HOME/.local/state}/omarchy-look ]] && (( $+commands[starship] )); then
+  eval "$(starship init zsh)"
+else
+  eval "$(oh-my-posh init zsh --config ~/.config/ohmyposh/zen.json)"
+fi
 
 
 # History

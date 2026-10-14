@@ -1,8 +1,9 @@
 # herdr keeps sockets, logs, session state and installed plugin code in this
-# directory. Track only the config and each plugin's settings.
+# directory. Track only the config, its looks and each plugin's settings.
 /*
 !/.gitignore
 !/config.toml
+!/looks/
 !/plugins/
 /plugins/*
 !/plugins/config/

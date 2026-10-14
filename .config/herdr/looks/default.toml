@@ -1,0 +1,16 @@
+# The everyday herdr look. herdr has no imports, so `omarchy-look on|off` copies
+# one file from looks/ into the look block of config.toml. The block ends inside
+# [ui]: a look puts its [ui] keys last, and config.toml's own [ui] keys follow.
+
+[theme]
+name = "catppuccin"
+auto_switch = false
+
+[theme.custom]
+# Mocha's stock active row (#1e1e2e) matches Alacritty's background (#1e1d2f), so
+# the current space and agent were invisible. surface0 lifts them a little; the
+# navigate-mode cursor moves up to surface1 so the two stay distinct.
+active_row_bg = "#313244"
+selection_bg = "#45475a"
+
+[ui]

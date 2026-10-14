@@ -1,0 +1,23 @@
+# Omarchy's herdr look, from its config/herdr/config.toml (github.com/basecamp/omarchy).
+# herdr draws with the terminal's own palette, so it wears Alacritty's theme, with
+# a blue accent and bare panes like tmux. Only the look comes over: Omarchy's
+# keys and behaviour settings stay out.
+# herdr has no imports, so `omarchy-look on|off` copies one file from looks/
+# into the look block of config.toml. The block ends inside [ui]: a look puts
+# its [ui] keys last, and config.toml's own [ui] keys follow.
+
+[theme]
+name = "terminal"
+
+[theme.custom]
+# The tab bar sits on the terminal's own background. With no panel_bg the active
+# tab's text falls back to surface_dim: black text on the blue accent.
+panel_bg = "reset"
+surface_dim = "black"
+
+[ui]
+accent = "blue"
+# Single-line dividers between panes, no outer frame, no scrollbar column.
+pane_gaps = false
+pane_outer_borders = false
+pane_scrollbars = false
