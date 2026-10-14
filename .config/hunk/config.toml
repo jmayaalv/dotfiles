@@ -1,0 +1,3 @@
+# Catppuccin Mocha, as in Ghostty and herdr. An unknown theme id falls back to
+# github-dark-default without a word, so check the name against hunk's `t` menu.
+theme = "catppuccin-mocha"
