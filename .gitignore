@@ -1,5 +1,7 @@
 .DS_Store
 .config/raycast/extensions
+.config/raycast/node-compile-cache/
+.config/hunk/state.json
 .config/claude/projects/
 .config/claude/shell-snapshots/
 .config/claude/statsig/
@@ -15,6 +17,8 @@
 !.claude/agents/
 !.claude/settings.json
 !.claude/skills
+.claude/skills/synced/
+.claude/skills/.trash/
 !.claude/statusline-command.sh
 .secrets/
 /.agent-shell/
