@@ -31,3 +31,7 @@
 ## A new plugin can make an installed one redundant: check before keeping both (2026-10-14)
 - **Mistake:** my design added herdr-fingers and kept peek "for images and PDFs". Peek draws those with the kitty graphics protocol, which Alacritty doesn't support, so on this setup it had only ever shown text, which Emacs does better. The user had to ask whether peek was now irrelevant.
 - **Rule:** when adding a tool, list the installed ones it overlaps and check each feature I'd keep one for actually works here (the terminal, the machine). Use the tool's own saved state or logs to see what the user really used it for. Propose removing what's left with no job.
+
+## Signal a process by its PID, never by its name (2026-10-14)
+- **Mistake:** to reload Ghostty's config I ran `kill -USR2 $(pgrep -x ghostty)`. The user's `ghostty +list-themes` in a herdr pane runs the same binary, so it got the signal too. It doesn't handle SIGUSR2, so it died with mouse reporting still on, and mouse movement typed escape codes into their prompt.
+- **Rule:** before signalling, list the matches with `pgrep -lf <name>` and pick the one PID that is the app (for Ghostty, the one whose command line has no `+action`). A CLI's subcommands and its GUI often share one binary name.
