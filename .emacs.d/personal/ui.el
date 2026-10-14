@@ -7,7 +7,10 @@
 
 (use-package catppuccin-theme
   :init
-  (setq catppuccin-flavor 'frappe)
+  ;; Macchiato: near black, yet a step lighter than the terminal's background
+  ;; (#1a1b26 Omarchy, #1e1d2f everyday), so an Emacs pane stands out in herdr.
+  ;; Frappé read gray; Mocha matches the terminal.
+  (setq catppuccin-flavor 'macchiato)
   :hook (after-init . (lambda ()
                         (load-theme 'catppuccin)
                         (custom-set-faces
