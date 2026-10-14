@@ -1,0 +1,53 @@
+# Ghostty, on trial next to Alacritty with the same keys, font and look. Over
+# Alacritty it adds images in herdr panes (Kitty graphics) and FiraCode's
+# ligatures.
+
+# Omarchy's Tokyo Night ships with Ghostty: the same background and accents,
+# text a shade brighter. `omarchy-look` leaves Ghostty alone.
+theme = TokyoNight Night
+
+font-family = FiraCode Nerd Font
+font-size = 12
+
+# No title bar, as under Hyprland; macOS keeps the rounded window frame.
+macos-titlebar-style = hidden
+window-padding-x = 14
+window-padding-y = 14
+window-padding-balance = true
+maximize = true
+
+cursor-style = block
+cursor-style-blink = false
+mouse-hide-while-typing = true
+# A selection also lands on the macOS clipboard, as in Alacritty.
+copy-on-select = clipboard
+# Closing a window only detaches herdr, so don't ask.
+confirm-close-surface = false
+
+# Option is Alt/Meta. While Ghostty is in front, Karabiner sends left Command
+# chords (except ⌘Tab, ⌘Space, ⌘` and screenshots) as left Option, so left
+# Command is Meta as in GUI Emacs, and turns the right Option into Command,
+# which programs see as Super. The right Command keeps the shortcuts below.
+macos-option-as-alt = true
+
+# Ghostty's default ⌘ shortcuts would swallow Emacs's Super keys (s-f, s-k,
+# s-j, s-, and s-<arrows> among them), so only Alacritty's few come back:
+# copy, paste, new window, quit and font size, since terminal Emacs can't
+# scale text itself. ⌘W sends C-w, Shift+Return a newline, as in Alacritty.
+# ⌘⇧, reloads this file; Ghostty doesn't watch it.
+# The menu's ⌘M (Minimize), ⌘H (Hide) and ⌃⌘F (Toggle Full Screen) stay fixed
+# whatever this file says. ⌘M is s-m, magit's prefix, and ⌃⌘F an Emacs chord,
+# so a macOS override moves both to ⌃⌥⇧⌘M and ⌃⌥⇧⌘F, on every Mac:
+#   defaults write com.mitchellh.ghostty NSUserKeyEquivalents -dict-add Minimize '@~^$m' 'Toggle Full Screen' '@~^$f'
+keybind = clear
+keybind = super+c=copy_to_clipboard
+keybind = super+v=paste_from_clipboard
+keybind = super+n=new_window
+keybind = super+q=quit
+keybind = super+0=reset_font_size
+keybind = super+equal=increase_font_size:1
+keybind = super+plus=increase_font_size:1
+keybind = super+minus=decrease_font_size:1
+keybind = super+shift+comma=reload_config
+keybind = super+w=text:\x17
+keybind = shift+enter=text:\n
