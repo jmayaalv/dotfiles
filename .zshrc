@@ -4,10 +4,7 @@ if [[ -f "/opt/homebrew/bin/brew" ]] then
 fi
 
 #java home
-#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
 export SDKMAN_DIR="$HOME/.sdkman"
-[[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
-
 export JAVA_HOME=${SDKMAN_DIR}/candidates/java/current
 export ATLASSIAN_USER_EMAIL="juan.maya@kane-group.com"
 # Load Atlassian API token from secure location
@@ -54,10 +51,19 @@ zinit snippet OMZP::command-not-found
 #theme for zsh-syntax-highlighting
 source ~/.config/zsh/catppuccin_macchiato-zsh-syntax-highlighting.zsh
 
-# Load completions
+# The following lines have been added by Docker Desktop to enable Docker CLI completions.
+fpath=(/Users/jmayaalv/.docker/completions $fpath)
+# End of Docker CLI completions
+
+# Load completions. The only compinit: each one more, run with another fpath,
+# found the cache stale and rebuilt it, ~2s a shell, so new herdr tabs took 10s.
+# Anything that adds to fpath goes above this.
 autoload -Uz compinit && compinit
 
 zinit cdreplay -q
+
+# sdkman runs its own compinit unless one already ran.
+[[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
 # `omarchy-look on` leaves this state file behind: Omarchy's starship prompt then
 # replaces oh-my-posh, along with its Alacritty and herdr looks.
 if [[ -e ${XDG_STATE_HOME:-$HOME/.local/state}/omarchy-look ]] && (( $+commands[starship] )); then
@@ -146,8 +152,4 @@ eval "$(zoxide init --cmd cd zsh)"
 
 # TestContainers — Docker Desktop Mac (docker.raw.sock requires socket override for Ryuk)
 export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock
-# The following lines have been added by Docker Desktop to enable Docker CLI completions.
-fpath=(/Users/jmayaalv/.docker/completions $fpath)
-autoload -Uz compinit
-compinit
-# End of Docker CLI completions
+# Docker Desktop's completions block sits above compinit.
