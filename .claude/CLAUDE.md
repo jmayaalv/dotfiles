@@ -81,3 +81,19 @@ instead of attempting to fix them yourself. If the tool doesn't work,
 report to the user that they need to fix the delimiter error manually.
 
 The tool automatically formats files with cljfmt when it processes them.
+
+## Agent skills
+
+Defaults for the engineering skills (to-spec, to-tickets, triage, wayfinder, domain-modeling…) in every project. A project's own `## Agent skills` section, in its CLAUDE.md, CLAUDE.local.md or AGENTS.md, overrides the matching subsection here.
+
+### Issue tracker
+
+Issues and specs live as local markdown under `.scratch/<feature>/` at the project root; nothing is posted to Jira, GitHub or Bitbucket. Git ignores `.scratch/` globally. See `~/.claude/agent-skills/issue-tracker.md`.
+
+### Triage labels
+
+The five default roles (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`), recorded as a `Status:` line in each issue file. See `~/.claude/agent-skills/triage-labels.md`.
+
+### Domain docs
+
+Single-context unless the project has a `CONTEXT-MAP.md`: one `CONTEXT.md` and `docs/adr/` at the project root. See `~/.claude/agent-skills/domain.md`.
