@@ -1,13 +1,14 @@
 # Omarchy's prompt, from its config/starship.toml (github.com/basecamp/omarchy),
-# plus $ahead_behind, which shows the ⇡/⇣/✓ it defines but leaves out, ✦ for
-# suspended jobs, and on the right the last command's duration, the Java
-# version in JVM projects and the Kubernetes context.
+# plus $ahead_behind, which shows the ⇡/⇣/✓ it defines but leaves out, and ✦
+# for suspended jobs. The branch and its status move to the right edge, after
+# the last command's duration, the Java version in JVM projects and the
+# Kubernetes context.
 # zsh uses it while `omarchy-look on`; otherwise the prompt is oh-my-posh.
 
 add_newline = true
 command_timeout = 200
-format = "[$directory$git_branch$git_status]($style)$jobs$character"
-right_format = "$cmd_duration$java$kubernetes"
+format = "[$directory]($style)$jobs$character"
+right_format = "$cmd_duration$java$kubernetes$git_branch$git_status"
 
 [character]
 error_symbol = "[✗](bold cyan)"
@@ -20,7 +21,8 @@ repo_root_style = "bold cyan"
 repo_root_format = "[$repo_root]($repo_root_style)[$path]($style)[$read_only]($read_only_style) "
 
 [git_branch]
-format = "[$branch]($style) "
+format = "[$symbol$branch]($style) "
+symbol = "\U000F062C "
 style = "italic cyan"
 
 [git_status]
@@ -48,14 +50,15 @@ style = "yellow"
 [java]
 format = "[$symbol$version]($style) "
 version_format = "${major}"
-symbol = "\ue738 "
+symbol = "\U000F0176 "
+style = "cyan"
 
 # The current context, everywhere: kubectl acts on it from any folder.
 # Production (pdn-) in bold red. Aliases drop the usual -eu-central-1 and the
 # EKS ARN prefix, so other regions still show.
 [kubernetes]
 disabled = false
-format = '[$symbol$context( \($namespace\))]($style)'
+format = '[$symbol$context( \($namespace\))]($style) '
 symbol = "☸ "
 style = "cyan"
 
