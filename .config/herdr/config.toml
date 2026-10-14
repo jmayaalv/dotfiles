@@ -128,10 +128,10 @@ active_row_bg = "#313244"
 selection_bg = "#45475a"
 
 [ui]
-# Bare panes, as in Omarchy's look: single-line dividers, no outer frame, no
-# scrollbar column.
+# Lean panes: single-line dividers and no scrollbar column, with an outer frame
+# so a line separates the sidebar from the panes.
 pane_gaps = false
-pane_outer_borders = false
+pane_outer_borders = true
 pane_scrollbars = false
 # Mocha's mauve for the active tab and highlights.
 accent = "#cba6f7"
