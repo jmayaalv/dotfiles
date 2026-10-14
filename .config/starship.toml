@@ -47,10 +47,11 @@ staged     = ""
 renamed    = ""
 deleted    = ""
 
-# Shown only after commands that ran 2s or more.
+# Shown only after commands that ran 2s or more, in a muted gray (Mocha's
+# overlay1): readable, but quieter than the cyan around it.
 [cmd_duration]
-format = "[took $duration]($style) "
-style = "yellow"
+format = "[$duration]($style) "
+style = "#7f849c"
 
 # The java on PATH, i.e. sdkman's current. The defaults detect Clojure projects
 # too (deps.edn, project.clj, .clj).
