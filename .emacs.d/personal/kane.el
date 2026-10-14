@@ -535,6 +535,14 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-database "imsplact1adb")
          (sql-user "db_writer"))
 
+        (plac.test2
+         (sql-name "plac.test2")
+         (sql-product 'postgres)
+         (sql-server "qa-plac-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
+         (sql-port 5432)
+         (sql-database "imsplact2adb")
+         (sql-user "db_writer"))
+
         (provlife.test1
          (sql-name "provlife.test1")
          (sql-product 'postgres)
@@ -690,12 +698,20 @@ Returns formatted string like 'agl          test1  [QA]'."
         (sql-database "imsveritaspdnadb")
         (sql-user "db_maintainer"))
 
-       (vertias.test1
-        (sql-name "veritas.test1")
+       (fnb.test1
+        (sql-name "fnb.test1")
         (sql-product 'postgres)
-        (sql-server "qa-veritas-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
+        (sql-server "qa-fnb-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
         (sql-port 5432)
-        (sql-database "imsveritast1adb")
+        (sql-database "imsfnbt1adb")
+        (sql-user "db_writer"))
+
+       (fnb.test2
+        (sql-name "fnb.test2")
+        (sql-product 'postgres)
+        (sql-server "qa-fnb-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
+        (sql-port 5432)
+        (sql-database "imsfnbt2adb")
         (sql-user "db_writer"))))
 
 (defvar kane-sql-history nil
