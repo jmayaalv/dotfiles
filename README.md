@@ -21,7 +21,6 @@ cd dotfiles
 │   ├── claude/             # Claude Code configuration and data
 │   ├── karabiner/          # Karabiner-Elements key remapping
 │   ├── macos/              # macOS system tweaks (animations on/off)
-│   ├── ohmyposh/           # Oh My Posh prompt theme configuration
 │   ├── tmux/               # Tmux configuration files
 │   └── tmuxinator/         # Tmuxinator session configurations
 ├── .emacs.d/               # Emacs configuration directory
@@ -139,6 +138,6 @@ means turning it off.
 Some configurations may require additional software:
 - **Homebrew** (macOS): Package manager used in zsh configuration
 - **Zinit**: Zsh plugin manager (auto-installed by .zshrc)
-- **Oh My Posh**: Prompt theming (configured in .config/ohmyposh/)
+- **Starship**: Prompt (configured in .config/starship.toml)
 - **Tmux**: Terminal multiplexer
 - **Alacritty**: Terminal emulator

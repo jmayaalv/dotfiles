@@ -4,7 +4,6 @@
 # config/alacritty/alacritty.toml (github.com/basecamp/omarchy), except the
 # font: FiraCode stays in place of Omarchy's JetBrainsMono, at 12 rather than
 # Omarchy's 9, which is sized for Hyprland's scaling.
-# alacritty.toml imports one file from looks/; `omarchy-look on|off` picks it.
 
 [colors.primary]
 background = "#1a1b26"

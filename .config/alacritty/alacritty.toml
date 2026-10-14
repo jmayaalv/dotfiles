@@ -108,6 +108,5 @@ lines = 80
 
 [general]
 live_config_reload = true
-# Colors, font family, padding and window frame live in one file under looks/.
-# `omarchy-look on|off` rewrites this path; live reload repaints open windows.
-import = ["~/.config/alacritty/looks/omarchy.toml"]
+# Colors, font family, padding and window frame: Omarchy's look.
+import = ["~/.config/alacritty/omarchy.toml"]

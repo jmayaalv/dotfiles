@@ -1,10 +1,9 @@
-# Ghostty, on trial next to Alacritty with the same keys, font and look. Over
+# Ghostty, on trial next to Alacritty with the same keys and font. Over
 # Alacritty it adds images in herdr panes (Kitty graphics) and FiraCode's
 # ligatures.
 
-# Omarchy's Tokyo Night ships with Ghostty: the same background and accents,
-# text a shade brighter. `omarchy-look` leaves Ghostty alone.
-theme = TokyoNight Night
+# Catppuccin Mocha, as in herdr; it ships with Ghostty.
+theme = Catppuccin Mocha
 
 font-family = FiraCode Nerd Font
 font-size = 12
