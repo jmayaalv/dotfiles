@@ -6,7 +6,9 @@
 set -eu
 PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
 herdr=${HERDR_BIN_PATH:-herdr}
-palette=$(ls -d "$HOME"/.config/herdr/plugins/github/hhdebb.herdr-radar-*/lib/palette.js | head -n 1)
+# The live checkout: herdr 0.9.4 moved it and leaves the old copy behind.
+root=$(jq -r '.[] | select(.plugin_id == "hhdebb.herdr-radar") | .plugin_root' "$HOME/.config/herdr/plugins.json")
+palette=$root/lib/palette.js
 
 python3 - "$palette" <<'EOF'
 import sys
