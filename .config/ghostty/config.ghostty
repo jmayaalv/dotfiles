@@ -14,6 +14,11 @@ window-padding-x = 14
 window-padding-y = 14
 window-padding-balance = true
 maximize = true
+# The padding takes the colour of the cell beside it, so herdr's sidebar runs
+# to the window edge instead of sitting inside a strip of Mocha background.
+window-padding-color = extend
+# Catppuccin's pastels a touch richer on the MacBook's wide-gamut screen.
+window-colorspace = display-p3
 
 cursor-style = block
 cursor-style-blink = false

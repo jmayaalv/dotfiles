@@ -133,6 +133,8 @@ selection_bg = "#45475a"
 pane_gaps = false
 pane_outer_borders = false
 pane_scrollbars = false
+# Mocha's mauve for the active tab and highlights.
+accent = "#cba6f7"
 
 # >>> herdr-radar tab-bar block
 tab_bar_right_separator = " · "
