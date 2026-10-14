@@ -144,6 +144,47 @@
   "remoteControlAtStartup": true,
   "agentPushNotifEnabled": true,
   "skipAutoPermissionPrompt": true,
+  "autoMode": {
+    "allow": [
+      "$defaults",
+      "Bash(lein test:*)",
+      "Bash(lein kaocha:*)",
+      "Bash(clj-paren-repair:*)",
+      "Bash(clj-nrepl-eval:*)"
+    ],
+    "soft_deny": [
+      "$defaults",
+      "Bash(lein migratus rollback:*)",
+      "Bash(bin/release prod:*)",
+      "Bash(db-dump:*)"
+    ],
+    "environment": [
+      "### Org-wide",
+      "**Organization**: belucasys (all repo remotes point at bitbucket.org:belucasys/*)",
+      "**Cloud provider(s)**: None configured",
+      "**Repository visibility**: not queryable via gh (origin is bitbucket.org, not github.com) — assume private; bitbucket.org:belucasys/ms-edge is a company-namespaced remote for a financial trading system, treat as private",
+      "**Internal sharing / snippet hosting**: None configured — treat public paste/gist services as outside the trust boundary",
+      "**Secrets management**: None configured",
+      "**Default / protected branches**: default branch `master` (from Repo facts); protection status not queryable on bitbucket — treat `master` as protected for review purposes",
+      "**CI/CD deploy targets**: None configured",
+      "**Network posture**: None configured",
+      "**Source control**: bitbucket.org/belucasys — the trusted repo `bitbucket.org:belucasys/ms-edge.git` and other belucasys checkouts under ~/Developer (beluca, ms-pricing, ms-trader, kane-specs, kane-readers, kane-fx, kanicle, vertex, yakura, allfunds-files, pipelines-templates), as scoped by the Trusted repo and Repository visibility entries above",
+      "**Trusted internal domains**: None configured",
+      "**Trusted cloud buckets**: None configured",
+      "**Key internal services**: local Clojure nREPL servers (default port 7888) reached via clj-nrepl-eval; local PostgreSQL 16.2 development database",
+      "**Internal package registry**: None configured",
+      "**Sensitive data locations & audiences**: financial trading and fund-management data in this repo's runtime scope — client accounts, positions, orders, trades, transactions, fee configs, settlements and CGT/tax records; plus `.env` (gitignored), `env/prod/resources/config.edn` and any DB dump produced by db-dump/db-support tooling; preserve exact handles when known and share only with audiences cleared at the [named+specifics] bar",
+      "**Data retention / declassification**: None configured",
+      "**Sensitive remote targets**: any namespace, host, or container whose name carries `prod` or `production` as a whole word or name segment (hyphen/underscore/dot-delimited — e.g. matches `prod-db`, not `producer`); also the `prod` release target used by `bin/release test|prod` and the production config profile `env/prod/resources/config.edn`",
+      "**Protected deployment namespaces / environments**: None configured — fall back to the Sensitive remote targets heuristic",
+      "**Protected IaC scopes**: IAM, RBAC, networking, quota, and node-pool resources; anything whose name or tag carries `prod` or `production` as a whole word or name segment",
+      "### User-specific",
+      "**Primary use of Claude Code**: Clojure development on the Edge financial trading system (REPL-driven work via lein/clj-nrepl-eval, tests via lein test / lein kaocha / clojure -X:test, migratus migrations)",
+      "**Trusted repo**: bitbucket.org:belucasys/ms-edge.git at /Users/jmayaalv/Developer/ms-edge/edge and its configured remote(s). Treat as private: confidential material is fine there; secrets and sensitive data are never cleared into any repo by its visibility.",
+      "**Org-specific CLIs**: lein, clj-nrepl-eval, clj-paren-repair, bb/bbc (babashka), imskube, kpf, db-token, db-connect, db-dump (from shell history)",
+      "**Routine under this repo's prefix**: lein test / lein kaocha / lein nrepl / lein migratus and clj-nrepl-eval against locally discovered nREPL ports are routine inside /Users/jmayaalv/Developer/ms-edge/edge"
+    ]
+  },
   "env": {
     "SQLIT_CONFIG_DIR": "/Users/jmayaalv/.config/sqlit-agents"
   }
