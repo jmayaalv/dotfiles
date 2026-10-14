@@ -51,3 +51,9 @@ keybind = super+minus=decrease_font_size:1
 keybind = super+shift+comma=reload_config
 keybind = super+w=text:\x17
 keybind = shift+enter=text:\n
+
+# ⌃` drops the quick terminal down from any app and puts it away again (global,
+# so macOS asks once for Accessibility). Emacs, Prelude and herdr leave C-`
+# unbound; it is taken from IntelliJ's Quick Switch Scheme and VS Code's
+# terminal.
+keybind = global:ctrl+grave_accent=toggle_quick_terminal
