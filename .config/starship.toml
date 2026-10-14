@@ -1,14 +1,22 @@
 # Omarchy's prompt, from its config/starship.toml (github.com/basecamp/omarchy),
 # plus $ahead_behind, which shows the ⇡/⇣/✓ it defines but leaves out, and ✦
-# for suspended jobs. The branch and its status move to the right edge, after
-# the last command's duration, the Java version in JVM projects and the
-# Kubernetes context.
+# for suspended jobs, and a host icon in front. The branch and its status move
+# to the right edge, after the last command's duration, the Java version in JVM
+# projects and the Kubernetes context.
 # zsh uses it while `omarchy-look on`; otherwise the prompt is oh-my-posh.
 
 add_newline = true
 command_timeout = 200
-format = "[$directory]($style)$jobs$character"
+format = "$hostname[$directory]($style)$jobs$character"
 right_format = "$cmd_duration$java$kubernetes$git_branch$git_status"
+
+# Which Mac the shell is on, as oh-my-posh's zen.json shows it: a server on the
+# Mac mini, the Apple logo on the MacBook. Any other host shows its name.
+[hostname]
+ssh_only = false
+format = "[$hostname]($style) "
+style = "bold cyan"
+aliases = { "Juans-Mac-mini" = "\U000F0486", "Juans-MacBook-Pro-2" = "" }
 
 [character]
 error_symbol = "[✗](bold cyan)"
