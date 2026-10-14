@@ -1,0 +1,26 @@
+#!/bin/zsh
+# herdr-fingers alt_action: open the picked paths in a terminal Emacs frame
+# (`ec`, see ~/.zshrc) in a split beside the pane they came from. A trailing
+# :LINE or :LINE:COL becomes emacsclient's +LINE:COL. Quitting the frame
+# closes the split.
+
+args=()
+for text in "${(@f)$(cat)}"; do
+  text=${text#file://}
+  [[ $text == '~/'* ]] && text=$HOME/${text#\~/}
+  if [[ $text =~ ':[0-9]+(:[0-9]+)?$' ]]; then
+    args+=(+${MATCH#:} ${text%$MATCH})
+  else
+    args+=($text)
+  fi
+done
+(( $#args )) || exit 0
+
+# HERDR_PANE_ID is the hints overlay; fingers records the pane it labelled.
+src=${HERDR_FINGERS_GEOMETRY%%|*}
+[[ -n $src ]] || src=$(jq -r .focused_pane_id <<<$HERDR_PLUGIN_CONTEXT_JSON)
+
+pane=$(herdr pane split $src --direction right --cwd $PWD --focus | jq -r .result.pane.pane_id)
+# `ec` is a zsh function, so type it into the split's shell. The leading space
+# keeps it out of the history (hist_ignore_space).
+herdr pane run $pane " ec ${(j: :)${(@q)args}}; exit"

@@ -68,20 +68,6 @@ type = "plugin_action"
 command = "jhochenbaum.hunkdiff.review:commit"
 description = "hunk: review the last commit"
 
-# peek: open a file an agent mentions (image, PDF, doc, code) in a split.
-# Its README wants f / shift+f, which the file viewer already has.
-[[keys.command]]
-key = "prefix+i"
-type = "plugin_action"
-command = "peek.pick"
-description = "peek: pick a file on screen"
-
-[[keys.command]]
-key = "prefix+shift+i"
-type = "plugin_action"
-command = "peek.last"
-description = "peek: open the newest file on screen"
-
 # graphdiff: map of what the agent changed. Its README wants g / shift+g,
 # which are herdr's goto and new-worktree.
 [[keys.command]]
@@ -96,18 +82,14 @@ type = "plugin_action"
 command = "graphdiff.tui"
 description = "graphdiff: map in the terminal"
 
-# herdr-yank: hint letters over visible tokens to copy, or URLs/files to open
+# herdr-fingers: hint letters over paths, URLs, SHAs. Hint copies, Shift pastes,
+# Ctrl opens, Alt opens in Emacs in a split (plugins/config/…herdr-fingers/).
+# Its README wants f, which the file viewer already has.
 [[keys.command]]
 key = "prefix+y"
 type = "plugin_action"
-command = "pgilad.herdr-yank.yank"
-description = "yank visible token"
-
-[[keys.command]]
-key = "prefix+shift+y"
-type = "plugin_action"
-command = "pgilad.herdr-yank.open-url"
-description = "open visible URL or file"
+command = "nathan-poncet.herdr-fingers.start"
+description = "fingers: copy, paste, open or edit a visible token"
 
 # herdr-radar: flip the agents list between active and recent; settings
 [[keys.command]]

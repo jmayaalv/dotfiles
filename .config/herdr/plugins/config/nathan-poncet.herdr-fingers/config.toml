@@ -1,0 +1,16 @@
+# herdr-fingers (prefix+y): hint copies, Shift+hint pastes into the pane,
+# Ctrl+hint opens in the default app, Alt+hint opens in Emacs in a split.
+# Everything else keeps the defaults in the plugin's examples/config.toml.
+
+# ec-split sits next to this file; HERDR_PLUGIN_CONFIG_DIR finds it on any
+# machine. It gets the picked paths on stdin.
+alt_action = "sh -c 'exec \"$HERDR_PLUGIN_CONFIG_DIR/ec-split\"'"
+
+# One pick per line, so Tab-picked paths with spaces stay whole.
+multi_separator = "\n"
+
+# The built-in `path` stops before :LINE:COL; this keeps it, so Emacs opens at
+# the line. A custom pattern wins over a built-in starting at the same column.
+[[patterns]]
+name = "path-line"
+regex = "[.\\w\\-~@]*(/[.\\w\\-@]+)+:[0-9]+(:[0-9]+)?"
