@@ -7,3 +7,7 @@ follow_appearance = false
 variant = "text"
 reorder_workspaces = false
 done_hold = "until_seen"
+# The other panes of a split tab hang off the first with a ├─ corner, and a row
+# reads "tab name · session title" rather than the title alone.
+split_corner = true
+row_label = "both"
