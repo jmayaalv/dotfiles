@@ -11,7 +11,7 @@
      "ba98102679e7ed71a0b79c9a490328370b6b20537e04730bf0028bdd8a2418a9"
      default))
  '(package-selected-packages
-   '(0blayout 0x0 ag agent-shell all-the-icons anzu apheleia beacon
+   '(0blayout 0x0 ag all-the-icons anzu apheleia beacon
               browse-kill-ring cape cargo catppuccin-theme cdlatex
               cider clipetty clojure-snippets cmake-mode
               company-auctex consult-lsp corfu crux csv-mode diff-hl
