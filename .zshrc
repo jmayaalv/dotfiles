@@ -89,6 +89,9 @@ zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
 zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
 zstyle ':fzf-tab:*' fzf-flags --bind=tab:accept
 zstyle ':fzf-tab:*' continuous-trigger 'tab'
+# Seed the search with what the candidates share, never the typed word: carapace
+# keeps the folder in the word (vim dir/<Tab>), which no file name matches.
+zstyle ':fzf-tab:*' query-string prefix
 
 
 
