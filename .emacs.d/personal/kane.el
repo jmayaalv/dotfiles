@@ -175,15 +175,12 @@ return nil so the caller doesn't connect yet."
 
 (defun kane/connection-needs-iam-p (connection-symbol)
   "Return non-nil if CONNECTION-SYMBOL requires AWS IAM authentication.
-Detects Aurora clusters (both QA and prod) by hostname pattern.
-Excludes SSH tunnel connections (localhost)."
+Detects RDS hosts: QA cluster endpoints and prod global endpoints."
   (let* ((conn-alist (cdr (assoc connection-symbol sql-connection-alist)))
          (server (cadr (assoc 'sql-server conn-alist))))
     (and server
          (stringp server)
-         ;; Match any Aurora cluster (qa- or pdn-), but exclude localhost
-         (string-match-p "aurora-cluster" server)
-         (not (string= server "localhost")))))
+         (string-match-p "\\.rds\\.amazonaws\\.com\\'" server))))
 
 (defun kane/get-aws-profile (connection-symbol)
   "Get the appropriate AWS profile for CONNECTION-SYMBOL.
@@ -281,7 +278,7 @@ Returns formatted string like 'agl          test1  [QA]'."
         (allangray.prod
           (sql-name "allangray.prod")
           (sql-product 'postgres)
-          (sql-server "pdn-allan-gray-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+          (sql-server "pdn-allan-gray-global-cluster.global-gqduhxpzuuqe.global.rds.amazonaws.com")
           (sql-port 5432)
           (sql-database "imsallangraypdnadb")
           (sql-user "db_maintainer"))
@@ -337,10 +334,18 @@ Returns formatted string like 'agl          test1  [QA]'."
         (agl.prod
           (sql-name "agl.prod")
           (sql-product 'postgres)
-          (sql-server "pdn-agl-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+          (sql-server "pdn-agl-global-cluster.global-gqduhxpzuuqe.global.rds.amazonaws.com")
           (sql-port 5432)
           (sql-database "imsaglpdnadb")
           (sql-user "db_maintainer"))
+
+        (appleby.prod
+         (sql-name "appleby.prod")
+         (sql-product 'postgres)
+         (sql-server "pdn-appleby-global-cluster.global-gqduhxpzuuqe.global.rds.amazonaws.com")
+         (sql-port 5432)
+         (sql-database "imsapplebypdnadb")
+         (sql-user "db_maintainer"))
 
 
         (axonic.test1
@@ -362,7 +367,7 @@ Returns formatted string like 'agl          test1  [QA]'."
         (axonic.prod
          (sql-name "axonic.prod")
          (sql-product 'postgres)
-         (sql-server "pdn-axonic-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+         (sql-server "pdn-axonic-global-cluster.global-gqduhxpzuuqe.global.rds.amazonaws.com")
          (sql-port 5432)
          (sql-database "imsaxonicpdnadb")
          (sql-user "db_maintainer"))
@@ -382,6 +387,14 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-port 5432)
          (sql-database "imsfnbt2adb")
          (sql-user "db_writer"))
+
+        (fnb.prod
+         (sql-name "fnb.prod")
+         (sql-product 'postgres)
+         (sql-server "pdn-fnb-global-cluster.global-gqduhxpzuuqe.global.rds.amazonaws.com")
+         (sql-port 5432)
+         (sql-database "imsfnbpdnadb")
+         (sql-user "db_maintainer"))
 
         (glacier.test1
          (sql-name "glacier.test1")
@@ -418,7 +431,7 @@ Returns formatted string like 'agl          test1  [QA]'."
          (glacier.prod
           (sql-name "glacier.prod")
           (sql-product 'postgres)
-          (sql-server "pdn-glacier-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+          (sql-server "pdn-glacier-global-cluster.global-gqduhxpzuuqe.global.rds.amazonaws.com")
           (sql-port 5432)
           (sql-database "imsglacierpdnadb")
           (sql-user "db_maintainer"))
@@ -434,10 +447,26 @@ Returns formatted string like 'agl          test1  [QA]'."
          (gosaver.prod
           (sql-name "gosaver.prod")
           (sql-product 'postgres)
-          (sql-server "pdn-gosaver-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+          (sql-server "pdn-gosaver-global-cluster.global-gqduhxpzuuqe.global.rds.amazonaws.com")
           (sql-port 5432)
           (sql-database "imsgosaverpdnadb")
           (sql-user "db_maintainer"))
+
+        (ims-accounting.prod
+         (sql-name "ims-accounting.prod")
+         (sql-product 'postgres)
+         (sql-server "pdn-ims-accounting-global-cluster.global-gqduhxpzuuqe.global.rds.amazonaws.com")
+         (sql-port 5432)
+         (sql-database "imsimsaccountingpdnadb")
+         (sql-user "db_maintainer"))
+
+        (kanedemo.prod
+         (sql-name "kanedemo.prod")
+         (sql-product 'postgres)
+         (sql-server "pdn-kanedemo-global-cluster.global-gqduhxpzuuqe.global.rds.amazonaws.com")
+         (sql-port 5432)
+         (sql-database "imskanedemopdnadb")
+         (sql-user "db_maintainer"))
 
         (lic.test1
          (sql-name "lic.test1")
@@ -450,7 +479,7 @@ Returns formatted string like 'agl          test1  [QA]'."
         (lic.prod
          (sql-name "lic.prod")
          (sql-product 'postgres)
-         (sql-server "pdn-lic-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+         (sql-server "pdn-lic-global-cluster.global-gqduhxpzuuqe.global.rds.amazonaws.com")
          (sql-port 5432)
          (sql-database "imslicpdnadb")
          (sql-user "db_maintainer"))
@@ -458,7 +487,7 @@ Returns formatted string like 'agl          test1  [QA]'."
         (nav.prod
          (sql-name "nav.prod")
          (sql-product 'postgres)
-         (sql-server "pdn-nav-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+         (sql-server "pdn-nav-global-cluster.global-gqduhxpzuuqe.global.rds.amazonaws.com")
          (sql-port 5432)
          (sql-database "imsnavpdnadb")
          (sql-user "db_maintainer"))
@@ -466,7 +495,7 @@ Returns formatted string like 'agl          test1  [QA]'."
         (omnia.prod
          (sql-name "omnia.prod")
          (sql-product 'postgres)
-         (sql-server "pdn-omnia-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+         (sql-server "pdn-omnia-global-cluster.global-gqduhxpzuuqe.global.rds.amazonaws.com")
          (sql-port 5432)
          (sql-database "imsomniapdnadb")
          (sql-user "db_maintainer"))
@@ -482,7 +511,7 @@ Returns formatted string like 'agl          test1  [QA]'."
         (omi.prod
           (sql-name "omi.prod")
           (sql-product 'postgres)
-          (sql-server "pdn-omi-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+          (sql-server "pdn-omi-global-cluster.global-gqduhxpzuuqe.global.rds.amazonaws.com")
           (sql-port 5432)
           (sql-database "imsomipdnadb")
           (sql-user "db_maintainer"))
@@ -522,7 +551,7 @@ Returns formatted string like 'agl          test1  [QA]'."
         (plac.prod
          (sql-name "plac.prod")
          (sql-product 'postgres)
-         (sql-server "pdn-plac-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+         (sql-server "pdn-plac-global-cluster.global-gqduhxpzuuqe.global.rds.amazonaws.com")
          (sql-port 5432)
          (sql-database "imsplacpdnadb")
          (sql-user "db_maintainer"))
@@ -570,7 +599,7 @@ Returns formatted string like 'agl          test1  [QA]'."
          (provlife.prod
           (sql-name "provlife.prod")
           (sql-product 'postgres)
-          (sql-server "pdn-provlife-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+          (sql-server "pdn-provlife-global-cluster.global-gqduhxpzuuqe.global.rds.amazonaws.com")
           (sql-port 5432)
           (sql-database "imsprovlifepdnadb")
           (sql-user "db_maintainer"))
@@ -595,7 +624,7 @@ Returns formatted string like 'agl          test1  [QA]'."
         (prospero.prod
          (sql-name "prospero.prod")
          (sql-product 'postgres)
-         (sql-server "pdn-prospero-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+         (sql-server "pdn-prospero-global-cluster.global-gqduhxpzuuqe.global.rds.amazonaws.com")
          (sql-port 5432)
          (sql-database "imsprosperopdnadb")
          (sql-user "db_maintainer"))
@@ -635,7 +664,7 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sbi.prod
           (sql-name "sbi.prod")
           (sql-product 'postgres)
-          (sql-server "pdn-sbi-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+          (sql-server "pdn-sbi-global-cluster.global-gqduhxpzuuqe.global.rds.amazonaws.com")
           (sql-port 5432)
           (sql-database "imssbipdnadb")
           (sql-user "db_maintainer"))
@@ -652,7 +681,7 @@ Returns formatted string like 'agl          test1  [QA]'."
        (secura.prod
         (sql-name "secura.prod")
         (sql-product 'postgres)
-        (sql-server "pdn-secura-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+        (sql-server "pdn-secura-global-cluster.global-gqduhxpzuuqe.global.rds.amazonaws.com")
         (sql-port 5432)
         (sql-database "imssecurapdnadb")
         (sql-user "db_maintainer"))
@@ -685,7 +714,7 @@ Returns formatted string like 'agl          test1  [QA]'."
         (sukoon.prod
          (sql-name "sukoon.prod")
          (sql-product 'postgres)
-         (sql-server "pdn-sukoon-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+         (sql-server "pdn-sukoon-global-cluster.global-gqduhxpzuuqe.global.rds.amazonaws.com")
          (sql-port 5432)
          (sql-database "imssukoonpdnadb")
          (sql-user "db_maintainer"))
@@ -693,7 +722,7 @@ Returns formatted string like 'agl          test1  [QA]'."
        (veritas.prod
         (sql-name "veritas.prod")
         (sql-product 'postgres)
-        (sql-server "pdn-veritas-aurora-cluster.cluster-czaaseae8xw7.eu-central-1.rds.amazonaws.com")
+        (sql-server "pdn-veritas-global-cluster.global-gqduhxpzuuqe.global.rds.amazonaws.com")
         (sql-port 5432)
         (sql-database "imsveritaspdnadb")
         (sql-user "db_maintainer"))
