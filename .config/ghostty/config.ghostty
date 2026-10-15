@@ -48,8 +48,9 @@ macos-option-as-alt = true
 # ⌘⇧, reloads this file; Ghostty doesn't watch it.
 # The menu's ⌘M (Minimize), ⌘H (Hide) and ⌃⌘F (Toggle Full Screen) stay fixed
 # whatever this file says. ⌘M is s-m, magit's prefix, and ⌃⌘F an Emacs chord,
-# so a macOS override moves both to ⌃⌥⇧⌘M and ⌃⌥⇧⌘F, on every Mac:
-#   defaults write com.mitchellh.ghostty NSUserKeyEquivalents -dict-add Minimize '@~^$m' 'Toggle Full Screen' '@~^$f'
+# so a macOS override moves them to right ⌘⇧M (Karabiner turns left ⌘⇧M into
+# M-M; right ⌥⇧M, s-M, is unbound) and ⌃⌥⇧⌘F, on every Mac:
+#   defaults write com.mitchellh.ghostty NSUserKeyEquivalents -dict-add Minimize '@$m' 'Toggle Full Screen' '@~^$f'
 keybind = clear
 keybind = super+c=copy_to_clipboard
 keybind = super+v=paste_from_clipboard
