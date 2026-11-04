@@ -2,7 +2,6 @@
 .config/raycast/extensions
 .config/raycast/node-compile-cache/
 .config/cagent/
-.config/hunk/state.json
 .config/claude/projects/
 .config/claude/shell-snapshots/
 .config/claude/statsig/
