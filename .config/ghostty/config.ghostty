@@ -22,10 +22,6 @@ maximize = true
 window-padding-color = extend
 # Catppuccin's pastels a touch richer on the MacBook's wide-gamut screen.
 window-colorspace = display-p3
-# The Dock icon in Mocha: a mauve ghost on a base-to-surface0 screen.
-macos-icon = custom-style
-macos-icon-ghost-color = #cba6f7
-macos-icon-screen-color = #1e1e2e,#313244
 
 cursor-style = block
 cursor-style-blink = false
