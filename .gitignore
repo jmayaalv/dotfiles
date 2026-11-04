@@ -24,3 +24,6 @@
 /.agent-shell/
 .config/karabiner/automatic_backups/
 __pycache__/
+
+# herdr-app mod state: Slack tokens, cached messages, chat drafts
+.config/herdr-app/data/
