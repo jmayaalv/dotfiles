@@ -1,0 +1,15 @@
+# Only what AGENTS.md calls config. The rest the app writes itself: state,
+# bookkeeping, telemetry, frame/, icons/, typings, and data/ (mod secrets).
+/*
+!/.gitignore
+!/keys.json
+!/settings.json
+!/programs.json
+!/layouts/
+!/themes/
+!/mods/
+/layouts/.state/
+# Shipped by the app, with what look like Windows' own sounds and icons
+/mods/win98/
+*.d.ts
+jsconfig.json
