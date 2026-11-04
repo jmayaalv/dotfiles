@@ -20,13 +20,13 @@
 
 ;; CONNECT TO DB
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; aws sso login --profile kane-nonprod-db_writer                                                                   ;;
+;; aws sso login --profile kane-nonprod-db_maintainer                                                               ;;
 ;; export TOKEN=$(aws rds generate-db-auth-token \                                                                  ;;
 ;;                    --hostname qa-allan-gray-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com \ ;;
 ;;                    --port 5432 \                                                                                 ;;
 ;;                    --region eu-central-1 \                                                                       ;;
-;;                    --username db_writer \                                                                        ;;
-;;                    --profile kane-nonprod-db_writer)
+;;                    --username db_maintainer \                                                                    ;;
+;;                    --profile kane-nonprod-db_maintainer)
  ;;aws rds describe-db-clusters \
 ;;--query 'DBClusters[*].[DBClusterIdentifier,Endpoint,Engine]' \
 ;;--output table --profile kane-nonprod-dev
@@ -36,7 +36,7 @@
 ;;       port=5432 \                                                                                                ;;
 ;;       sslmode=require \                                                                                          ;;
 ;;       dbname=imsallangrayt1adb \                                                                                 ;;
-;;       user=db_writer \                                                                                           ;;
+;;       user=db_maintainer \                                                                                       ;;
 ;;       password=$TOKEN"                                                                                           ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -44,8 +44,6 @@
 (defvar kane-aurora-port 5432
   "Default port for Aurora database connections.")
 
-(defvar kane-aurora-region "eu-central-1"
-  "AWS region for Aurora clusters.")
 
 ;; IAM token cache - tokens are valid for 15 minutes
 (defvar kane-iam-token-cache (make-hash-table :test 'equal)
@@ -79,7 +77,7 @@ Returns token string or nil if not cached or expired."
     (puthash cache-key (cons token (float-time)) kane-iam-token-cache)))
 
 (defvar kane-aws-profiles
-  '("kane-nonprod-db_writer" "kane-prod-db_maintainer")
+  '("kane-nonprod-db_maintainer" "kane-prod-db_maintainer")
   "AWS SSO profiles available for interactive login.")
 
 (defun kane/aws-sso-login (profile &optional callback)
@@ -116,32 +114,47 @@ A GUI Emacs started from the Dock doesn't have /usr/local/bin on its PATH."
       (seq-find #'file-executable-p '("/usr/local/bin/aws" "/opt/homebrew/bin/aws"))
       (user-error "aws CLI not found")))
 
+(defun kane/rds-cluster-endpoint (hostname)
+  "Return the regional cluster endpoint behind HOSTNAME.
+A global endpoint is a CNAME to the primary region's cluster, which moves on
+failover, so it is resolved on every connect."
+  (if (string-suffix-p ".global.rds.amazonaws.com" hostname)
+      (string-trim-right (or (car (process-lines "dig" "+short" "CNAME" hostname))
+                             (user-error "%s does not resolve" hostname))
+                         "\\.")
+    hostname))
+
 (defun kane/aurora-get-auth-token (hostname username profile)
   "Return an AWS IAM auth token for HOSTNAME and USERNAME using PROFILE, or nil.
+The token is signed for the regional cluster endpoint HOSTNAME resolves to,
+in that endpoint's region: a token signed for another region is refused.
 Checks the cache first. A token is only accepted, and cached, when aws exits
 0 and prints a signed URL, so an expired SSO session or a missing CLI is
 never mistaken for a password."
-  (or (kane/get-cached-token hostname username)
-      (let ((err-file (make-temp-file "kane-aws-err")))
-        (unwind-protect
-            (with-temp-buffer
-              (let ((status (call-process (kane/aws-program) nil (list t err-file) nil
-                                          "rds" "generate-db-auth-token"
-                                          "--hostname" hostname
-                                          "--port" (format "%s" kane-aurora-port)
-                                          "--region" kane-aurora-region
-                                          "--username" username
-                                          "--profile" profile))
-                    (token (string-trim (buffer-string))))
-                (if (and (eq status 0) (string-match-p "X-Amz-Signature=" token))
-                    (progn (kane/cache-token hostname username token) token)
-                  (message "No IAM token for %s: %s" hostname
-                           (car (split-string (with-temp-buffer
-                                                (insert-file-contents err-file)
-                                                (buffer-string))
-                                              "\n" t)))
-                  nil)))
-          (delete-file err-file)))))
+  (let* ((cluster (kane/rds-cluster-endpoint hostname))
+         (region (and (string-match "\\.\\([^.]+\\)\\.rds\\.amazonaws\\.com\\'" cluster)
+                      (match-string 1 cluster))))
+    (or (kane/get-cached-token cluster username)
+        (let ((err-file (make-temp-file "kane-aws-err")))
+          (unwind-protect
+              (with-temp-buffer
+                (let ((status (call-process (kane/aws-program) nil (list t err-file) nil
+                                            "rds" "generate-db-auth-token"
+                                            "--hostname" cluster
+                                            "--port" (format "%s" kane-aurora-port)
+                                            "--region" region
+                                            "--username" username
+                                            "--profile" profile))
+                      (token (string-trim (buffer-string))))
+                  (if (and (eq status 0) (string-match-p "X-Amz-Signature=" token))
+                      (progn (kane/cache-token cluster username token) token)
+                    (message "No IAM token for %s: %s" hostname
+                             (car (split-string (with-temp-buffer
+                                                  (insert-file-contents err-file)
+                                                  (buffer-string))
+                                                "\n" t)))
+                    nil)))
+            (delete-file err-file))))))
 
 (defun kane/prepare-login (connection-name retry)
   "Set the sql login variables for CONNECTION-NAME; return non-nil when ready.
@@ -184,15 +197,12 @@ Detects RDS hosts: QA cluster endpoints and prod global endpoints."
 
 (defun kane/get-aws-profile (connection-symbol)
   "Get the appropriate AWS profile for CONNECTION-SYMBOL.
-Maps database username to AWS profile:
-  db_writer -> kane-nonprod-db_writer
-  db_maintainer -> kane-prod-db_maintainer"
-  (let* ((conn-alist (cdr (assoc connection-symbol sql-connection-alist)))
-         (user (cadr (assoc 'sql-user conn-alist))))
-    (cond
-     ((string= user "db_writer") "kane-nonprod-db_writer")
-     ((string= user "db_maintainer") "kane-prod-db_maintainer")
-     (t "kane-nonprod-db_writer")))) ; default fallback
+Every RDS connection logs in as db_maintainer; the profile picks the account:
+  prod -> kane-prod-db_maintainer
+  rest -> kane-nonprod-db_maintainer"
+  (if (kane/is-prod-connection-p connection-symbol)
+      "kane-prod-db_maintainer"
+    "kane-nonprod-db_maintainer"))
 
 (defun kane/format-connection-for-completion (connection-symbol)
   "Format CONNECTION-SYMBOL for better completion display.
@@ -265,7 +275,7 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-server "qa-allan-gray-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
          (sql-database "imsallangrayt1adb")
-         (sql-user "db_writer"))
+         (sql-user "db_maintainer"))
 
         (allangray.test2
          (sql-name "allangray.test2")
@@ -273,7 +283,7 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-server "qa-allan-gray-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
          (sql-database "imsallangrayt2adb")
-         (sql-user "db_writer"))
+         (sql-user "db_maintainer"))
 
         (allangray.prod
           (sql-name "allangray.prod")
@@ -289,7 +299,7 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-server "qa-agl-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
          (sql-database "imsaglt1adb")
-         (sql-user "db_writer"))
+         (sql-user "db_maintainer"))
 
         (agl.test2
          (sql-name "agl.test2")
@@ -297,7 +307,7 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-server "qa-agl-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
          (sql-database "imsaglt2adb")
-         (sql-user "db_writer"))
+         (sql-user "db_maintainer"))
 
         (agl.test3
          (sql-name "agl.test3")
@@ -305,7 +315,7 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-server "qa-agl-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
          (sql-database "imsaglt3adb")
-         (sql-user "db_writer"))
+         (sql-user "db_maintainer"))
 
         (agl.test4
          (sql-name "agl.test4")
@@ -313,7 +323,7 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-server "qa-agl-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
          (sql-database "imsaglt4adb")
-         (sql-user "db_writer"))
+         (sql-user "db_maintainer"))
 
         (agl.test5
          (sql-name "agl.test5")
@@ -321,7 +331,7 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-server "qa-agl-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
          (sql-database "imsaglt5adb")
-         (sql-user "db_writer"))
+         (sql-user "db_maintainer"))
 
         (agl.test6
          (sql-name "agl.test6")
@@ -329,7 +339,7 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-server "qa-agl-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
          (sql-database "imsaglt6adb")
-         (sql-user "db_writer"))
+         (sql-user "db_maintainer"))
 
         (agl.prod
           (sql-name "agl.prod")
@@ -354,7 +364,7 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-server "qa-axonic-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
          (sql-database "imsaxonict1adb")
-         (sql-user "db_writer"))
+         (sql-user "db_maintainer"))
 
         (axonic.test2
          (sql-name "axonic.test2")
@@ -362,7 +372,7 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-server "qa-axonic-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
          (sql-database "imsaxonict2adb")
-         (sql-user "db_writer"))
+         (sql-user "db_maintainer"))
 
         (axonic.prod
          (sql-name "axonic.prod")
@@ -378,7 +388,7 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-server "qa-fnb-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
          (sql-database "imsfnbt1adb")
-         (sql-user "db_writer"))
+         (sql-user "db_maintainer"))
 
         (fnb.test2
          (sql-name "fnb.test2")
@@ -386,7 +396,7 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-server "qa-fnb-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
          (sql-database "imsfnbt2adb")
-         (sql-user "db_writer"))
+         (sql-user "db_maintainer"))
 
         (fnb.prod
          (sql-name "fnb.prod")
@@ -402,7 +412,7 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-server "qa-glacier-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
          (sql-database "imsglaciert1adb")
-         (sql-user "db_writer"))
+         (sql-user "db_maintainer"))
 
         (glacier.test2
          (sql-name "glacier.test2")
@@ -410,7 +420,7 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-server "qa-glacier-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
          (sql-database "imsglaciert2adb")
-         (sql-user "db_writer"))
+         (sql-user "db_maintainer"))
 
         (glacier.test3
          (sql-name "glacier.test3")
@@ -418,7 +428,7 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-server "qa-glacier-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
          (sql-database "imsglaciert3adb")
-         (sql-user "db_writer"))
+         (sql-user "db_maintainer"))
 
         (glacier.test4
          (sql-name "glacier.test4")
@@ -426,7 +436,7 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-server "qa-glacier-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
          (sql-database "imsglaciert4adb")
-         (sql-user "db_writer"))
+         (sql-user "db_maintainer"))
 
          (glacier.prod
           (sql-name "glacier.prod")
@@ -442,7 +452,7 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-server "qa-gosaver-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
          (sql-database "imsgosavert1adb")
-         (sql-user "db_writer"))
+         (sql-user "db_maintainer"))
 
          (gosaver.prod
           (sql-name "gosaver.prod")
@@ -474,7 +484,7 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-server "qa-lic-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
          (sql-database "imslict1adb")
-         (sql-user "db_writer"))
+         (sql-user "db_maintainer"))
 
         (lic.prod
          (sql-name "lic.prod")
@@ -506,7 +516,7 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-server "qa-omnia-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
          (sql-database "imsomniat1adb")
-         (sql-user "db_writer"))
+         (sql-user "db_maintainer"))
 
         (omi.prod
           (sql-name "omi.prod")
@@ -522,7 +532,7 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-server "qa-omi-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
          (sql-database "imsomit1adb")
-         (sql-user "db_writer"))
+         (sql-user "db_maintainer"))
 
         (omi.test2
          (sql-name "omi.test2")
@@ -530,7 +540,7 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-server "qa-omi-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
          (sql-database "imsomit2adb")
-         (sql-user "db_writer"))
+         (sql-user "db_maintainer"))
 
         (omi.test3
          (sql-name "omi.test3")
@@ -538,7 +548,7 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-server "qa-omi-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
          (sql-database "imsomit3adb")
-         (sql-user "db_writer"))
+         (sql-user "db_maintainer"))
 
         (omi.test4
          (sql-name "omi.test4")
@@ -546,7 +556,7 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-server "qa-omi-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
          (sql-database "imsomit4adb")
-         (sql-user "db_writer"))
+         (sql-user "db_maintainer"))
 
         (plac.prod
          (sql-name "plac.prod")
@@ -562,7 +572,7 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-server "qa-plac-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
          (sql-database "imsplact1adb")
-         (sql-user "db_writer"))
+         (sql-user "db_maintainer"))
 
         (plac.test2
          (sql-name "plac.test2")
@@ -570,7 +580,7 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-server "qa-plac-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
          (sql-database "imsplact2adb")
-         (sql-user "db_writer"))
+         (sql-user "db_maintainer"))
 
         (provlife.test1
          (sql-name "provlife.test1")
@@ -578,7 +588,7 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-server "qa-provlife-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
          (sql-database "imsprovlifet1adb")
-         (sql-user "db_writer"))
+         (sql-user "db_maintainer"))
 
         (provlife.test2
          (sql-name "provlife.test2")
@@ -586,7 +596,7 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-server "qa-provlife-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
          (sql-database "imsprovlifet2adb")
-         (sql-user "db_writer"))
+         (sql-user "db_maintainer"))
 
         (provlife.test3
          (sql-name "provlife.test3")
@@ -594,7 +604,7 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-server "qa-provlife-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
          (sql-database "imsprovlifet3adb")
-         (sql-user "db_writer"))
+         (sql-user "db_maintainer"))
 
          (provlife.prod
           (sql-name "provlife.prod")
@@ -611,7 +621,7 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-server "qa-prospero-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
          (sql-database "imsprosperot1adb")
-         (sql-user "db_writer"))
+         (sql-user "db_maintainer"))
 
         (prospero.test2
          (sql-name "prospero.test2")
@@ -619,7 +629,7 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-server "qa-prospero-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
          (sql-database "imsprosperot2adb")
-         (sql-user "db_writer"))
+         (sql-user "db_maintainer"))
 
         (prospero.prod
          (sql-name "prospero.prod")
@@ -635,7 +645,7 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-server "qa-sbi-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
          (sql-database "imssbit1adb")
-         (sql-user "db_writer"))
+         (sql-user "db_maintainer"))
 
         (sbi.test2
          (sql-name "sbi.test2")
@@ -643,7 +653,7 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-server "qa-sbi-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
          (sql-database "imssbit2adb")
-         (sql-user "db_writer"))
+         (sql-user "db_maintainer"))
 
         (sbi.test3
          (sql-name "sbi.test3")
@@ -651,7 +661,7 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-server "qa-sbi-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
          (sql-database "imssbit3adb")
-         (sql-user "db_writer"))
+         (sql-user "db_maintainer"))
 
         (sbi.test4
          (sql-name "sbi.test4")
@@ -659,7 +669,7 @@ Returns formatted string like 'agl          test1  [QA]'."
          (sql-server "qa-sbi-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
          (sql-port 5432)
          (sql-database "imssbit4adb")
-         (sql-user "db_writer"))
+         (sql-user "db_maintainer"))
 
          (sbi.prod
           (sql-name "sbi.prod")
@@ -676,7 +686,7 @@ Returns formatted string like 'agl          test1  [QA]'."
         (sql-server "qa-secura-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
         (sql-port 5432)
         (sql-database "imssecurat1adb")
-        (sql-user "db_writer"))
+        (sql-user "db_maintainer"))
 
        (secura.prod
         (sql-name "secura.prod")
@@ -692,7 +702,7 @@ Returns formatted string like 'agl          test1  [QA]'."
         (sql-server "qa-sukoon-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
         (sql-port 5432)
         (sql-database "imssukoont1adb")
-        (sql-user "db_writer"))
+        (sql-user "db_maintainer"))
 
        (sukoon.test2
         (sql-name "sukoon.test2")
@@ -700,7 +710,7 @@ Returns formatted string like 'agl          test1  [QA]'."
         (sql-server "qa-sukoon-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
         (sql-port 5432)
         (sql-database "imssukoont2adb")
-        (sql-user "db_writer"))
+        (sql-user "db_maintainer"))
 
        (sukoon.test3
         (sql-name "sukoon.test3")
@@ -708,7 +718,7 @@ Returns formatted string like 'agl          test1  [QA]'."
         (sql-server "qa-sukoon-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
         (sql-port 5432)
         (sql-database "imssukoont3adb")
-        (sql-user "db_writer"))
+        (sql-user "db_maintainer"))
 
 
         (sukoon.prod
@@ -733,7 +743,7 @@ Returns formatted string like 'agl          test1  [QA]'."
         (sql-server "qa-fnb-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
         (sql-port 5432)
         (sql-database "imsfnbt1adb")
-        (sql-user "db_writer"))
+        (sql-user "db_maintainer"))
 
        (fnb.test2
         (sql-name "fnb.test2")
@@ -741,7 +751,7 @@ Returns formatted string like 'agl          test1  [QA]'."
         (sql-server "qa-fnb-aurora-cluster.cluster-cf4s6q6esomf.eu-central-1.rds.amazonaws.com")
         (sql-port 5432)
         (sql-database "imsfnbt2adb")
-        (sql-user "db_writer"))))
+        (sql-user "db_maintainer"))))
 
 (defvar kane-sql-history nil
   "History list for kane-sql database selections.")
