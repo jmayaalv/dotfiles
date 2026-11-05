@@ -23,7 +23,7 @@ export FZF_DEFAULT_OPTS=" \
 
 
 # this is a solution to emacs tramp timeout problem
-[ $TERM = "dumb" ] && unsetopt zle && PS1='$ '
+[[ $TERM == dumb ]] && unsetopt zle && PS1="$ "
 
 # Temp workaround to disable punycode deprecation logging to stderr
 # https://github.com/bitwarden/clients/issues/6689
@@ -63,8 +63,9 @@ zinit cdreplay -q
 
 # sdkman runs its own compinit unless one already ran.
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
-# The prompt: Omarchy's starship, see ~/.config/starship.toml.
-eval "$(starship init zsh)"
+# The prompt: Omarchy's starship, see ~/.config/starship.toml. Not for TERM=dumb
+# (Emacs TRAMP), which needs the plain "$ " prompt set near the top.
+[[ $TERM != dumb ]] && eval "$(starship init zsh)"
 
 
 # History
