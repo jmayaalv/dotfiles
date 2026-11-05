@@ -26,7 +26,9 @@
             (deprecated  :underline (:color "#b7bdf8" :style wave))))))
 
 ;;enable snippets
-(setq yas-snippet-dirs      '("~/.emacs.d/snippets"))
+;; Personal snippets in ~/.emacs.d/snippets, only when that folder exists: yas
+;; reports a missing one as an error on every start. clojure-snippets adds its own.
+(setq yas-snippet-dirs (seq-filter #'file-directory-p '("~/.emacs.d/snippets")))
 (yas-global-mode 1)
 (diminish 'yas-minor-mode)
 

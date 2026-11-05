@@ -13,6 +13,9 @@ command -v batcat >/dev/null && alias cat='batcat'
 # EDITOR/BROWSER/MANPAGER come from ~/.zshenv (see the dotfiles README).
 if [[ -r /usr/share/omarchy/default/bash/envs ]]; then
   emulate sh -c '. /usr/share/omarchy/default/bash/envs'
+  # Omarchy sets BAT_THEME=ansi; drop it so bat uses the dotfiles' theme
+  # (~/.config/bat/config: Catppuccin Macchiato), as on the Mac.
+  unset BAT_THEME
 fi
 
 # mise: Omarchy installs clojure, babashka, node, claude... through it.
