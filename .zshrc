@@ -51,9 +51,8 @@ zinit snippet OMZP::command-not-found
 #theme for zsh-syntax-highlighting
 source ~/.config/zsh/catppuccin_macchiato-zsh-syntax-highlighting.zsh
 
-# The following lines have been added by Docker Desktop to enable Docker CLI completions.
-fpath=(/Users/jmayaalv/.docker/completions $fpath)
-# End of Docker CLI completions
+# Docker CLI completions (written by Docker Desktop; absent on plain Linux Docker).
+[[ -d $HOME/.docker/completions ]] && fpath=($HOME/.docker/completions $fpath)
 
 # Load completions. The only compinit: each one more, run with another fpath,
 # found the cache stale and rebuilt it, ~2s a shell, so new herdr tabs took 10s.
@@ -96,8 +95,10 @@ zstyle ':fzf-tab:*' query-string prefix
 
 
 
-export CARAPACE_BRIDGES='zsh,fish,bash,inshellisense' # optional
-source <(carapace _carapace)
+if command -v carapace >/dev/null; then
+  export CARAPACE_BRIDGES='zsh,fish,bash,inshellisense' # optional
+  source <(carapace _carapace)
+fi
 
 #Common aliases
 alias main='tmux new -s main'
@@ -109,22 +110,9 @@ alias clj-new-lib='clojure -X:new  :template lib :name'
 alias tlocal='tmux new -s local'
 alias attach='tmux attach-session -t'
 alias claude-ch='claude --channels "plugin:telegram@claude-plugins-official"'
-alias bbc='/opt/homebrew/Cellar/bb/0.3.2/bin/bb'
-alias bitbucket='/opt/homebrew/Cellar/bb/0.3.2/bin/bb'
-alias emacs="/Applications/Emacs.app/Contents/MacOS/Emacs -nw"
-# emacsclient & co. Appended, so Emacs's own ctags/etags never shadow others.
-path+=(/Applications/Emacs.app/Contents/MacOS/bin)
-
-# Terminal Emacs frame on a shared daemon, started on first use, so every herdr
-# space edits the same buffers.
-ec() {
-  local app=/Applications/Emacs.app/Contents/MacOS
-  "$app/bin/emacsclient" -e t >/dev/null 2>&1 || "$app/Emacs" --daemon
-  "$app/bin/emacsclient" -t "$@"
-}
 alias cat='bat'
 
-# OS-specific configurations
+# OS-specific configurations: Emacs/ec, paths and tools that differ per OS.
 if [[ "$OSTYPE" == "darwin"* ]]; then
     # mac specific settings
     source ~/.config/zsh/zshrc.mac
@@ -133,18 +121,8 @@ elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
     source ~/.config/zsh/zshrc.linux
 fi
 
-# Added by Antigravity
-export PATH="/Users/jmayaalv/.antigravity/antigravity/bin:$PATH"
-
-# Added by LM Studio CLI (lms)
-export PATH="$PATH:/Users/jmayaalv/.lmstudio/bin"
-# End of LM Studio CLI section
-
 # Shell integrations
 eval "$(fzf --zsh)"
 export _ZO_DOCTOR=0
 eval "$(zoxide init --cmd cd zsh)"
-
-# TestContainers — Docker Desktop Mac (docker.raw.sock requires socket override for Ryuk)
-export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock
 # Docker Desktop's completions block sits above compinit.

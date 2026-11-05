@@ -5,4 +5,26 @@ export LANG=en_US.UTF-8
 
 export PATH=$HOME/bin:$HOME/.local/bin:$HOME/.config/eza:$HOME/.npm-global/bin/:$PATH
 
-alias cat='batcat'
+# Debian/Ubuntu ship bat as batcat; Arch (Omarchy) calls it bat, as .zshrc expects.
+command -v batcat >/dev/null && alias cat='batcat'
+
+# --- Omarchy (Arch) ----------------------------------------------------------
+# What Omarchy's bash startup does, for zsh. OMARCHY_PATH, the mise shims and
+# EDITOR/BROWSER/MANPAGER come from ~/.zshenv (see the dotfiles README).
+if [[ -r /usr/share/omarchy/default/bash/envs ]]; then
+  emulate sh -c '. /usr/share/omarchy/default/bash/envs'
+fi
+
+# mise: Omarchy installs clojure, babashka, node, claude... through it.
+command -v mise >/dev/null && eval "$(mise activate zsh)"
+
+# try: throwaway project folders in ~/Work/tries, loaded on first use.
+if command -v try >/dev/null; then
+  try() {
+    unset -f try
+    eval "$(SHELL=/bin/zsh command try init ~/Work/tries)"
+    try "$@"
+  }
+fi
+
+# `ec` comes from ~/.local/bin/ec on Linux: emacsclient -t on the systemd Emacs daemon.
