@@ -27,4 +27,22 @@ if command -v try >/dev/null; then
   }
 fi
 
+# Omarchy's bash aliases (lt, ff, g, d, h, ..., n, open) and helper functions
+# (tdl, ga/gd worktrees, compress, rsw/lsw, fip...), loaded from Omarchy itself so
+# they follow its updates. Two exceptions keep the shared config in charge:
+#  - cd: Omarchy aliases it to zd -> z, but .zshrc makes zoxide `cd` itself
+#    (zoxide init --cmd cd), so there is no z; keep .zshrc's cd.
+#  - ls: keep the shared plain eza.
+# The ssh auto-reconnect wrapper (fns/ssh-reconnect) is left out: it relies on
+# bash's `argv` and 0-based arrays, and in zsh would never reconnect.
+if [[ -r ${OMARCHY_PATH:-/usr/share/omarchy}/default/bash/aliases ]]; then
+  source ${OMARCHY_PATH:-/usr/share/omarchy}/default/bash/aliases
+  unalias cd 2>/dev/null; unfunction zd 2>/dev/null
+  alias ls='eza'
+  for f in ${OMARCHY_PATH:-/usr/share/omarchy}/default/bash/fns/*(N); do
+    [[ ${f:t} == ssh-reconnect ]] || source $f
+  done
+  unset f
+fi
+
 # `ec` comes from ~/.local/bin/ec on Linux: emacsclient -t on the systemd Emacs daemon.
