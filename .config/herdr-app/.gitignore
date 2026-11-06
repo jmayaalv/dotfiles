@@ -8,8 +8,14 @@
 !/layouts/
 !/themes/
 !/mods/
-/layouts/.state/
-# Shipped by the app, with what look like Windows' own sounds and icons
-/mods/win98/
+# Herdr writes its own layouts and mods (installed.json lists them) at every
+# start and update, on each machine, so only ours are kept. Add new ones here.
+/layouts/*
+!/layouts/my-main.json
+/mods/*
+!/mods/pluck
+!/mods/resize
+!/mods/tuicr
+!/mods/walkthrough
 *.d.ts
 jsconfig.json
