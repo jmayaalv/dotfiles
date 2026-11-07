@@ -2,9 +2,9 @@
 # ~/.config/herdr/config.toml are tuned by hand.
 follow_appearance = false
 
-# Set from radar's settings screen (prefix then ,). "auto" uses the icon font
-# when installed; if its logos render wrong in Alacritty, "text" is plain Unicode.
-variant = "text"
+# Vendor logos from the icon font; Ghostty maps their codepoints to it (the
+# herdr-radar block in ghostty/config.ghostty). "text" is plain Unicode (§ for Claude).
+variant = "font"
 reorder_workspaces = false
 done_hold = "until_seen"
 # The other panes of a split tab hang off the first with a ├─ corner.

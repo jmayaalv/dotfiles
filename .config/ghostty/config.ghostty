@@ -1,7 +1,3 @@
-# Ghostty, on trial next to Alacritty with the same keys and font. Over
-# Alacritty it adds images in herdr panes (Kitty graphics) and FiraCode's
-# ligatures.
-
 # Catppuccin Mocha, as in herdr; it ships with Ghostty.
 theme = Catppuccin Mocha
 
@@ -26,7 +22,7 @@ window-colorspace = display-p3
 cursor-style = block
 cursor-style-blink = false
 mouse-hide-while-typing = true
-# A selection also lands on the macOS clipboard, as in Alacritty.
+# A selection also lands on the macOS clipboard.
 copy-on-select = clipboard
 # Closing a window only detaches herdr, so don't ask.
 confirm-close-surface = false
@@ -38,9 +34,9 @@ confirm-close-surface = false
 macos-option-as-alt = true
 
 # Ghostty's default ⌘ shortcuts would swallow Emacs's Super keys (s-f, s-k,
-# s-j, s-, and s-<arrows> among them), so only Alacritty's few come back:
+# s-j, s-, and s-<arrows> among them), so only a few come back:
 # copy, paste, new window, quit and font size, since terminal Emacs can't
-# scale text itself. ⌘W sends C-w, Shift+Return a newline, as in Alacritty.
+# scale text itself. ⌘W sends C-w, Shift+Return a newline.
 # ⌘⇧, reloads this file; Ghostty doesn't watch it.
 # The menu's ⌘M (Minimize), ⌘H (Hide) and ⌃⌘F (Toggle Full Screen) stay fixed
 # whatever this file says. ⌘M is s-m, magit's prefix, and ⌃⌘F an Emacs chord,
@@ -65,3 +61,8 @@ keybind = shift+enter=text:\n
 # unbound; it is taken from IntelliJ's Quick Switch Scheme and VS Code's
 # terminal.
 keybind = global:ctrl+grave_accent=toggle_quick_terminal
+
+# >>> herdr-radar font block
+font-codepoint-map = U+E1A0-U+E1BA=Herdr Agent Icons Max
+font-codepoint-map = U+E1C0-U+E1C5=Herdr Agent Icons Max
+# <<< herdr-radar font block

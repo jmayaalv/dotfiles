@@ -17,8 +17,8 @@ cd dotfiles
 .
 ├── .clojure/               # Clojure configuration and history
 ├── .config/
-│   ├── alacritty/          # Terminal emulator configuration
 │   ├── claude/             # Claude Code configuration and data
+│   ├── ghostty/            # Terminal emulator configuration
 │   ├── karabiner/          # Karabiner-Elements key remapping
 │   ├── macos/              # macOS system tweaks (animations on/off)
 │   ├── tmux/               # Tmux configuration files
@@ -31,7 +31,7 @@ cd dotfiles
 ## Applications Configured
 
 - **Zsh**: Shell configuration with Zinit plugin manager, Homebrew integration, and custom PATH settings
-- **Alacritty**: GPU-accelerated terminal emulator
+- **Ghostty**: GPU-accelerated terminal emulator
 - **Claude Code**: AI-powered development environment configuration and data
 - **Tmux**: Terminal multiplexer with custom configuration
 - **Tmuxinator**: Tmux session manager with predefined layouts
@@ -140,4 +140,4 @@ Some configurations may require additional software:
 - **Zinit**: Zsh plugin manager (auto-installed by .zshrc)
 - **Starship**: Prompt (configured in .config/starship.toml)
 - **Tmux**: Terminal multiplexer
-- **Alacritty**: Terminal emulator
+- **Ghostty**: Terminal emulator
