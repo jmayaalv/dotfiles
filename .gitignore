@@ -27,3 +27,6 @@ __pycache__/
 
 # herdr-app mod state: Slack tokens, cached messages, chat drafts
 .config/herdr-app/data/
+
+# gh login state: per machine, and holds the token where there is no keychain
+.config/gh/hosts.yml
