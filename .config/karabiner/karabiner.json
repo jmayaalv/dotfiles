@@ -34,7 +34,7 @@
                 },
                 "rules": [
                     {
-                        "description": "Alacritty and Ghostty: right Option is Super (via Command), as in GUI Emacs",
+                        "description": "Ghostty: right Option is Super (via Command), as in GUI Emacs",
                         "manipulators": [
                             {
                                 "type": "basic",
@@ -55,7 +55,6 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
                                             "^com\\.mitchellh\\.ghostty$"
                                         ]
                                     }
@@ -64,7 +63,7 @@
                         ]
                     },
                     {
-                        "description": "Alacritty and Ghostty: left Command chords are Meta (via left Option), except \u2318Tab, \u2318Space, \u2318` and screenshots; right Command stays Command",
+                        "description": "Ghostty, Rex and Herdr: left Command chords are Meta (via left Option), except ⌘Tab, ⌘Space, ⌘` and screenshots; right Command stays Command",
                         "manipulators": [
                             {
                                 "type": "basic",
@@ -92,8 +91,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -124,8 +124,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -156,8 +157,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -188,8 +190,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -220,8 +223,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -252,8 +256,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -284,8 +289,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -316,8 +322,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -348,8 +355,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -380,8 +388,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -412,8 +421,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -444,8 +454,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -476,8 +487,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -508,8 +520,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -540,8 +553,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -572,8 +586,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -604,8 +619,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -636,8 +652,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -668,8 +685,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -700,8 +718,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -732,8 +751,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -764,8 +784,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -796,8 +817,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -828,8 +850,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -860,8 +883,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -892,8 +916,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -924,8 +949,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -956,8 +982,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -988,8 +1015,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -1020,8 +1048,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -1052,8 +1081,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -1084,8 +1114,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -1116,8 +1147,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -1148,8 +1180,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -1180,8 +1213,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -1212,8 +1246,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -1244,8 +1279,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -1276,8 +1312,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -1307,8 +1344,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -1338,8 +1376,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -1369,8 +1408,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -1400,8 +1440,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -1431,8 +1472,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -1462,8 +1504,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -1493,8 +1536,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -1524,8 +1568,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -1555,8 +1600,9 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -1586,8 +1632,73 @@
                                     {
                                         "type": "frontmost_application_if",
                                         "bundle_identifiers": [
-                                            "^org\\.alacritty$",
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "description": "Rex and Herdr: left Control is Command, the same as right Command (Caps Lock stays Control)",
+                        "manipulators": [
+                            {
+                                "type": "basic",
+                                "from": {
+                                    "key_code": "left_control",
+                                    "modifiers": {
+                                        "optional": [
+                                            "any"
+                                        ]
+                                    }
+                                },
+                                "to": [
+                                    {
+                                        "key_code": "right_command"
+                                    }
+                                ],
+                                "conditions": [
+                                    {
+                                        "type": "frontmost_application_if",
+                                        "bundle_identifiers": [
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "description": "Rex and Herdr: right Option is Control+Option+Command, which Emacs (terminal.el) turns into Super",
+                        "manipulators": [
+                            {
+                                "type": "basic",
+                                "from": {
+                                    "key_code": "right_option",
+                                    "modifiers": {
+                                        "optional": [
+                                            "any"
+                                        ]
+                                    }
+                                },
+                                "to": [
+                                    {
+                                        "key_code": "right_command",
+                                        "modifiers": [
+                                            "right_control",
+                                            "right_option"
+                                        ]
+                                    }
+                                ],
+                                "conditions": [
+                                    {
+                                        "type": "frontmost_application_if",
+                                        "bundle_identifiers": [
+                                            "^com\\.superlogical\\.rex$",
+                                            "^dev\\.herdr\\.app$"
                                         ]
                                     }
                                 ]
@@ -1595,7 +1706,19 @@
                         ]
                     }
                 ]
-            }
+            },
+            "simple_modifications": [
+                {
+                    "from": {
+                        "key_code": "caps_lock"
+                    },
+                    "to": [
+                        {
+                            "key_code": "right_control"
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

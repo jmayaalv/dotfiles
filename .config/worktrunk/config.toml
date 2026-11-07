@@ -1,0 +1,3 @@
+# Worktrees go where Claude Code puts its own: <repo>/.claude/worktrees/<branch>
+# (feature/bop -> feature-bop). Rex's New Worktree command (rex/new-worktree) uses this.
+worktree-path = "{{ repo_path }}/.claude/worktrees/{{ branch | sanitize }}"
