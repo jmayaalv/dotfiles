@@ -12,10 +12,13 @@ for _, d in ipairs({ "left", "right", "up", "down" }) do
   rex.bind("ctrl+cmd+" .. d, "pane.move", { direction = d })
 end
 
--- cmd+[ / ]: previous / next session, in sidebar order (replace Focus
--- Previous/Next Pane).
-rex.bind("cmd+[", "session.previous")
-rex.bind("cmd+]", "session.next")
+-- cmd+[ / ]: previous / next tab (replace Focus Previous/Next Pane);
+-- shift+cmd+[ / ]: previous / next session, in sidebar order (replace Show
+-- Previous/Next Tab).
+rex.bind("cmd+[", "client.tab.previous")
+rex.bind("cmd+]", "client.tab.next")
+rex.bind("shift+cmd+[", "session.previous")
+rex.bind("shift+cmd+]", "session.next")
 
 -- Close: cmd+w the pane (default); shift+cmd+w the tab (replaces Close Window,
 -- since the default alt+cmd+w needs the broken alt key); ctrl+cmd+w (Caps
