@@ -108,7 +108,33 @@ local function find_rect(node, id)
   if node.split then return find_rect(node.split.before, id) or find_rect(node.split.after, id) end
 end
 
+-- open_url: opens an http(s) URL on this Mac. Hints on a pane on another host
+-- calls it back here over Rex, so a URL opens where you are, not on the mini.
+rex.action{
+  name  = "open_url",
+  title = "Open URL on This Mac",
+  args  = { url = "string" },
+  run   = function(_, args)
+    if not args.url:match("^https?://") then error("open_url: only http(s) URLs", 0) end
+    local r, err = rex.exec({ "/usr/bin/open", args.url })
+    if r == nil then error(err, 0) end
+    if not r.ok then error(r.stderr, 0) end
+  end,
+}
+
+-- This server's Tailscale address, for that call back. The server's PATH has
+-- no rex, so ask through its own CLI. nil when Tailscale is off.
+local function own_address()
+  local cli = os.getenv("HOME") .. "/Library/Application Support/com.superlogical.rex/RexServer/Versions/Current/Rex Server.app/Contents/MacOS/rex"
+  local r = rex.exec({ cli, "api", "call", "server.status" }, { timeout = 5 })
+  local s = r and r.ok and rex.json.decode(r.stdout)
+  return s and s.tailscale and s.tailscale.https and s.tailscale.https.url
+end
+
 -- The picker over ctx's pane; mode "jump" is the ace-jump variant below.
+-- This file's actions run on this machine's server; ctx.server names the
+-- pane's host when it's another one (a mini pane). The picker runs there, so
+-- it gets this server's address: URLs open here, paths (files there) don't.
 local function open_hints(ctx, mode)
   local view, err = rex.session.view{}
   if view == nil then error(err, 0) end
@@ -127,7 +153,8 @@ local function open_hints(ctx, mode)
             options = {
               cwd          = pane_folder(ctx),
               command      = { script("rex-hints/hints"), ctx.session_id, ctx.block_id,
-                               w.zoomed_block_id == ctx.block_id and "1" or "0", mode },
+                               w.zoomed_block_id == ctx.block_id and "1" or "0", mode,
+                               ctx.server and (own_address() or "remote") or "local" },
               path_prepend = { "/opt/homebrew/bin" },  -- node, as for wt above
               size         = size.columns and { columns = size.columns, rows = size.rows } or nil,
             },
