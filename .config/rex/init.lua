@@ -30,6 +30,11 @@ rex.bind("ctrl+cmd+w", "session.close")
 -- shift+cmd+t renames the tab (Rename Tab has no default key).
 rex.bind("shift+cmd+t", "client.tab.rename")
 
+-- The commands below run where the pane is, which may be another host (the
+-- mini has no init.lua; these bindings come from here), so they name the
+-- script repos by their ~/Developer path, the same on every machine.
+local function script(path) return os.getenv("HOME") .. "/Developer/" .. path end
+
 -- The folder of the program in the action's pane. These shells don't report
 -- theirs to Rex, so the terminal's `pwd` is empty.
 local function pane_folder(ctx)
@@ -38,8 +43,8 @@ local function pane_folder(ctx)
 end
 
 -- ctrl+cmd+n (Caps Lock+cmd): New Worktree. A floating pane in the focused
--- pane's folder asks for a branch; rex/new-worktree makes the worktree with
--- worktrunk and opens a session there (~/Developer/rex-new-worktree).
+-- pane's folder asks for a branch; ~/Developer/rex-new-worktree makes the
+-- worktree with worktrunk and opens a session there.
 rex.action{
   name  = "new_worktree",
   title = "New Worktree…",
@@ -51,7 +56,7 @@ rex.action{
         flavor  = "com.superlogical.terminal.shell",
         options = {
           cwd     = pane_folder(ctx),
-          command = { os.getenv("HOME") .. "/.config/rex/new-worktree", ctx.client_id or "" },
+          command = { script("rex-new-worktree/new-worktree"), ctx.client_id or "" },
           -- wt lives here; brew shellenv runs only in .zshrc, which a command pane skips.
           path_prepend = { "/opt/homebrew/bin" },
         },
@@ -63,7 +68,7 @@ rex.action{
 rex.bind("ctrl+cmd+n", "new_worktree")
 
 -- tuicr review of a pane's uncommitted changes in a pane on its right
--- (rex/tuicr-review, ~/Developer/rex-tuicr). When tuicr quits, the comments new
+-- (~/Developer/rex-tuicr). When tuicr quits, the comments new
 -- or edited in it go back to the pane's agent: shift+cmd+d pastes them into its
 -- input, unsent (replaces Split Pane Down; shift+cmd+down still splits). The
 -- submit variant, palette only, also presses Enter. A pane with no agent (a
@@ -83,7 +88,7 @@ local function tuicr_review(mode)
         label   = "tuicr",
         options = {
           cwd          = pane_folder(ctx),
-          command      = { os.getenv("HOME") .. "/.config/rex/tuicr-review", how, ctx.session_id, ctx.block_id },
+          command      = { script("rex-tuicr/tuicr-review"), how, ctx.session_id, ctx.block_id },
           path_prepend = { "/opt/homebrew/bin" },  -- tuicr and node, as for wt above
         },
       },
@@ -95,9 +100,9 @@ rex.action{ name = "tuicr_review_paste", title = "Review Changes in tuicr (paste
 rex.action{ name = "tuicr_review_submit", title = "Review Changes in tuicr (submit comments)", run = tuicr_review("submit") }
 rex.bind("shift+cmd+d", "tuicr_review_paste")
 
--- shift+cmd+j: hints over the focused pane (rex/hints) in a floating pane laid
--- exactly over it. Type a hint, then c copy, o open, e edit (ec in a split),
--- t edit in a tab, m move (a click there). Repo: ~/Developer/rex-hints.
+-- shift+cmd+j: hints over the focused pane (~/Developer/rex-hints) in a
+-- floating pane laid exactly over it. Type a hint, then c copy, o open, e edit
+-- (ec in a split), t edit in a tab, m move (a click there).
 local function find_rect(node, id)
   if node.block_id == id then return node.rect end
   if node.split then return find_rect(node.split.before, id) or find_rect(node.split.after, id) end
@@ -121,7 +126,7 @@ local function open_hints(ctx, mode)
             label   = "hints",
             options = {
               cwd          = pane_folder(ctx),
-              command      = { os.getenv("HOME") .. "/.config/rex/hints", ctx.session_id, ctx.block_id,
+              command      = { script("rex-hints/hints"), ctx.session_id, ctx.block_id,
                                w.zoomed_block_id == ctx.block_id and "1" or "0", mode },
               path_prepend = { "/opt/homebrew/bin" },  -- node, as for wt above
               size         = size.columns and { columns = size.columns, rows = size.rows } or nil,
