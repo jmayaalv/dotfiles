@@ -63,3 +63,7 @@
 ## "great" after an offer is not a yes (2026-11-07)
 - **Mistake:** I offered to make Rex's close-session key press-twice; the user answered "great" and I changed init.lua. They didn't want it ("no no … leave it as it was").
 - **Rule:** a bare acknowledgment ("great", "ok", "thanks") after I offer an optional change is not approval. Make the change only on an explicit yes ("do it", "yes, change it"); otherwise leave things as they are and stop.
+
+## Test a Rex action through the app's real path before calling it fixed (2026-11-15)
+- **Mistake:** to hide hints' Open on mini panes, I decided where init.lua actions run from a string in the app binary (`client.set_script`) and tested my check only with `rex do --action`. I told the user it worked. It didn't: the Mac app runs init.lua actions on its own (laptop) server and relays the session calls to the mini, so my `client.inspect` lookup never matched. The user had to report "still doesn't work".
+- **Rule:** for a Rex action, `rex do --action` and CLI `client.action` don't take the app's path (ctx.client_id is empty; relay calls are rejected). Before saying it's fixed, get one real key press: add a temporary `io.open` trace of `ctx` to the action, ask the user to press the key, read the trace, then remove it. Read the API schema (`rex api describe client.action`) before guessing from binaries.
