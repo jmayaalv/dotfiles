@@ -86,6 +86,15 @@ else
   brew install --cask hamed-elfayome/claude-usage/claude-usage-tracker
 fi
 
+# leaf: read papers, docs and web pages, and review diffs, in the terminal
+# (https://leaf.dipxsy.app). Its Rex plugin is installed after stow, below.
+if command -v leaf &>/dev/null; then
+  echo "leaf already installed, skipping."
+else
+  echo "Installing leaf..."
+  brew install deepanshumishraa/tap/leaf
+fi
+
 # Install the Claude Code statusline script. ~/.claude is not stowed (Claude Code
 # writes into it), so this is copied rather than symlinked.
 if [ -d "$HOME/.claude" ]; then
@@ -138,5 +147,10 @@ stow --target="$HOME" .
 # dotfiles repo. --adopt moves the real file into the repo and replaces it with a symlink.
 echo "Adopting any unmanaged files into stow..."
 stow --adopt --target="$HOME" .
+
+# leaf's Rex plugin: adds a managed block to ~/.config/rex/init.lua and writes
+# ~/.config/rex/plugins/leaf, so it runs after stow. Re-running changes nothing.
+echo "Installing leaf's Rex plugin..."
+leaf rex install || echo "  leaf rex install failed (is Rex installed?), skipping."
 
 echo "Done. Restart your shell or run: source ~/.zshrc"

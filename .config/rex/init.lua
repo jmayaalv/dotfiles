@@ -193,3 +193,10 @@ rex.bind("resize/enter",  "client.mode.exit")
 -- ctrl+alt+cmd, which nothing here binds, so the program gets C-M-s-<key> and
 -- ~/.emacs.d/personal/terminal.el turns that into s-<key>. (Re-sending keys
 -- with pane.send_key doesn't work: it drops cmd+letter.)
+
+-- >>> leaf >>>
+-- Managed by `leaf rex install`; `leaf rex uninstall` removes it.
+-- plugin: dbd96079ad70c4c6
+dofile("/Users/jmayaalv/.config/rex/plugins/leaf/init.lua").setup({ bin = { "/opt/homebrew/bin/leaf" } })
+-- open: idle
+-- <<< leaf <<<
