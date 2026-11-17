@@ -187,5 +187,10 @@
   },
   "env": {
     "SQLIT_CONFIG_DIR": "/Users/jmayaalv/.config/sqlit-agents"
+  },
+  "attribution": {
+    "commit": "",
+    "pr": "",
+    "sessionUrl": false
   }
 }
