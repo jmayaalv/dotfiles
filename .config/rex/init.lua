@@ -100,9 +100,9 @@ rex.action{ name = "tuicr_review_paste", title = "Review Changes in tuicr (paste
 rex.action{ name = "tuicr_review_submit", title = "Review Changes in tuicr (submit comments)", run = tuicr_review("submit") }
 rex.bind("shift+cmd+d", "tuicr_review_paste")
 
--- shift+cmd+j: hints over the focused pane (~/Developer/rex-hints) in a
+-- super+shift+j: hints over the focused pane (~/Developer/rex-hints) in a
 -- floating pane laid exactly over it. Type a hint, then c copy, o open, e edit
--- (ec in a split), t edit in a tab, m move. ctrl+cmd+j (Caps Lock+cmd): ace-jump,
+-- (ec in a split), t edit in a tab, m move. super+ctrl+j (Caps Lock+cmd): ace-jump,
 -- type a word's first character, then its hint.
 dofile(script("rex-hints/init.lua")).setup()
 
